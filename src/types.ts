@@ -19,6 +19,28 @@ export interface Cliente {
   telefono: string;
 }
 
+// Franja en la que un profesional atiende turnos. dia_semana: 0 = domingo … 6 = sábado
+export interface HorarioAtencion {
+  dia_semana: number;
+  hora_inicio: string;
+  hora_fin: string;
+}
+
+// Profesional de la clínica tal como lo lista el panel del personal
+export interface Veterinario {
+  id: number;
+  nombre: string;
+  email: string;
+  telefono: string;
+  especialidad: string | null;
+  matricula: string | null;
+  foto: string | null;
+  horarios: HorarioAtencion[];
+  // Solo en la respuesta del alta: si se lo invitó a elegir su contraseña y si salió el email
+  invitado?: boolean;
+  email_enviado?: boolean;
+}
+
 export interface Pet {
   id: number;
   usuario_id: number;

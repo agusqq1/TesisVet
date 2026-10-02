@@ -6,12 +6,13 @@ import {
   Calendar,
   Users,
   FileText,
+  Stethoscope,
   ShoppingBag,
   Package,
   LogOut,
 } from "lucide-react";
 
-export type AdminSection = "dashboard" | "turnos" | "pacientes" | "pedidos" | "tienda";
+export type AdminSection = "dashboard" | "turnos" | "pacientes" | "doctores" | "pedidos" | "tienda";
 
 interface AdminSidebarProps {
   active: AdminSection;
@@ -23,6 +24,7 @@ const SECCIONES: Array<{ key: AdminSection | "historial"; label: string; path: s
   { key: "turnos", label: "Gestión de Turnos", path: "/admin/turnos", icon: <Calendar size={16} /> },
   { key: "pacientes", label: "Pacientes & Clientes", path: "/admin/pacientes", icon: <Users size={16} /> },
   { key: "historial", label: "Historiales Clínicos", path: "/historial", icon: <FileText size={16} /> },
+  { key: "doctores", label: "Doctores", path: "/admin/doctores", icon: <Stethoscope size={16} /> },
   { key: "pedidos", label: "Pedidos de Tienda", path: "/admin/pedidos", icon: <Package size={16} /> },
   { key: "tienda", label: "Gestión de Tienda", path: "/admin/tienda", icon: <ShoppingBag size={16} /> },
 ];

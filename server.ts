@@ -25,6 +25,7 @@ import { horariosDisponibles, hoyLocal, sumarDias } from "./server/agenda";
 import {
   CLINICA,
   emailConfigurado,
+  emailAltaProfesional,
   emailBienvenida,
   emailDerivacion,
   emailPedido,
@@ -101,6 +102,15 @@ const esEmail = (v: unknown): v is string =>
   typeof v === "string" && v.length <= 190 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 
 const PASSWORD_MIN = 8;
+
+// Enlace para elegir una contraseña. En producción conviene fijar APP_URL en .env
+// para que no dependa del pedido.
+function enlaceClave(req: Request, token: string) {
+  const base = /^https?:\/\//.test(process.env.APP_URL || "")
+    ? process.env.APP_URL!.replace(/\/+$/, "")
+    : `${req.protocol}://${req.get("host")}`;
+  return `${base}/reset-password?token=${token}`;
+}
 
 const PET_SELECT = `
   SELECT m.id, m.usuario_id, m.nombre, m.especie, m.raza, m.edad, m.peso, m.foto,
@@ -331,12 +341,7 @@ app.post("/api/auth/forgot-password", limiteCuentas, wrap(async (req, res) => {
       "INSERT INTO recuperaciones_password (token_hash, usuario_id, expira_en) VALUES (?, ?, NOW() + INTERVAL 1 HOUR)",
       [hashToken(token), user.id]
     );
-
-    // En producción conviene fijar APP_URL en .env para que el enlace no dependa del pedido
-    const base = /^https?:\/\//.test(process.env.APP_URL || "")
-      ? process.env.APP_URL!.replace(/\/+$/, "")
-      : `${req.protocol}://${req.get("host")}`;
-    const enlace = `${base}/reset-password?token=${token}`;
+    const enlace = enlaceClave(req, token);
 
     const { delivered } = await enviarEmail({
       to: user.email,
@@ -425,6 +430,120 @@ app.post("/api/users", requireVet, wrap(async (req, res) => {
     }
     throw err;
   }
+}));
+
+// --- VETERINARIOS (equipo de la clínica) ---
+async function fetchVeterinarios(where = "", params: any[] = []) {
+  const vets = await query(
+    `SELECT id, nombre, email, telefono, especialidad, matricula, foto
+     FROM usuarios WHERE rol = 'veterinario' ${where} ORDER BY nombre`,
+    params
+  );
+  if (vets.length === 0) return [];
+  const horarios = await query(
+    `SELECT veterinario_id, dia_semana,
+            TIME_FORMAT(hora_inicio, '%H:%i') AS hora_inicio,
+            TIME_FORMAT(hora_fin, '%H:%i') AS hora_fin
+     FROM horarios_veterinario WHERE veterinario_id IN (?)
+     ORDER BY dia_semana, hora_inicio`,
+    [vets.map((v) => v.id)]
+  );
+  return vets.map((v) => ({
+    ...v,
+    horarios: horarios
+      .filter((h) => h.veterinario_id === v.id)
+      .map(({ veterinario_id, ...h }) => h),
+  }));
+}
+
+app.get("/api/veterinarios", requireVet, wrap(async (req, res) => {
+  res.json(await fetchVeterinarios());
+}));
+
+// Alta de un profesional. Queda con acceso al panel y, si se le cargan días de
+// atención, entra en la agenda de turnos online. Sin contraseña inicial recibe un
+// email con un enlace para elegir la suya.
+app.post("/api/veterinarios", requireVet, wrap(async (req, res) => {
+  const { nombre, email, telefono, especialidad, matricula, password, dias, hora_inicio, hora_fin } = req.body;
+  if (typeof nombre !== "string" || !nombre.trim() || !esEmail(email)) {
+    return res.status(400).json({ error: "Ingresá el nombre y un email válido del profesional." });
+  }
+  if (!str(matricula).trim()) {
+    return res.status(400).json({ error: "Ingresá la matrícula del profesional." });
+  }
+
+  const conPassword = typeof password === "string" && password !== "";
+  if (conPassword && password.length < PASSWORD_MIN) {
+    return res
+      .status(400)
+      .json({ error: `La contraseña debe tener al menos ${PASSWORD_MIN} caracteres.` });
+  }
+  if (!conPassword && !emailConfigurado()) {
+    return res.status(400).json({
+      error: "El envío de emails no está configurado: cargá una contraseña inicial para el profesional.",
+    });
+  }
+
+  const diasAtencion: unknown[] = Array.isArray(dias) ? [...new Set(dias)] : [];
+  if (diasAtencion.some((d) => !Number.isInteger(d) || (d as number) < 0 || (d as number) > 6)) {
+    return res.status(400).json({ error: "Alguno de los días de atención no es válido." });
+  }
+  if (diasAtencion.length > 0 && (!esHora(hora_inicio) || !esHora(hora_fin) || hora_inicio >= hora_fin)) {
+    return res
+      .status(400)
+      .json({ error: "El horario de atención no es válido: la hora de fin tiene que ser posterior a la de inicio." });
+  }
+
+  const passwordHash = await bcrypt.hash(conPassword ? password : nuevoToken(), 10);
+  let vetId: number;
+  try {
+    vetId = await transaction(async (conn) => {
+      const [result] = await conn.query<ResultSetHeader>("INSERT INTO usuarios SET ?", [
+        {
+          nombre: nombre.trim(),
+          email,
+          password_hash: passwordHash,
+          rol: "veterinario",
+          telefono: str(telefono).trim(),
+          especialidad: str(especialidad).trim() || null,
+          matricula: str(matricula).trim(),
+        },
+      ]);
+      for (const dia of diasAtencion) {
+        await conn.query("INSERT INTO horarios_veterinario SET ?", [
+          { veterinario_id: result.insertId, dia_semana: dia, hora_inicio, hora_fin },
+        ]);
+      }
+      return result.insertId;
+    });
+  } catch (err) {
+    if (isDup(err)) {
+      return res.status(400).json({ error: "Ya existe una cuenta registrada con ese email." });
+    }
+    throw err;
+  }
+
+  let enlace: string | null = null;
+  if (!conPassword) {
+    const token = nuevoToken();
+    await execute(
+      "INSERT INTO recuperaciones_password (token_hash, usuario_id, expira_en) VALUES (?, ?, NOW() + INTERVAL 3 DAY)",
+      [hashToken(token), vetId]
+    );
+    enlace = enlaceClave(req, token);
+  }
+
+  // El profesional ya quedó registrado: si el email falla, la respuesta lo informa
+  const { delivered } = await enviarEmail({
+    to: email,
+    ...emailAltaProfesional(nombre.trim(), enlace),
+  });
+  if (enlace && !delivered && process.env.NODE_ENV !== "production") {
+    console.log(`[ALTA PROFESIONAL] Enlace para ${email}: ${enlace}`);
+  }
+
+  const [vet] = await fetchVeterinarios("AND id = ?", [vetId]);
+  res.status(201).json({ ...vet, email_enviado: delivered, invitado: !conPassword });
 }));
 
 // --- PETS ---

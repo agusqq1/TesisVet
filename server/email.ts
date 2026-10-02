@@ -258,6 +258,34 @@ export function emailBienvenida(nombre: string) {
   };
 }
 
+// Aviso al profesional que el personal dio de alta desde el panel. Con `enlace` lo
+// invita a elegir su contraseña; sin él, entra con la que le cargaron en la clínica.
+export function emailAltaProfesional(nombre: string, enlace: string | null) {
+  const acceso = enlace
+    ? `
+        <p>Para empezar, elegí tu contraseña desde este enlace (vence en 3 días):</p>
+        <p style="margin: 20px 0;">
+          <a href="${esc(enlace)}" style="background-color: #2563eb; color: white; padding: 12px 20px; border-radius: 8px; text-decoration: none; font-weight: bold;">Elegir mi contraseña</a>
+        </p>
+        <p style="font-size: 12px; color: #64748b; word-break: break-all;">Si el botón no funciona, copiá esta dirección en tu navegador: ${esc(enlace)}</p>
+        <p style="font-size: 13px; color: #64748b;">Si el enlace venció, pedí uno nuevo desde "¿Olvidaste tu contraseña?" en la pantalla de ingreso.</p>`
+    : `
+        <p>Ingresá con este email y la contraseña que te indicaron en la clínica. Podés cambiarla cuando quieras desde "¿Olvidaste tu contraseña?" en la pantalla de ingreso.</p>`;
+
+  return {
+    subject: `Tu acceso al panel de ${CLINICA.nombre}`,
+    html: plantilla(
+      "ACCESO AL PANEL VETERINARIO",
+      `${CLINICA.nombre} &bull; Equipo profesional`,
+      `
+        <p>Hola <strong>${esc(nombre)}</strong>,</p>
+        <p>Te sumaron al equipo de ${CLINICA.nombre}. Desde el panel veterinario vas a poder ver tu agenda de turnos, las historias clínicas y emitir órdenes de derivación.</p>
+        ${acceso}
+      `
+    ),
+  };
+}
+
 // `pedido` es un pedido tal como lo devuelve la API
 export function emailPedido(pedido: any) {
   const filas = pedido.items

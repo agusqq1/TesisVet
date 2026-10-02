@@ -19,6 +19,7 @@ import { Perfil } from "./pages/Perfil";
 import { AdminDashboard } from "./pages/AdminDashboard";
 import { AdminTurnos } from "./pages/AdminTurnos";
 import { AdminPacientes } from "./pages/AdminPacientes";
+import { AdminDoctores } from "./pages/AdminDoctores";
 import { AdminPedidos } from "./pages/AdminPedidos";
 import { AdminTienda } from "./pages/AdminTienda";
 
@@ -102,6 +103,7 @@ function AppContent() {
         {currentPath === "/admin/pacientes" && (
           <AdminPacientes navigate={navigate} />
         )}
+        {currentPath === "/admin/doctores" && <AdminDoctores navigate={navigate} />}
         {currentPath === "/admin/pedidos" && <AdminPedidos navigate={navigate} />}
         {currentPath === "/admin/tienda" && (
           <AdminTienda navigate={navigate} />
