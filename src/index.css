@@ -9,18 +9,18 @@
   --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-display: "Plus Jakarta Sans", "Inter", ui-sans-serif, system-ui, sans-serif;
 
-  /* Verde clínico */
-  --color-brand-50: #eefaf6;
-  --color-brand-100: #d6f3ea;
-  --color-brand-200: #aee6d6;
-  --color-brand-300: #7bd2bc;
-  --color-brand-400: #47b79e;
-  --color-brand-500: #259b83;
-  --color-brand-600: #177d6a;
-  --color-brand-700: #146457;
-  --color-brand-800: #145046;
-  --color-brand-900: #12423b;
-  --color-brand-950: #082621;
+  /* Azul de la marca */
+  --color-brand-50: #eff6ff;
+  --color-brand-100: #dbeafe;
+  --color-brand-200: #bfdbfe;
+  --color-brand-300: #93c5fd;
+  --color-brand-400: #60a5fa;
+  --color-brand-500: #3b82f6;
+  --color-brand-600: #2563eb;
+  --color-brand-700: #1d4ed8;
+  --color-brand-800: #1e40af;
+  --color-brand-900: #1e3a8a;
+  --color-brand-950: #172554;
 
   /* Esquinas: menos redondeadas que las de fábrica en los tamaños grandes */
   --radius-sm: 0.3rem;
@@ -201,7 +201,7 @@
   .auth-visual::before{
     content:"";
     position:absolute; inset:0;
-    background:linear-gradient(0deg, rgba(8,38,33,.88) 8%, rgba(18,66,59,.35) 60%, rgba(18,66,59,.15) 100%);
+    background:linear-gradient(0deg, rgba(23,37,84,.88) 8%, rgba(30,58,138,.35) 60%, rgba(30,58,138,.15) 100%);
   }
   .auth-visual > *{ position:relative; z-index:1; }
   .auth-visual .logo{ color:#fff; margin-bottom:auto; }
@@ -224,7 +224,7 @@
     padding:10px 14px; background:#fff;
     transition:border-color .15s ease, box-shadow .15s ease;
   }
-  .input-wrap:focus-within{ border-color:var(--marca); box-shadow:0 0 0 3px rgba(23,125,106,0.15); }
+  .input-wrap:focus-within{ border-color:var(--marca); box-shadow:0 0 0 3px rgba(37,99,235,0.15); }
   .input-wrap input, .input-wrap select{
     border:none; outline:none; width:100%; font-size:.95rem; background:transparent; color:var(--texto);
   }
@@ -356,7 +356,7 @@
     width:100%; border:1px solid #cbd5e1; border-radius:var(--r-campo);
     padding:12px 14px; min-height:100px; resize:vertical; margin-top:6px; font-size:.95rem; color:var(--texto);
   }
-  textarea.wizard-notes:focus{ border-color:var(--marca); outline:none; box-shadow:0 0 0 3px rgba(23,125,106,0.15); }
+  textarea.wizard-notes:focus{ border-color:var(--marca); outline:none; box-shadow:0 0 0 3px rgba(37,99,235,0.15); }
 
   .review-block{ margin-bottom:26px; }
   .review-block h4{ font-family:var(--font-sans); font-size:.75rem; text-transform:uppercase; letter-spacing:.06em; color:var(--texto-muted); margin-bottom:10px; font-weight:600; }
@@ -408,7 +408,7 @@
     display:flex; align-items:center; gap:10px; background:#fff; border:1px solid #cbd5e1;
     border-radius:var(--r-campo); padding:10px 14px; max-width:480px; width: 100%; transition:border-color .15s, box-shadow .15s;
   }
-  .search-bar:focus-within{ border-color:var(--marca); box-shadow:0 0 0 3px rgba(23,125,106,0.15); }
+  .search-bar:focus-within{ border-color:var(--marca); box-shadow:0 0 0 3px rgba(37,99,235,0.15); }
   .search-bar input{ border:none; outline:none; flex:1; font-size:.92rem; background:transparent; }
 
   /* ---------------- Panel Admin (Veterinario) ---------------- */

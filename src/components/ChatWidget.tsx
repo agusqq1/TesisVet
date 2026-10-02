@@ -422,7 +422,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ navigate }) => {
             ? "bg-slate-800 hover:bg-slate-900"
             : "bg-gradient-to-r from-brand-600 via-brand-700 to-brand-700 hover:from-brand-700 hover:to-brand-800 hover:shadow-brand-500/25"
         }`}
-        style={{ boxShadow: "0 10px 25px -5px rgba(23, 125, 106, 0.4)" }}
+        style={{ boxShadow: "0 10px 25px -5px rgba(37, 99, 235, 0.4)" }}
         aria-label="Abrir asistente de chat"
       >
         <div className="relative">
