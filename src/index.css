@@ -95,6 +95,9 @@
   padding-inline:32px;
 }
 
+/* Mapas (Leaflet): usan la tipografía del sitio */
+.leaflet-container{ font-family:var(--font-sans); }
+
 @layer components {
   /* ---------------- Botones ---------------- */
   .btn{

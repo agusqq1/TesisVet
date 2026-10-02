@@ -264,3 +264,32 @@ CREATE TABLE IF NOT EXISTS recuperaciones_password (
   KEY idx_recuperaciones_usuario (usuario_id),
   CONSTRAINT fk_recuperaciones_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Operativos de veterinarias móviles (castración, vacunación) que la clínica difunde
+-- en el mapa público. El punto exacto se guarda como latitud y longitud.
+CREATE TABLE IF NOT EXISTS operativos_moviles (
+  id          INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  titulo      VARCHAR(160) NOT NULL,
+  organizador VARCHAR(160) NOT NULL DEFAULT '',
+  servicios   VARCHAR(255) NOT NULL,
+  fecha       DATE NOT NULL,
+  hora_inicio TIME NOT NULL,
+  hora_fin    TIME NOT NULL,
+  direccion   VARCHAR(200) NOT NULL,
+  localidad   VARCHAR(120) NOT NULL,
+  latitud     DECIMAL(9,6) NOT NULL,
+  longitud    DECIMAL(9,6) NOT NULL,
+  requisitos  TEXT NULL,
+  creado_en   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_operativos_fecha (fecha)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Localidades de las que cada usuario pidió recibir avisos de operativos.
+CREATE TABLE IF NOT EXISTS avisos_operativos (
+  usuario_id INT UNSIGNED NOT NULL,
+  localidad  VARCHAR(120) NOT NULL,
+  PRIMARY KEY (usuario_id, localidad),
+  KEY idx_avisos_localidad (localidad),
+  CONSTRAINT fk_avisos_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

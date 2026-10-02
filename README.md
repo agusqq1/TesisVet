@@ -52,7 +52,7 @@ Las crea `npm run db:setup`. Se ingresa escribiendo el email y la contraseña en
 |---|---|
 | `npm run db:up` | Levanta MySQL y phpMyAdmin en Docker |
 | `npm run db:down` | Los detiene (los datos no se pierden) |
-| `npm run db:setup` | Crea las tablas que falten y carga datos si la base está vacía |
+| `npm run db:setup` | Crea las tablas que falten y carga datos si la base está vacía. Hay que correrlo después de actualizar el código si se agregaron tablas |
 | `npm run db:reset` | Borra todo y vuelve a cargar los datos iniciales |
 | `npm run db:backup` | Guarda una copia de la base en `backups/` |
 
@@ -60,6 +60,7 @@ Las crea `npm run db:setup`. Se ingresa escribiendo el email y la contraseña en
 - **Datos iniciales:** `db/seed-data.ts` (o `data_storage.json`, si existe, con los datos de la versión anterior)
 - **Imágenes subidas** (fotos de mascotas, radiografías): carpeta `uploads/`; en la base se guarda solo la ruta
 - **Horarios de atención:** tabla `horarios_veterinario`, una fila por veterinario, día y franja. La agenda online solo ofrece turnos dentro de esas franjas.
+- **Veterinarias móviles:** operativos de castración y vacunación que se cargan desde el panel y se ven en el mapa público (`/veterinarias-moviles`, con OpenStreetMap). Los clientes eligen de qué localidades quieren avisos y reciben un email cuando se publica uno. Las localidades están en `src/zonas.ts`.
 - **Doctores:** se agregan desde el panel, en la sección Doctores, con sus días y horario de atención. Si no se les carga una contraseña inicial, reciben un email con un enlace para elegirla (necesita el envío de emails configurado).
 
 Los datos de MySQL viven en el volumen de Docker `mysql_data`. Para borrarlo por completo: `docker compose down -v`.

@@ -14,6 +14,7 @@ const SECCIONES = [
   { path: "/booking", label: "Turnos" },
   { path: "/historial", label: "Historia clínica" },
   { path: "/tienda", label: "Tienda" },
+  { path: "/veterinarias-moviles", label: "Veterinarias móviles" },
 ];
 
 export const Header: React.FC<HeaderProps> = ({ currentPath, navigate }) => {

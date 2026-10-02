@@ -28,11 +28,13 @@ import {
   emailAltaProfesional,
   emailBienvenida,
   emailDerivacion,
+  emailOperativo,
   emailPedido,
   emailRecuperacion,
   emailTurno,
   enviarEmail,
 } from "./server/email";
+import { ZONAS } from "./src/zonas";
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
@@ -103,14 +105,16 @@ const esEmail = (v: unknown): v is string =>
 
 const PASSWORD_MIN = 8;
 
-// Enlace para elegir una contraseña. En producción conviene fijar APP_URL en .env
-// para que no dependa del pedido.
-function enlaceClave(req: Request, token: string) {
-  const base = /^https?:\/\//.test(process.env.APP_URL || "")
+// Dirección pública del sitio, para los enlaces de los emails. En producción conviene
+// fijar APP_URL en .env para que no dependa del pedido.
+const urlBase = (req: Request) =>
+  /^https?:\/\//.test(process.env.APP_URL || "")
     ? process.env.APP_URL!.replace(/\/+$/, "")
     : `${req.protocol}://${req.get("host")}`;
-  return `${base}/reset-password?token=${token}`;
-}
+
+// Enlace para elegir una contraseña
+const enlaceClave = (req: Request, token: string) =>
+  `${urlBase(req)}/reset-password?token=${token}`;
 
 const PET_SELECT = `
   SELECT m.id, m.usuario_id, m.nombre, m.especie, m.raza, m.edad, m.peso, m.foto,
@@ -1358,6 +1362,127 @@ app.patch("/api/orders/:id/estado", requireVet, wrap(async (req, res) => {
 
   const [pedido] = await fetchPedidos("WHERE p.id = ?", [pedidoId]);
   res.json(pedido);
+}));
+
+// --- VETERINARIAS MÓVILES (operativos de castración y vacunación) ---
+const OPERATIVO_SELECT = `
+  SELECT id, titulo, organizador, servicios, fecha,
+         TIME_FORMAT(hora_inicio, '%H:%i') AS hora_inicio,
+         TIME_FORMAT(hora_fin, '%H:%i') AS hora_fin,
+         direccion, localidad, latitud, longitud, requisitos
+  FROM operativos_moviles`;
+
+const esZona = (v: unknown): v is string => ZONAS.some((z) => z.nombre === v);
+
+const esCoordenada = (v: unknown, maximo: number): v is number =>
+  typeof v === "number" && Number.isFinite(v) && Math.abs(v) <= maximo;
+
+// El mapa es público: muestra los operativos de hoy en adelante.
+app.get("/api/operativos", wrap(async (req, res) => {
+  const hoy = hoyLocal();
+  // El personal también ve los que ya pasaron: primero los próximos, del más cercano al más lejano
+  if (req.query.todos === "true" && req.user?.rol === "veterinario") {
+    return res.json(
+      await query(`${OPERATIVO_SELECT} ORDER BY fecha < ?, ABS(DATEDIFF(fecha, ?)), hora_inicio`, [hoy, hoy])
+    );
+  }
+  res.json(await query(`${OPERATIVO_SELECT} WHERE fecha >= ? ORDER BY fecha, hora_inicio`, [hoy]));
+}));
+
+// Al publicar un operativo se avisa por email a quienes se anotaron en esa localidad.
+app.post("/api/operativos", requireVet, wrap(async (req, res) => {
+  const {
+    titulo,
+    organizador,
+    servicios,
+    fecha,
+    hora_inicio,
+    hora_fin,
+    direccion,
+    localidad,
+    latitud,
+    longitud,
+    requisitos,
+  } = req.body;
+
+  if (![titulo, servicios, direccion].every((v) => typeof v === "string" && v.trim())) {
+    return res.status(400).json({ error: "Completá el título, los servicios y la dirección del operativo." });
+  }
+  if (!esZona(localidad)) {
+    return res.status(400).json({ error: "Elegí la localidad del operativo." });
+  }
+  const hoy = hoyLocal();
+  if (!esFecha(fecha) || fecha < hoy || fecha > sumarDias(hoy, 365)) {
+    return res.status(400).json({ error: "La fecha del operativo tiene que ser de hoy en adelante." });
+  }
+  if (!esHora(hora_inicio) || !esHora(hora_fin) || hora_inicio >= hora_fin) {
+    return res
+      .status(400)
+      .json({ error: "El horario no es válido: la hora de fin tiene que ser posterior a la de inicio." });
+  }
+  if (!esCoordenada(latitud, 90) || !esCoordenada(longitud, 180)) {
+    return res.status(400).json({ error: "Marcá en el mapa el punto donde va a estar la veterinaria móvil." });
+  }
+
+  const result = await execute("INSERT INTO operativos_moviles SET ?", [
+    {
+      titulo: titulo.trim(),
+      organizador: str(organizador).trim(),
+      servicios: servicios.trim(),
+      fecha,
+      hora_inicio,
+      hora_fin,
+      direccion: direccion.trim(),
+      localidad,
+      latitud,
+      longitud,
+      requisitos: str(requisitos).trim() || null,
+    },
+  ]);
+  const operativo = await queryOne(`${OPERATIVO_SELECT} WHERE id = ?`, [result.insertId]);
+
+  const suscriptores = await query(
+    `SELECT u.nombre, u.email
+     FROM avisos_operativos a JOIN usuarios u ON u.id = a.usuario_id
+     WHERE a.localidad = ?`,
+    [localidad]
+  );
+  // Los avisos salen de a uno y en segundo plano: la respuesta no espera a que terminen
+  const enlaceMapa = `${urlBase(req)}/veterinarias-moviles`;
+  (async () => {
+    for (const s of suscriptores) {
+      await enviarEmail({ to: s.email, ...emailOperativo(s.nombre, operativo, enlaceMapa) });
+    }
+  })().catch(() => {});
+
+  res.status(201).json({ ...operativo, avisos: suscriptores.length, email_activo: emailConfigurado() });
+}));
+
+app.delete("/api/operativos/:id", requireVet, wrap(async (req, res) => {
+  const result = await execute("DELETE FROM operativos_moviles WHERE id = ?", [toId(req.params.id)]);
+  if (result.affectedRows === 0) {
+    return res.status(404).json({ error: "Operativo no encontrado." });
+  }
+  res.json({ message: "Operativo eliminado." });
+}));
+
+// Localidades de las que el usuario quiere recibir avisos
+app.get("/api/operativos/avisos", requireAuth, wrap(async (req, res) => {
+  const filas = await query("SELECT localidad FROM avisos_operativos WHERE usuario_id = ?", [req.user!.id]);
+  res.json(filas.map((f) => f.localidad));
+}));
+
+app.put("/api/operativos/avisos", requireAuth, wrap(async (req, res) => {
+  const pedidas: unknown[] = Array.isArray(req.body.localidades) ? req.body.localidades : [];
+  const localidades = [...new Set(pedidas.filter(esZona))];
+
+  await transaction(async (conn) => {
+    await conn.query("DELETE FROM avisos_operativos WHERE usuario_id = ?", [req.user!.id]);
+    for (const localidad of localidades) {
+      await conn.query("INSERT INTO avisos_operativos SET ?", [{ usuario_id: req.user!.id, localidad }]);
+    }
+  });
+  res.json(localidades);
 }));
 
 // --- ADMIN STATS ---

@@ -286,6 +286,46 @@ export function emailAltaProfesional(nombre: string, enlace: string | null) {
   };
 }
 
+// "2026-10-10" → "sábado, 10 de octubre"
+const fechaLarga = (fecha: string) =>
+  new Intl.DateTimeFormat("es-AR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    timeZone: "UTC",
+  }).format(new Date(`${fecha}T12:00:00Z`));
+
+// Aviso a quien pidió enterarse de los operativos de veterinarias móviles de su
+// localidad. `o` es un operativo tal como lo devuelve la API.
+export function emailOperativo(nombre: string, o: any, enlaceMapa: string) {
+  return {
+    subject: `Veterinaria móvil en ${o.localidad}: ${fechaLarga(o.fecha)}`,
+    html: plantilla(
+      "VETERINARIA MÓVIL CERCA TUYO",
+      `${CLINICA.nombre} &bull; Aviso para ${esc(o.localidad)}`,
+      `
+        <p>Hola <strong>${esc(nombre)}</strong>,</p>
+        <p>Se publicó un operativo de veterinaria móvil en <strong>${esc(o.localidad)}</strong>:</p>
+        ${caja(
+          `<p style="margin: 0 0 8px; font-size: 15px; font-weight: bold; color: #1e3a8a;">${esc(o.titulo)}</p>` +
+            fila("Servicios", o.servicios) +
+            fila("Fecha", fechaLarga(o.fecha)) +
+            fila("Horario", `${o.hora_inicio} a ${o.hora_fin} hs`) +
+            fila("Lugar", `${o.direccion}, ${o.localidad}`) +
+            (o.organizador ? fila("Organiza", o.organizador) : "") +
+            (o.requisitos ? fila("Requisitos", o.requisitos) : "")
+        )}
+        <p style="margin: 20px 0;">
+          <a href="${esc(enlaceMapa)}" style="background-color: #2563eb; color: white; padding: 12px 20px; border-radius: 8px; text-decoration: none; font-weight: bold;">Ver en el mapa</a>
+        </p>
+        <p style="font-size: 12px; color: #64748b;">
+          Recibís este aviso porque te anotaste a los operativos de ${esc(o.localidad)}. Podés dejar de recibirlos desde la sección "Veterinarias móviles" de la web.
+        </p>
+      `
+    ),
+  };
+}
+
 // `pedido` es un pedido tal como lo devuelve la API
 export function emailPedido(pedido: any) {
   const filas = pedido.items

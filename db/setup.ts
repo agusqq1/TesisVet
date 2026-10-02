@@ -14,9 +14,12 @@ import mysql from "mysql2/promise";
 import type { Connection } from "mysql2/promise";
 import { dbConfig, pool } from "./pool";
 import { guardarImagen } from "./imagenes";
+import { hoyLocal, sumarDias } from "../server/agenda";
 import * as seed from "./seed-data";
 
 const TABLAS = [
+  "avisos_operativos",
+  "operativos_moviles",
   "sesiones",
   "recuperaciones_password",
   "horarios_veterinario",
@@ -297,6 +300,10 @@ async function cargarDatos(conn: Connection) {
         producto_imagen: it.producto_imagen ?? null,
       });
     }
+  }
+
+  for (const { en_dias, ...operativo } of seed.operativosMoviles) {
+    await insertar("operativos_moviles", { ...operativo, fecha: sumarDias(hoyLocal(), en_dias) });
   }
 
   return omitidos;

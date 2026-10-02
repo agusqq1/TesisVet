@@ -4,6 +4,7 @@ import { CartProvider } from "./context/CartContext";
 import { Header } from "./components/Header";
 import { Footer } from "./components/Footer";
 import { ChatWidget } from "./components/ChatWidget";
+import { AvisoOperativos, RUTA_MAPA } from "./components/AvisoOperativos";
 
 import { Home } from "./pages/Home";
 import { Login } from "./pages/Login";
@@ -16,10 +17,12 @@ import { MascotaNueva } from "./pages/MascotaNueva";
 import { Tienda } from "./pages/Tienda";
 import { Carrito } from "./pages/Carrito";
 import { Perfil } from "./pages/Perfil";
+import { VeterinariasMoviles } from "./pages/VeterinariasMoviles";
 import { AdminDashboard } from "./pages/AdminDashboard";
 import { AdminTurnos } from "./pages/AdminTurnos";
 import { AdminPacientes } from "./pages/AdminPacientes";
 import { AdminDoctores } from "./pages/AdminDoctores";
+import { AdminOperativos } from "./pages/AdminOperativos";
 import { AdminPedidos } from "./pages/AdminPedidos";
 import { AdminTienda } from "./pages/AdminTienda";
 
@@ -95,6 +98,7 @@ function AppContent() {
         {currentPath === "/tienda" && <Tienda navigate={navigate} />}
         {currentPath === "/carrito" && <Carrito navigate={navigate} />}
         {currentPath === "/perfil" && <Perfil navigate={navigate} />}
+        {currentPath === RUTA_MAPA && <VeterinariasMoviles navigate={navigate} />}
 
         {(currentPath === "/admin" || currentPath === "/admin/dashboard") && (
           <AdminDashboard navigate={navigate} />
@@ -104,6 +108,7 @@ function AppContent() {
           <AdminPacientes navigate={navigate} />
         )}
         {currentPath === "/admin/doctores" && <AdminDoctores navigate={navigate} />}
+        {currentPath === "/admin/operativos" && <AdminOperativos navigate={navigate} />}
         {currentPath === "/admin/pedidos" && <AdminPedidos navigate={navigate} />}
         {currentPath === "/admin/tienda" && (
           <AdminTienda navigate={navigate} />
@@ -111,6 +116,8 @@ function AppContent() {
       </main>
 
       {!isAuthPage && !isAdminPage && <Footer navigate={navigate} />}
+
+      {!isAuthPage && !isAdminPage && <AvisoOperativos currentPath={currentPath} navigate={navigate} />}
 
       {!isAuthPage && <ChatWidget navigate={navigate} />}
     </div>

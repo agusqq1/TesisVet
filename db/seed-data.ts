@@ -653,3 +653,48 @@ export const products = [
     imagen: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=400&q=80",
   },
 ];
+
+// Operativos de ejemplo de veterinarias móviles. `en_dias` indica cuántos días
+// después de la carga cae cada uno, así siempre aparecen como próximos.
+export const operativosMoviles = [
+  {
+    titulo: "Quirófano móvil de castración",
+    organizador: "Programa municipal de zoonosis (dato de ejemplo)",
+    servicios: "Castración gratuita de perros y gatos",
+    en_dias: 4,
+    hora_inicio: "08:00",
+    hora_fin: "13:00",
+    direccion: "Plaza central de Del Viso",
+    localidad: "Del Viso",
+    latitud: -34.4502,
+    longitud: -58.7968,
+    requisitos:
+      "Ayuno de 12 horas de sólidos y 6 de agua. Perros con collar y correa, gatos en transportadora o bolso cerrado. Llevar una manta y el DNI.",
+  },
+  {
+    titulo: "Jornada de vacunación antirrábica",
+    organizador: "Programa municipal de zoonosis (dato de ejemplo)",
+    servicios: "Vacunación antirrábica gratuita y desparasitación",
+    en_dias: 9,
+    hora_inicio: "10:00",
+    hora_fin: "15:00",
+    direccion: "Plaza 12 de Octubre",
+    localidad: "Pilar",
+    latitud: -34.4587,
+    longitud: -58.9139,
+    requisitos: "Animales mayores de 3 meses. Se atiende por orden de llegada.",
+  },
+  {
+    titulo: "Veterinaria móvil: castración y vacunación",
+    organizador: "Programa municipal de zoonosis (dato de ejemplo)",
+    servicios: "Castración con turno previo y vacunación antirrábica",
+    en_dias: 16,
+    hora_inicio: "09:00",
+    hora_fin: "14:00",
+    direccion: "Sociedad de fomento del barrio, frente a la estación",
+    localidad: "Tortuguitas",
+    latitud: -34.4706,
+    longitud: -58.7561,
+    requisitos: "Ayuno de 12 horas para castración. Los turnos se entregan en el lugar desde las 8:30.",
+  },
+];

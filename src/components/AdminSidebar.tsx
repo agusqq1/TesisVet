@@ -7,12 +7,13 @@ import {
   Users,
   FileText,
   Stethoscope,
+  MapPin,
   ShoppingBag,
   Package,
   LogOut,
 } from "lucide-react";
 
-export type AdminSection = "dashboard" | "turnos" | "pacientes" | "doctores" | "pedidos" | "tienda";
+export type AdminSection = "dashboard" | "turnos" | "pacientes" | "doctores" | "operativos" | "pedidos" | "tienda";
 
 interface AdminSidebarProps {
   active: AdminSection;
@@ -25,6 +26,7 @@ const SECCIONES: Array<{ key: AdminSection | "historial"; label: string; path: s
   { key: "pacientes", label: "Pacientes & Clientes", path: "/admin/pacientes", icon: <Users size={16} /> },
   { key: "historial", label: "Historiales Clínicos", path: "/historial", icon: <FileText size={16} /> },
   { key: "doctores", label: "Doctores", path: "/admin/doctores", icon: <Stethoscope size={16} /> },
+  { key: "operativos", label: "Veterinarias Móviles", path: "/admin/operativos", icon: <MapPin size={16} /> },
   { key: "pedidos", label: "Pedidos de Tienda", path: "/admin/pedidos", icon: <Package size={16} /> },
   { key: "tienda", label: "Gestión de Tienda", path: "/admin/tienda", icon: <ShoppingBag size={16} /> },
 ];

@@ -41,6 +41,25 @@ export interface Veterinario {
   email_enviado?: boolean;
 }
 
+// Operativo de una veterinaria móvil (castración, vacunación) publicado en el mapa
+export interface OperativoMovil {
+  id: number;
+  titulo: string;
+  organizador: string;
+  servicios: string;
+  fecha: string;
+  hora_inicio: string;
+  hora_fin: string;
+  direccion: string;
+  localidad: string;
+  latitud: number;
+  longitud: number;
+  requisitos: string | null;
+  // Solo en la respuesta del alta: a cuántos anotados se avisa y si el envío de emails está activo
+  avisos?: number;
+  email_activo?: boolean;
+}
+
 export interface Pet {
   id: number;
   usuario_id: number;
