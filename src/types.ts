@@ -1,0 +1,227 @@
+export type UserRole = 'cliente' | 'veterinario';
+
+export interface User {
+  id: number;
+  nombre: string;
+  email: string;
+  rol: UserRole;
+  telefono?: string;
+  especialidad?: string | null;
+  matricula?: string | null;
+  foto?: string;
+}
+
+// Cliente tal como lo lista el panel del personal
+export interface Cliente {
+  id: number;
+  nombre: string;
+  email: string;
+  telefono: string;
+}
+
+export interface Pet {
+  id: number;
+  usuario_id: number;
+  nombre: string;
+  especie: string;
+  raza?: string;
+  edad?: number;
+  peso?: number;
+  foto?: string;
+  estado_salud: string;
+  alergias?: string;
+  condiciones_cronicas?: string;
+  creado_en?: string;
+  dueno?: string;
+  telefono?: string;
+}
+
+export interface Service {
+  id: number;
+  nombre: string;
+  descripcion: string;
+  duracion_min: number;
+  precio: number;
+  icono: string;
+  categoria?: 'general' | 'especializado';
+  especialidad?: 'Cardiología' | 'Radiología / Diagnóstico por Imágenes' | 'Ecografía Doppler' | 'Traumatología Compleja' | 'Cirugía Especializada' | 'Laboratorio de Alta Complejidad' | string;
+  estudio_sugerido?: string;
+  derivacion_habilitada?: boolean;
+}
+
+export type TurnoEstado = 'pendiente' | 'confirmado' | 'cancelado' | 'completado';
+
+export interface Turno {
+  id: number;
+  mascota_id: number;
+  servicio_id: number;
+  veterinario_id?: number | null;
+  fecha: string;
+  hora: string;
+  duracion_min?: number;
+  estado: TurnoEstado;
+  notas?: string;
+  creado_en?: string;
+  mascota_nombre?: string;
+  dueno?: string;
+  dueno_email?: string;
+  servicio_nombre?: string;
+  veterinario_nombre?: string;
+  
+  // Metadatos de turno especializado y derivación médica
+  es_especializado?: boolean;
+  categoria_servicio?: 'general' | 'especializado';
+  especialidad?: string;
+  estudio_solicitado?: string;
+  sintomas_observados?: string;
+  tiene_estudios_previos?: boolean;
+  derivado?: boolean;
+  derivacion_id?: number;
+  derivacion_codigo?: string;
+}
+
+export type ConsultaTipo = 'CONTROL' | 'EMERGENCIA' | 'VACUNA' | 'CIRUGIA' | 'DIAGNOSTICO';
+
+export interface Consulta {
+  id: number;
+  mascota_id: number;
+  veterinario_id?: number | null;
+  fecha: string;
+  tipo: ConsultaTipo;
+  titulo: string;
+  descripcion: string;
+  creado_en?: string;
+  vet_nombre?: string;
+}
+
+export type VacunaEstado = 'AL_DIA' | 'VENCIDA' | 'PENDIENTE';
+
+export interface Vacuna {
+  id: number;
+  mascota_id: number;
+  nombre: string;
+  fecha_aplicacion?: string;
+  fecha_refuerzo?: string;
+  estado: VacunaEstado;
+}
+
+export interface Estudio {
+  id: number;
+  mascota_id: number;
+  nombre: string;
+  tipo?: string;
+  fecha: string;
+  resultado_url?: string;
+  imagen_url?: string;
+  zona_anatomica?: string;
+  observaciones?: string;
+  veterinario_id?: number;
+  veterinario_nombre?: string;
+  institucion?: string;
+}
+
+export interface CentroVeterinarioRecomendado {
+  id: string;
+  nombre: string;
+  direccion: string;
+  localidad: string;
+  telefono: string;
+  whatsapp?: string;
+  horarios: string;
+  especialidades: string[];
+  equipamiento: string[];
+  medico_responsable: string;
+  distancia_estimada: string;
+  acepta_urgencias: boolean;
+}
+
+export interface OrdenDerivacion {
+  id: number;
+  codigo: string;
+  mascota_id: number;
+  mascota_nombre: string;
+  especie: string;
+  raza?: string;
+  edad?: number;
+  peso?: number;
+  dueno_nombre: string;
+  dueno_telefono?: string;
+  dueno_email?: string;
+  
+  veterinario_emisor_id: number;
+  veterinario_emisor_nombre: string;
+  veterinario_matricula: string;
+  clinica_origen: string;
+  
+  centro_destino: CentroVeterinarioRecomendado;
+  
+  especialidad_derivada: 'Cardiología' | 'Radiología / Diagnóstico por Imágenes' | 'Ecografía Doppler' | 'Traumatología Compleja' | 'Cirugía Especializada' | 'Laboratorio de Alta Complejidad';
+  estudio_solicitado: string;
+  motivo_derivacion: 'Falta de especialista cardiólogo en sede' | 'Saturación de turnos / derivación prioritaria' | 'Equipamiento de alta complejidad requerido' | 'Evaluación prequirúrgica urgente';
+  
+  sospecha_diagnostica: string;
+  resumen_clinico: string;
+  indicaciones_previas: string;
+  
+  fecha_emision: string;
+  fecha_validez_hasta: string;
+  estado: 'activa' | 'presentada' | 'completada' | 'vencida';
+  creado_en: string;
+}
+
+export type ProductCategory = 'Medicamentos' | 'Bienestar y Estética' | 'Nutrición y Alimento' | 'Pulgas y Garrapatas';
+
+export interface Product {
+  id: number;
+  nombre: string;
+  categoria: ProductCategory;
+  etiqueta?: string;
+  descripcion?: string;
+  precio: number;
+  imagen?: string;
+  requiere_receta?: boolean;
+  stock?: number;
+}
+
+export interface CartItem {
+  product: Product;
+  quantity: number;
+}
+
+export interface OrderItem {
+  id: number;
+  pedido_id: number;
+  producto_id: number | null;
+  cantidad: number;
+  precio_unitario: number;
+  producto_nombre: string;
+  producto_imagen?: string | null;
+  requiere_receta: boolean;
+}
+
+export type OrderEstado = 'pendiente' | 'pagado' | 'enviado' | 'entregado' | 'cancelado';
+
+export interface Order {
+  id: number;
+  order_code: string;
+  usuario_id: number;
+  cliente_nombre: string;
+  cliente_email: string;
+  total: number;
+  estado: OrderEstado;
+  entrega: 'retiro' | 'envio';
+  direccion_envio?: string | null;
+  telefono_contacto?: string | null;
+  creado_en: string;
+  items: OrderItem[];
+  // Solo en la respuesta de la compra: indica si salió el email de confirmación
+  email_enviado?: boolean;
+}
+
+export interface AdminStats {
+  totalHoy: number;
+  pendientes: number;
+  totalPacientes: number;
+  totalClientes: number;
+  pedidosPendientes: number;
+}

@@ -1,0 +1,48 @@
+# Base de datos local de VetAnimal.
+# Usuario, contraseñas y puerto se leen del archivo .env de esta misma carpeta.
+#
+#   npm run db:up      levanta MySQL y phpMyAdmin
+#   npm run db:down    los detiene (los datos quedan guardados en el volumen)
+
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: vetanimal-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_NAME:-vetanimal}
+      MYSQL_USER: ${DB_USER:-vetanimal}
+      MYSQL_PASSWORD: ${DB_PASSWORD:?Falta DB_PASSWORD en el archivo .env}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?Falta DB_ROOT_PASSWORD en el archivo .env}
+      TZ: America/Argentina/Buenos_Aires
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    ports:
+      # Solo accesible desde esta computadora
+      - "127.0.0.1:${DB_PORT:-3306}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u root -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  # Interfaz web para ver y editar las tablas: http://localhost:8080
+  phpmyadmin:
+    image: phpmyadmin:5
+    container_name: vetanimal-phpmyadmin
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      PMA_HOST: mysql
+      PMA_USER: ${DB_USER:-vetanimal}
+      PMA_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "127.0.0.1:8080:80"
+
+volumes:
+  mysql_data:

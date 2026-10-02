@@ -1,0 +1,54 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Production & Build outputs
+dist/
+dist-ssr/
+build/
+*.tsbuildinfo
+
+# Local Environment & Secrets
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env*.local
+!.env.example
+
+# Editor & OS files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+
+# Cache & Logs
+.vite/
+.cache/
+.eslintcache
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Imágenes subidas por los usuarios (fotos de mascotas, radiografías)
+uploads/
+
+# Copias de seguridad de la base (contienen datos de clientes)
+backups/
+
+# Datos y código de la versión anterior a MySQL (incluyen contraseñas sin cifrar)
+data_storage.json
+db/legacy/
+
+# Temporary files & working directories
+temp_repo/
+tmp/
+*.tmp
+
