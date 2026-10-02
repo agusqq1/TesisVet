@@ -244,6 +244,17 @@ export interface OrderItem {
 
 export type OrderEstado = 'pendiente' | 'pagado' | 'enviado' | 'entregado' | 'cancelado';
 
+// Pago online de un pedido. De la tarjeta solo se conocen la marca y los últimos 4 dígitos
+export interface PagoPedido {
+  referencia: string;
+  marca: string;
+  ultimos4: string;
+  cuotas: number;
+}
+
+// Lo que el formulario de pago le manda al servidor
+export type DatosPago = Omit<PagoPedido, "referencia"> & { titular: string };
+
 export interface Order {
   id: number;
   order_code: string;
@@ -256,6 +267,8 @@ export interface Order {
   direccion_envio?: string | null;
   telefono_contacto?: string | null;
   creado_en: string;
+  // null si se paga al retirar o recibir
+  pago: PagoPedido | null;
   items: OrderItem[];
   // Solo en la respuesta de la compra: indica si salió el email de confirmación
   email_enviado?: boolean;

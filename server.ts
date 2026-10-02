@@ -35,6 +35,7 @@ import {
   enviarEmail,
 } from "./server/email";
 import { ZONAS } from "./src/zonas";
+import { CUOTAS, MARCAS_TARJETA } from "./src/tarjetas";
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
@@ -231,9 +232,11 @@ async function fetchPedidos(where: string, params: any[] = []) {
   const pedidos = await query(
     `SELECT p.id, CONCAT('VET-', p.id) AS order_code, p.usuario_id,
             u.nombre AS cliente_nombre, u.email AS cliente_email,
-            p.total, p.estado, p.entrega, p.direccion_envio, p.telefono_contacto, p.creado_en
+            p.total, p.estado, p.entrega, p.direccion_envio, p.telefono_contacto, p.creado_en,
+            g.referencia AS pago_referencia, g.tarjeta_marca, g.tarjeta_ultimos4, g.cuotas AS pago_cuotas
      FROM pedidos p
      JOIN usuarios u ON u.id = p.usuario_id
+     LEFT JOIN pagos g ON g.pedido_id = p.id
      ${where}
      ORDER BY p.id DESC`,
     params
@@ -244,7 +247,14 @@ async function fetchPedidos(where: string, params: any[] = []) {
       pedidos.map((p) => p.id),
     ])
   ).map((it) => ({ ...it, requiere_receta: Boolean(it.requiere_receta) }));
-  return pedidos.map((p) => ({ ...p, items: items.filter((it) => it.pedido_id === p.id) }));
+  return pedidos.map(({ pago_referencia, tarjeta_marca, tarjeta_ultimos4, pago_cuotas, ...p }) => ({
+    ...p,
+    // Solo los pedidos pagados online tienen un pago registrado
+    pago: pago_referencia
+      ? { referencia: pago_referencia, marca: tarjeta_marca, ultimos4: tarjeta_ultimos4, cuotas: pago_cuotas }
+      : null,
+    items: items.filter((it) => it.pedido_id === p.id),
+  }));
 }
 
 // ==========================================
@@ -1242,9 +1252,40 @@ app.delete("/api/products/:id", requireVet, wrap(async (req, res) => {
   res.json({ message: "Producto eliminado correctamente.", product: mapProduct(product) });
 }));
 
+// Pago simulado con tarjeta: no se cobra nada ni interviene ningún medio de pago real.
+// El número y el código de seguridad no llegan al servidor: el navegador manda solo
+// la marca y los últimos 4 dígitos. Como en los entornos de prueba de los medios de
+// pago, el nombre del titular decide el resultado: FUND y OTHE simulan un rechazo.
+function autorizarPagoSimulado(pago: any) {
+  const titular = str(pago?.titular).trim();
+  const cuotas = Number(pago?.cuotas ?? 1);
+  if (
+    !titular ||
+    titular.length > 120 ||
+    !MARCAS_TARJETA.includes(pago?.marca) ||
+    !/^\d{4}$/.test(str(pago?.ultimos4)) ||
+    !CUOTAS.includes(cuotas)
+  ) {
+    throw httpError(400, "Los datos de la tarjeta no son válidos.");
+  }
+  if (titular.toUpperCase() === "FUND") {
+    throw httpError(402, "La tarjeta no tiene fondos suficientes. Probá con otra tarjeta.");
+  }
+  if (titular.toUpperCase() === "OTHE") {
+    throw httpError(402, "La tarjeta rechazó el pago. Probá con otra o pagá al recibir el pedido.");
+  }
+  return {
+    referencia: `SIM-${nuevoToken().substring(0, 10).toUpperCase()}`,
+    cuotas,
+    tarjeta_marca: pago.marca as string,
+    tarjeta_ultimos4: pago.ultimos4 as string,
+    titular,
+  };
+}
+
 app.post("/api/orders", requireAuth, wrap(async (req, res) => {
-  // items = [{ productId, quantity }]
-  const { items, entrega, direccion_envio, telefono_contacto } = req.body;
+  // items = [{ productId, quantity }]; pago = { titular, marca, ultimos4, cuotas } si paga online
+  const { items, entrega, direccion_envio, telefono_contacto, pago } = req.body;
   if (!Array.isArray(items) || !items.length) {
     return res.status(400).json({ error: "El carrito está vacío." });
   }
@@ -1298,12 +1339,16 @@ app.post("/api/orders", requireAuth, wrap(async (req, res) => {
       });
     }
 
-    // El pedido nace "pendiente": se marca como pagado desde el panel cuando se cobra
+    total = Math.round(total * 100) / 100;
+    // Si el pago se rechaza, la transacción se revierte: no queda pedido ni stock reservado
+    const pagoAprobado = pago ? autorizarPagoSimulado(pago) : null;
+
+    // Sin pago online el pedido nace "pendiente": se marca como pagado desde el panel cuando se cobra
     const [pedido] = await conn.query<ResultSetHeader>("INSERT INTO pedidos SET ?", [
       {
         usuario_id: req.user!.id,
-        total: Math.round(total * 100) / 100,
-        estado: "pendiente",
+        total,
+        estado: pagoAprobado ? "pagado" : "pendiente",
         entrega: tipoEntrega,
         direccion_envio: tipoEntrega === "envio" ? direccion : null,
         telefono_contacto: str(telefono_contacto).trim() || req.user!.telefono || null,
@@ -1311,6 +1356,9 @@ app.post("/api/orders", requireAuth, wrap(async (req, res) => {
     ]);
     for (const item of orderItems) {
       await conn.query("INSERT INTO pedido_items SET ?", [{ pedido_id: pedido.insertId, ...item }]);
+    }
+    if (pagoAprobado) {
+      await conn.query("INSERT INTO pagos SET ?", [{ pedido_id: pedido.insertId, monto: total, ...pagoAprobado }]);
     }
     return pedido.insertId;
   });

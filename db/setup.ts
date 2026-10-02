@@ -23,6 +23,7 @@ const TABLAS = [
   "sesiones",
   "recuperaciones_password",
   "horarios_veterinario",
+  "pagos",
   "pedido_items",
   "pedidos",
   "productos",

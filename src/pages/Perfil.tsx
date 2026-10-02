@@ -647,7 +647,7 @@ export const Perfil: React.FC<PerfilProps> = ({ navigate }) => {
       {pedidos.length > 0 && (
         <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm mt-8">
           <h2 className="font-bold text-xl text-slate-900 mb-1">Mis Pedidos de Tienda</h2>
-          <p className="text-xs text-slate-500 mb-5">El pago se realiza al retirar o recibir el pedido.</p>
+          <p className="text-xs text-slate-500 mb-5">Los pedidos pendientes se pagan al retirar o recibir.</p>
           <div className="overflow-x-auto">
             <table className="data-table">
               <thead>
@@ -679,6 +679,11 @@ export const Perfil: React.FC<PerfilProps> = ({ navigate }) => {
                     </td>
                     <td>
                       <strong>{formatPrecio(p.total)}</strong>
+                      {p.pago && (
+                        <small className="block text-gray-500 whitespace-nowrap">
+                          {p.pago.marca} •••• {p.pago.ultimos4}
+                        </small>
+                      )}
                     </td>
                     <td>
                       <span className={`badge badge-${p.estado === "entregado" ? "completado" : p.estado === "cancelado" ? "cancelado" : p.estado === "pendiente" ? "pendiente" : "confirmado"}`}>

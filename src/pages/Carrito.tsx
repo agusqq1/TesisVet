@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
-import { Order } from "../types";
+import { DatosPago, Order } from "../types";
 import { api } from "../api";
 import { formatPrecio } from "../format";
-import { Mail, CheckCircle2, Trash2, ShoppingBag, ArrowLeft, ArrowRight, Minus, Plus, Store, Truck, AlertTriangle } from "lucide-react";
+import { Mail, CheckCircle2, Trash2, ShoppingBag, ArrowLeft, ArrowRight, Minus, Plus, Store, Truck, AlertTriangle, CreditCard, Banknote } from "lucide-react";
 import { LogoIcon } from "../components/LogoIcon";
+import { PagoTarjeta } from "../components/PagoTarjeta";
 
 interface CarritoProps {
   navigate: (path: string) => void;
@@ -21,8 +22,32 @@ export const Carrito: React.FC<CarritoProps> = ({ navigate }) => {
   const [entrega, setEntrega] = useState<"retiro" | "envio">("retiro");
   const [direccion, setDireccion] = useState("");
   const [telefono, setTelefono] = useState(user?.telefono || "");
+  const [medioPago, setMedioPago] = useState<"tarjeta" | "entrega">("tarjeta");
+  const [mostrarPago, setMostrarPago] = useState(false);
 
   const llevaReceta = items.some((i) => i.product.requiere_receta);
+
+  // Registra el pedido. Con `pago` queda pagado en el momento; si el pago se rechaza, lanza el motivo
+  const registrarPedido = (pago?: DatosPago) =>
+    api<Order>("/api/orders", {
+      method: "POST",
+      body: {
+        items: items.map((i) => ({
+          productId: i.product.id,
+          quantity: i.quantity,
+        })),
+        entrega,
+        direccion_envio: direccion,
+        telefono_contacto: telefono,
+        pago,
+      },
+    });
+
+  const mostrarComprobante = (order: Order) => {
+    setMostrarPago(false);
+    setCompletedOrder(order);
+    clearCart();
+  };
 
   const handleCheckout = async () => {
     if (!user) {
@@ -34,25 +59,16 @@ export const Carrito: React.FC<CarritoProps> = ({ navigate }) => {
       setError("Ingresá la dirección de envío.");
       return;
     }
-
-    setSubmitting(true);
     setError("");
 
+    if (medioPago === "tarjeta") {
+      setMostrarPago(true);
+      return;
+    }
+
+    setSubmitting(true);
     try {
-      const order = await api<Order>("/api/orders", {
-        method: "POST",
-        body: {
-          items: items.map((i) => ({
-            productId: i.product.id,
-            quantity: i.quantity,
-          })),
-          entrega,
-          direccion_envio: direccion,
-          telefono_contacto: telefono,
-        },
-      });
-      setCompletedOrder(order);
-      clearCart();
+      mostrarComprobante(await registrarPedido());
     } catch (e: any) {
       setError(e.message || "Error al procesar el pedido");
     } finally {
@@ -72,7 +88,7 @@ export const Carrito: React.FC<CarritoProps> = ({ navigate }) => {
 
           <div>
             <span className="inline-block text-xs font-bold uppercase tracking-wider px-3 py-1 bg-emerald-50 text-emerald-800 rounded-full border border-emerald-200 mb-2">
-              ¡Pedido Recibido!
+              {completedOrder.pago ? "¡Pago aprobado!" : "¡Pedido Recibido!"}
             </span>
 
             <h1 className="text-lg sm:text-xl font-bold text-slate-900 mb-1">
@@ -94,9 +110,20 @@ export const Carrito: React.FC<CarritoProps> = ({ navigate }) => {
                   : "Retiro en la clínica"}
               </span>
             </p>
-            <p>
-              El pago se realiza al {completedOrder.entrega === "envio" ? "recibir" : "retirar"} el pedido. Te vamos a contactar para coordinar la entrega.
-            </p>
+            {completedOrder.pago ? (
+              <p className="flex items-start gap-1.5">
+                <CreditCard size={14} className="shrink-0 mt-0.5" />
+                <span>
+                  Pagaste con <strong>{completedOrder.pago.marca} terminada en {completedOrder.pago.ultimos4}</strong>
+                  {completedOrder.pago.cuotas > 1 && ` en ${completedOrder.pago.cuotas} cuotas`}. Operación{" "}
+                  <strong className="font-mono">{completedOrder.pago.referencia}</strong>. Te vamos a contactar para coordinar la entrega.
+                </span>
+              </p>
+            ) : (
+              <p>
+                El pago se realiza al {completedOrder.entrega === "envio" ? "recibir" : "retirar"} el pedido. Te vamos a contactar para coordinar la entrega.
+              </p>
+            )}
             {completedOrder.email_enviado && (
               <p className="flex items-center gap-1.5 text-brand-900">
                 <Mail size={14} />
@@ -132,7 +159,7 @@ export const Carrito: React.FC<CarritoProps> = ({ navigate }) => {
                 </div>
               ))}
               <div className="pt-3 flex items-center justify-between font-bold text-sm">
-                <span className="text-slate-800">Total a pagar:</span>
+                <span className="text-slate-800">{completedOrder.pago ? "Total pagado:" : "Total a pagar:"}</span>
                 <span className="text-brand-700 text-lg font-bold">{formatPrecio(completedOrder.total)}</span>
               </div>
             </div>
@@ -281,7 +308,7 @@ export const Carrito: React.FC<CarritoProps> = ({ navigate }) => {
                 }`}
               >
                 <Store size={18} />
-                <span><strong className="block text-sm">Retiro en la clínica</strong>Pagás al retirar</span>
+                <span><strong className="block text-sm">Retiro en la clínica</strong>Lo pasás a buscar cuando esté listo</span>
               </button>
               <button
                 type="button"
@@ -293,7 +320,7 @@ export const Carrito: React.FC<CarritoProps> = ({ navigate }) => {
                 }`}
               >
                 <Truck size={18} />
-                <span><strong className="block text-sm">Envío a domicilio</strong>Pagás al recibir</span>
+                <span><strong className="block text-sm">Envío a domicilio</strong>Coordinamos la entrega con vos</span>
               </button>
             </div>
 
@@ -323,6 +350,37 @@ export const Carrito: React.FC<CarritoProps> = ({ navigate }) => {
             </div>
           </div>
 
+          {/* Pago */}
+          <div className="mt-6 pt-6 border-t border-slate-200">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 mb-3">¿Cómo querés pagar?</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => setMedioPago("tarjeta")}
+                className={`p-3 rounded-xl border text-left text-xs flex items-center gap-2.5 cursor-pointer transition-all ${
+                  medioPago === "tarjeta"
+                    ? "bg-brand-50 border-brand-600 ring-2 ring-brand-600/20 text-brand-900"
+                    : "bg-white border-slate-200 text-slate-700 hover:border-slate-300"
+                }`}
+              >
+                <CreditCard size={18} />
+                <span><strong className="block text-sm">Tarjeta de crédito o débito</strong>Pagás ahora, hasta en 6 cuotas</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setMedioPago("entrega")}
+                className={`p-3 rounded-xl border text-left text-xs flex items-center gap-2.5 cursor-pointer transition-all ${
+                  medioPago === "entrega"
+                    ? "bg-brand-50 border-brand-600 ring-2 ring-brand-600/20 text-brand-900"
+                    : "bg-white border-slate-200 text-slate-700 hover:border-slate-300"
+                }`}
+              >
+                <Banknote size={18} />
+                <span><strong className="block text-sm">Al {entrega === "envio" ? "recibir" : "retirar"} el pedido</strong>Pagás en el momento de la entrega</span>
+              </button>
+            </div>
+          </div>
+
           <div className="mt-6 pt-6 border-t border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <span className="text-xs text-slate-500 block uppercase font-bold tracking-wider">Total a Pagar:</span>
@@ -349,11 +407,28 @@ export const Carrito: React.FC<CarritoProps> = ({ navigate }) => {
               disabled={submitting}
               className="btn btn-primary text-xs font-bold py-2.5 px-6 shadow-lg shadow-brand-600/25 flex items-center gap-2"
             >
-              <span>{submitting ? "Procesando pedido..." : user ? "Confirmar Pedido" : "Iniciar sesión para comprar"}</span>
+              <span>
+                {submitting
+                  ? "Procesando pedido..."
+                  : !user
+                  ? "Iniciar sesión para comprar"
+                  : medioPago === "tarjeta"
+                  ? "Continuar al pago"
+                  : "Confirmar Pedido"}
+              </span>
               <ArrowRight size={14} />
             </button>
           </div>
         </div>
+      )}
+
+      {mostrarPago && (
+        <PagoTarjeta
+          total={total}
+          onPagar={registrarPedido}
+          onAprobado={mostrarComprobante}
+          onCerrar={() => setMostrarPago(false)}
+        />
       )}
     </div>
   );

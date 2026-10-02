@@ -156,6 +156,17 @@ export const AdminPedidos: React.FC<AdminPedidosProps> = ({ navigate }) => {
                       </td>
                       <td>
                         <strong>{formatPrecio(p.total)}</strong>
+                        {p.pago && (
+                          <small
+                            className="block text-gray-500 whitespace-nowrap"
+                            title={`Operación ${p.pago.referencia}. Pago de prueba: no hubo cobro real.`}
+                          >
+                            Pago online simulado
+                            <br />
+                            {p.pago.marca} •••• {p.pago.ultimos4}
+                            {p.pago.cuotas > 1 && ` · ${p.pago.cuotas} cuotas`}
+                          </small>
+                        )}
                       </td>
                       <td>
                         <select

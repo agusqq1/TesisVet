@@ -293,3 +293,22 @@ CREATE TABLE IF NOT EXISTS avisos_operativos (
   KEY idx_avisos_localidad (localidad),
   CONSTRAINT fk_avisos_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Pagos online de los pedidos. Por ahora los genera el pago simulado de la tienda:
+-- no hay cobro real. De la tarjeta solo se guardan la marca y los últimos 4 dígitos.
+CREATE TABLE IF NOT EXISTS pagos (
+  id               INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  pedido_id        INT UNSIGNED NOT NULL,
+  proveedor        VARCHAR(40) NOT NULL DEFAULT 'simulado',
+  referencia       VARCHAR(40) NOT NULL,
+  monto            DECIMAL(10,2) NOT NULL,
+  cuotas           TINYINT UNSIGNED NOT NULL DEFAULT 1,
+  tarjeta_marca    VARCHAR(30) NOT NULL,
+  tarjeta_ultimos4 CHAR(4) NOT NULL,
+  titular          VARCHAR(120) NOT NULL,
+  creado_en        DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_pagos_pedido (pedido_id),
+  UNIQUE KEY uq_pagos_referencia (referencia),
+  CONSTRAINT fk_pagos_pedido FOREIGN KEY (pedido_id) REFERENCES pedidos (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

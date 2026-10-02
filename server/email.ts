@@ -351,7 +351,11 @@ export function emailPedido(pedido: any) {
       `${CLINICA.nombre} &bull; Pedido #${esc(pedido.order_code)}`,
       `
         <p>Hola <strong>${esc(pedido.cliente_nombre)}</strong>,</p>
-        <p>Registramos tu pedido y ya reservamos los productos. El pago se realiza al retirar o recibir el pedido.</p>
+        <p>Registramos tu pedido y ya reservamos los productos. ${
+          pedido.pago
+            ? `El pago con ${esc(pedido.pago.marca)} terminada en ${esc(pedido.pago.ultimos4)} quedó registrado (operación ${esc(pedido.pago.referencia)}). Es un pago de prueba: no se realizó ningún cobro.`
+            : "El pago se realiza al retirar o recibir el pedido."
+        }</p>
         <table style="width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 13px;">
           ${filas}
           <tr>
