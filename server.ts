@@ -1,6 +1,8 @@
 import "dotenv/config";
+import dotenv from "dotenv";
 import express from "express";
 import type { Request, Response, NextFunction } from "express";
+import fs from "fs";
 import path from "path";
 import bcrypt from "bcryptjs";
 import type { ResultSetHeader } from "mysql2/promise";
@@ -1484,9 +1486,35 @@ async function checkDatabase() {
   }
 }
 
+const estadoEmail = () =>
+  emailConfigurado()
+    ? `[EMAIL] Envío real activado desde ${CLINICA.email}`
+    : "[EMAIL] Envío desactivado: falta SMTP_PASS en .env (los emails solo se anotan en esta consola)";
+
+const estadoChat = () =>
+  getGeminiClient()
+    ? "[CHAT] Respuestas con IA activadas"
+    : "[CHAT] Sin GEMINI_API_KEY en .env: el chat responde con textos fijos";
+
+// Relee el archivo .env cuando cambia, para tomar claves nuevas (correo, chat con IA)
+// sin reiniciar el servidor. La conexión a la base no se rearma: un cambio en DB_*
+// sí necesita reiniciar.
+function vigilarEnv() {
+  const archivo = path.join(process.cwd(), ".env");
+  fs.watchFile(archivo, { interval: 1500 }, (actual, anterior) => {
+    if (actual.mtimeMs === anterior.mtimeMs) return;
+    dotenv.config({ path: archivo, override: true, quiet: true });
+    geminiAiClient = null;
+    console.log("\n[.env] Cambios detectados, configuración recargada:");
+    console.log(estadoEmail());
+    console.log(estadoChat());
+  });
+}
+
 // --- VITE SERVING & PRODUCTION SETUP ---
 async function startServer() {
   await checkDatabase();
+  vigilarEnv();
 
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
@@ -1504,11 +1532,8 @@ async function startServer() {
 
   app.listen(PORT, "0.0.0.0", () => {
     console.log(`\nVetAnimal listo en http://localhost:${PORT}`);
-    console.log(
-      emailConfigurado()
-        ? `[EMAIL] Envío real activado desde ${CLINICA.email}`
-        : "[EMAIL] Envío desactivado: falta SMTP_PASS en .env (los emails solo se anotan en esta consola)"
-    );
+    console.log(estadoEmail());
+    console.log(estadoChat());
   });
 }
 

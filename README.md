@@ -33,7 +33,7 @@ npm run dev
 | http://localhost:3000 | La aplicación |
 | http://localhost:8080 | phpMyAdmin, para ver y editar las tablas |
 
-`npm run dev` se reinicia solo cuando cambia el código del servidor o el archivo `.env`.
+`npm run dev` se reinicia solo cuando cambia el código del servidor. Las claves de correo y del chat se toman al guardar el archivo `.env`, sin reiniciar; un cambio en los datos `DB_*` sí necesita reiniciar.
 
 ## Cuentas de demostración
 
@@ -69,7 +69,7 @@ Los datos de MySQL viven en el volumen de Docker `mysql_data`. Para borrarlo por
 
 1. Crear una clave en https://aistudio.google.com/apikey
 2. Agregar en `.env`: `GEMINI_API_KEY=la-clave`
-3. Reiniciar la app
+3. Guardar el archivo: la consola del servidor avisa que el chat con IA quedó activado
 
 **Emails reales** (confirmación de turnos y pedidos, órdenes de derivación, bienvenida, recuperación de contraseña). Sin configurar no se envía nada: cada email queda anotado en la consola del servidor, y el enlace de recuperación de contraseña también se muestra ahí para poder probar. Con una cuenta de Gmail:
 
