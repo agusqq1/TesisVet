@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Estudio, Pet } from '../types';
 import { X, ZoomIn, ZoomOut, RotateCcw, Sliders, Calendar, User, ShieldCheck, Download, Printer } from 'lucide-react';
+import { formatFecha } from '../format';
 
 interface RadiografiaViewerModalProps {
   estudio: Estudio | null;
@@ -104,7 +105,7 @@ export const RadiografiaViewerModal: React.FC<RadiografiaViewerModalProps> = ({
 
             {/* Diagnostic Plate Overlay Watermark */}
             <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-md border border-white/10 text-[11px] font-mono text-slate-300 pointer-events-none">
-              <span className="text-blue-400 font-bold">VETANIMAL</span> | {estudio.fecha} | ZOOM: {Math.round(zoom * 100)}%
+              <span className="text-blue-400 font-bold">VETANIMAL</span> | {formatFecha(estudio.fecha)} | ZOOM: {Math.round(zoom * 100)}%
             </div>
 
             {/* Floating Toolbar */}
@@ -172,7 +173,7 @@ export const RadiografiaViewerModal: React.FC<RadiografiaViewerModalProps> = ({
                   <span className="text-slate-400 flex items-center gap-1.5">
                     <Calendar size={13} className="text-slate-500" /> Fecha del estudio
                   </span>
-                  <span className="font-semibold text-slate-200">{estudio.fecha}</span>
+                  <span className="font-semibold text-slate-200">{formatFecha(estudio.fecha)}</span>
                 </div>
 
                 <div className="flex items-center justify-between py-1.5 border-b border-slate-800">

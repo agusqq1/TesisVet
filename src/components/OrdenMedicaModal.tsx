@@ -3,6 +3,7 @@ import { OrdenDerivacion } from '../types';
 import { X, Printer, Mail, CheckCircle2, Building2, Phone, MapPin, Calendar, Clock, AlertTriangle, ShieldCheck, FileCheck2, ArrowRight } from 'lucide-react';
 import { LogoIcon } from './LogoIcon';
 import { api } from '../api';
+import { formatFecha } from '../format';
 
 interface OrdenMedicaModalProps {
   orden: OrdenDerivacion | null;
@@ -123,10 +124,10 @@ export const OrdenMedicaModal: React.FC<OrdenMedicaModalProps> = ({ orden, onClo
                   {orden.codigo}
                 </div>
                 <div className="text-[11px] text-slate-600 mt-0.5">
-                  Emisión: <strong>{orden.fecha_emision}</strong>
+                  Emisión: <strong>{formatFecha(orden.fecha_emision)}</strong>
                 </div>
                 <div className="text-[11px] text-emerald-700 font-semibold">
-                  Válida hasta: {orden.fecha_validez_hasta}
+                  Válida hasta: {formatFecha(orden.fecha_validez_hasta)}
                 </div>
               </div>
             </div>

@@ -199,7 +199,7 @@ export const AdminTienda: React.FC<AdminTiendaProps> = ({ navigate }) => {
               <select
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value)}
-                className="border border-[#e1e0d8] rounded-xl px-3 py-2 bg-white text-sm"
+                className="border border-slate-200 rounded-xl px-3 py-2 bg-white text-sm"
               >
                 <option value="Todos">Todas las categorías</option>
                 {defaultCategories.map((cat) => (
@@ -249,7 +249,7 @@ export const AdminTienda: React.FC<AdminTiendaProps> = ({ navigate }) => {
                           <img
                             src={p.imagen || imagePresets[0].url}
                             alt={p.nombre}
-                            className="w-12 h-12 rounded-xl object-cover border border-[#e1e0d8] bg-white flex-shrink-0"
+                            className="w-12 h-12 rounded-xl object-cover border border-slate-200 bg-white flex-shrink-0"
                           />
                           <div>
                             <strong className="block text-sm text-gray-900">{p.nombre}</strong>
@@ -260,23 +260,23 @@ export const AdminTienda: React.FC<AdminTiendaProps> = ({ navigate }) => {
                         </div>
                       </td>
                       <td>
-                        <span className="inline-block text-xs font-semibold px-2.5 py-1 rounded-full bg-[#f1f0ea] text-gray-800">
+                        <span className="inline-block text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-gray-800">
                           {p.categoria}
                         </span>
                         {p.etiqueta && (
-                          <span className="block mt-1 text-[10px] font-bold text-[#2f4b3c]">
+                          <span className="block mt-1 text-[10px] font-bold text-blue-700">
                             {p.etiqueta}
                           </span>
                         )}
                       </td>
                       <td>
-                        <strong className="text-base text-[#2f4b3c]">
+                        <strong className="text-base text-blue-700">
                           {formatPrecio(p.precio)}
                         </strong>
                       </td>
                       <td>
                         <span
-                          className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+                          className={`text-xs font-bold px-2 py-0.5 rounded-full whitespace-nowrap ${
                             (p.stock ?? 0) > 10
                               ? "bg-green-100 text-green-800"
                               : (p.stock ?? 0) > 0
@@ -327,7 +327,7 @@ export const AdminTienda: React.FC<AdminTiendaProps> = ({ navigate }) => {
       {/* Modal for Create/Edit Product */}
       {showModal && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl relative my-8 border border-[#e1e0d8]">
+          <div className="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl relative border border-slate-200 max-h-[92vh] overflow-y-auto">
             <button
               onClick={() => setShowModal(false)}
               className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 font-bold text-xl cursor-pointer"
@@ -451,7 +451,7 @@ export const AdminTienda: React.FC<AdminTiendaProps> = ({ navigate }) => {
                     type="checkbox"
                     checked={requiereReceta}
                     onChange={(e) => setRequiereReceta(e.target.checked)}
-                    className="rounded text-[#2f4b3c]"
+                    className="rounded text-blue-700"
                   />
                   <span>Requiere prescripción o receta médica veterinaria</span>
                 </label>
@@ -471,7 +471,7 @@ export const AdminTienda: React.FC<AdminTiendaProps> = ({ navigate }) => {
                         }}
                         className={`flex items-center gap-2 px-2.5 py-1 rounded-lg border text-xs font-semibold ${
                           imagen === preset.url && !customImg
-                            ? "bg-[#2f4b3c] text-white border-[#2f4b3c]"
+                            ? "bg-blue-600 text-white border-blue-600"
                             : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
                         }`}
                       >

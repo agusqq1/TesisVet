@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { Pet, Turno, Order } from "../types";
 import { api } from "../api";
-import { formatPrecio } from "../format";
+import { formatFecha, formatPrecio } from "../format";
 import { 
   FileText, 
   Pencil, 
@@ -197,14 +197,14 @@ export const Perfil: React.FC<PerfilProps> = ({ navigate }) => {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
         {/* User Card */}
-        <div className="bg-white rounded-2xl border border-[#e1e0d8] p-6 shadow-sm">
+        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
           <div className="flex items-center gap-4 mb-4">
-            <div className="w-16 h-16 rounded-full bg-[#e7f0ea] text-[#2f4b3c] flex items-center justify-center font-bold text-2xl border border-[#e1e0d8]">
+            <div className="w-16 h-16 rounded-full bg-blue-50 text-blue-700 flex items-center justify-center font-bold text-2xl border border-slate-200">
               {user.nombre.substring(0, 1).toUpperCase()}
             </div>
             <div>
               <h2 className="font-bold text-lg">{user.nombre}</h2>
-              <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-[#bcdccb] text-[#2f4b3c]">
+              <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">
                 {user.rol === "veterinario" ? "Veterinario / Admin" : "Cliente"}
               </span>
             </div>
@@ -220,7 +220,7 @@ export const Perfil: React.FC<PerfilProps> = ({ navigate }) => {
         </div>
 
         {/* Pets Overview Card */}
-        <div className="bg-white rounded-2xl border border-[#e1e0d8] p-6 shadow-sm md:col-span-2">
+        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm md:col-span-2">
           <div className="flex justify-between items-center mb-4">
             <h2 className="font-bold text-lg">
               {user.rol === "veterinario" ? `Pacientes Clínicos (${pets.length})` : `Mis Mascotas (${pets.length})`}
@@ -243,7 +243,7 @@ export const Perfil: React.FC<PerfilProps> = ({ navigate }) => {
               {pets.map((p) => (
                 <div
                   key={p.id}
-                  className="flex flex-col justify-between p-4 border border-[#e1e0d8] rounded-2xl hover:border-[#3c5f4a] transition-all bg-[#fafaf8]"
+                  className="flex flex-col justify-between p-4 border border-slate-200 rounded-2xl hover:border-blue-400 transition-all bg-slate-50"
                 >
                   <div className="flex items-start gap-3">
                     <img
@@ -265,7 +265,7 @@ export const Perfil: React.FC<PerfilProps> = ({ navigate }) => {
                               ? "bg-amber-100 text-amber-900 border border-amber-200"
                               : p.especie === "Perro"
                               ? "bg-blue-100 text-blue-900 border border-blue-200"
-                              : "bg-[#e7f0ea] text-[#2f4b3c]"
+                              : "bg-blue-50 text-blue-700"
                           }`}
                         >
                           {p.especie === "Gato" ? "🐱 Gato" : p.especie === "Perro" ? "🐶 Perro" : p.especie}
@@ -285,7 +285,7 @@ export const Perfil: React.FC<PerfilProps> = ({ navigate }) => {
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between gap-2 mt-4 pt-3 border-t border-[#e1e0d8]">
+                  <div className="flex items-center justify-between gap-2 mt-4 pt-3 border-t border-slate-200">
                     <button
                       onClick={() => navigate(`/historial?mascota_id=${p.id}`)}
                       className="text-xs text-blue-600 font-semibold hover:underline cursor-pointer flex items-center gap-1.5"
@@ -322,7 +322,7 @@ export const Perfil: React.FC<PerfilProps> = ({ navigate }) => {
       {/* Edit Pet Modal */}
       {editingPet && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl relative my-8 border border-[#e1e0d8]">
+          <div className="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl relative border border-slate-200 max-h-[92vh] overflow-y-auto">
             <button
               onClick={() => setEditingPet(null)}
               className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 font-bold text-xl cursor-pointer"
@@ -359,7 +359,7 @@ export const Perfil: React.FC<PerfilProps> = ({ navigate }) => {
                     value={editNombre}
                     onChange={(e) => setEditNombre(e.target.value)}
                     required
-                    className="w-full text-sm p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2f4b3c]"
+                    className="w-full text-sm p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600"
                   />
                 </div>
 
@@ -368,7 +368,7 @@ export const Perfil: React.FC<PerfilProps> = ({ navigate }) => {
                   <select
                     value={editEspecie}
                     onChange={(e) => setEditEspecie(e.target.value)}
-                    className="w-full text-sm p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2f4b3c]"
+                    className="w-full text-sm p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600"
                   >
                     <option value="Perro">Perro</option>
                     <option value="Gato">Gato</option>
@@ -383,7 +383,7 @@ export const Perfil: React.FC<PerfilProps> = ({ navigate }) => {
                     type="text"
                     value={editRaza}
                     onChange={(e) => setEditRaza(e.target.value)}
-                    className="w-full text-sm p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2f4b3c]"
+                    className="w-full text-sm p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600"
                   />
                 </div>
 
@@ -395,7 +395,7 @@ export const Perfil: React.FC<PerfilProps> = ({ navigate }) => {
                       value={editEdad}
                       onChange={(e) => setEditEdad(e.target.value === "" ? "" : Number(e.target.value))}
                       min="0"
-                      className="w-full text-sm p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2f4b3c]"
+                      className="w-full text-sm p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600"
                     />
                   </div>
                   <div>
@@ -406,7 +406,7 @@ export const Perfil: React.FC<PerfilProps> = ({ navigate }) => {
                       value={editPeso}
                       onChange={(e) => setEditPeso(e.target.value === "" ? "" : Number(e.target.value))}
                       min="0"
-                      className="w-full text-sm p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2f4b3c]"
+                      className="w-full text-sm p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600"
                     />
                   </div>
                 </div>
@@ -430,7 +430,7 @@ export const Perfil: React.FC<PerfilProps> = ({ navigate }) => {
                       }}
                       className={`flex items-center gap-1.5 p-1 px-2.5 rounded-lg border text-xs font-medium transition-all ${
                         (customFotoUrl ? customFotoUrl : editFoto) === p.url
-                          ? "border-[#2f4b3c] bg-[#e7f0ea] text-[#2f4b3c] font-bold"
+                          ? "border-blue-600 bg-blue-50 text-blue-700 font-bold"
                           : "border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100"
                       }`}
                     >
@@ -447,7 +447,7 @@ export const Perfil: React.FC<PerfilProps> = ({ navigate }) => {
                       type="file"
                       accept="image/*"
                       onChange={handleFileUpload}
-                      className="block w-full text-xs text-gray-500 file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-[#2f4b3c] file:text-white hover:file:bg-[#243c30]"
+                      className="block w-full text-xs text-gray-500 file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700"
                     />
                   </div>
 
@@ -458,7 +458,7 @@ export const Perfil: React.FC<PerfilProps> = ({ navigate }) => {
                       placeholder="https://..."
                       value={customFotoUrl}
                       onChange={(e) => setCustomFotoUrl(e.target.value)}
-                      className="w-full text-xs p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2f4b3c]"
+                      className="w-full text-xs p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600"
                     />
                   </div>
                 </div>
@@ -487,7 +487,7 @@ export const Perfil: React.FC<PerfilProps> = ({ navigate }) => {
                     value={editAlergias}
                     onChange={(e) => setEditAlergias(e.target.value)}
                     placeholder="Ej: Polen, Algún fármaco..."
-                    className="w-full text-xs p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2f4b3c]"
+                    className="w-full text-xs p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600"
                   />
                 </div>
                 <div>
@@ -497,7 +497,7 @@ export const Perfil: React.FC<PerfilProps> = ({ navigate }) => {
                     value={editCondiciones}
                     onChange={(e) => setEditCondiciones(e.target.value)}
                     placeholder="Ej: Displasia leve..."
-                    className="w-full text-xs p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#2f4b3c]"
+                    className="w-full text-xs p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600"
                   />
                 </div>
               </div>
@@ -527,7 +527,7 @@ export const Perfil: React.FC<PerfilProps> = ({ navigate }) => {
       )}
 
       {/* Turnos Section */}
-      <div className="bg-white rounded-2xl border border-[#e1e0d8] p-6 shadow-sm">
+      <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
           <div>
             <h2 className="font-bold text-xl text-slate-900">Mis Turnos Solicitados</h2>
@@ -572,8 +572,8 @@ export const Perfil: React.FC<PerfilProps> = ({ navigate }) => {
               <tbody>
                 {turnos.map((t) => (
                   <tr key={t.id}>
-                    <td>
-                      <strong>{t.fecha}</strong>
+                    <td className="whitespace-nowrap">
+                      <strong>{formatFecha(t.fecha)}</strong>
                       <br />
                       <small className="text-gray-500">{t.hora} hs</small>
                     </td>
@@ -645,7 +645,7 @@ export const Perfil: React.FC<PerfilProps> = ({ navigate }) => {
 
       {/* Pedidos de la tienda */}
       {pedidos.length > 0 && (
-        <div className="bg-white rounded-2xl border border-[#e1e0d8] p-6 shadow-sm mt-8">
+        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm mt-8">
           <h2 className="font-bold text-xl text-slate-900 mb-1">Mis Pedidos de Tienda</h2>
           <p className="text-xs text-slate-500 mb-5">El pago se realiza al retirar o recibir el pedido.</p>
           <div className="overflow-x-auto">
@@ -665,7 +665,7 @@ export const Perfil: React.FC<PerfilProps> = ({ navigate }) => {
                     <td>
                       <strong className="font-mono">#{p.order_code}</strong>
                       <br />
-                      <small className="text-gray-500">{p.creado_en.substring(0, 10)}</small>
+                      <small className="text-gray-500">{formatFecha(p.creado_en)}</small>
                     </td>
                     <td>
                       {p.items.map((it) => (

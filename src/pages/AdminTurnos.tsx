@@ -6,6 +6,7 @@ import { api } from "../api";
 import { GenerarDerivacionModal } from "../components/GenerarDerivacionModal";
 import { OrdenMedicaModal } from "../components/OrdenMedicaModal";
 import { Stethoscope, Sparkles, CheckCircle2, FileCheck } from "lucide-react";
+import { formatFecha } from "../format";
 
 interface AdminTurnosProps {
   navigate: (path: string) => void;
@@ -136,7 +137,7 @@ export const AdminTurnos: React.FC<AdminTurnosProps> = ({ navigate }) => {
                 <select
                   value={filterEstado}
                   onChange={(e) => setFilterEstado(e.target.value)}
-                  className="border border-[#e1e0d8] rounded-lg px-3 py-2 bg-white text-sm"
+                  className="border border-slate-200 rounded-lg px-3 py-2 bg-white text-sm"
                 >
                   <option value="todos">Todos los estados</option>
                   <option value="confirmado">Confirmados</option>
@@ -154,7 +155,7 @@ export const AdminTurnos: React.FC<AdminTurnosProps> = ({ navigate }) => {
                   type="date"
                   value={filterFecha}
                   onChange={(e) => setFilterFecha(e.target.value)}
-                  className="border border-[#e1e0d8] rounded-lg px-3 py-2 bg-white text-sm"
+                  className="border border-slate-200 rounded-lg px-3 py-2 bg-white text-sm"
                 />
                 {filterFecha && (
                   <button
@@ -209,20 +210,20 @@ export const AdminTurnos: React.FC<AdminTurnosProps> = ({ navigate }) => {
                   filteredTurnos.map((t) => (
                     <tr key={t.id} className={t.estado === "cancelado" ? "opacity-60 bg-gray-50" : ""}>
                       <td>#{t.id}</td>
-                      <td>
-                        <strong>{t.fecha}</strong>
+                      <td className="whitespace-nowrap">
+                        <strong>{formatFecha(t.fecha)}</strong>
                         <br />
                         <small className="text-gray-500">{t.hora} hs</small>
                       </td>
                       <td>
                         <strong className="text-gray-900">{t.mascota_nombre}</strong>
                         {t.sintomas_observados && (
-                          <div className="text-[11px] text-slate-500 truncate max-w-xs mt-0.5" title={t.sintomas_observados}>
+                          <div className="text-[11px] text-slate-500 truncate max-w-[220px] mt-0.5" title={t.sintomas_observados}>
                             🩺 {t.sintomas_observados}
                           </div>
                         )}
                       </td>
-                      <td>{t.dueno}</td>
+                      <td className="whitespace-nowrap">{t.dueno}</td>
                       <td>
                         <div className="font-semibold text-slate-900">{t.servicio_nombre}</div>
                         <div className="flex items-center gap-1.5 mt-1 flex-wrap">

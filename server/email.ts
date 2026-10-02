@@ -58,6 +58,24 @@ const getMailTransporter = () => {
 
 export const emailConfigurado = () => getMailTransporter() !== null;
 
+// Prueba la conexión y el inicio de sesión contra el servidor de correo, sin enviar nada
+export async function verificarEmail(): Promise<{ ok: boolean; detalle: string }> {
+  const transporter = getMailTransporter();
+  if (!transporter) {
+    return { ok: false, detalle: "Falta SMTP_PASS en el archivo .env" };
+  }
+  try {
+    await transporter.verify();
+    return { ok: true, detalle: `Conectado como ${CLINICA.email}` };
+  } catch (err: any) {
+    const detalle =
+      err.code === "EAUTH"
+        ? "El servidor de correo rechazó el usuario o la contraseña. Con Gmail hay que usar una contraseña de aplicación, no la clave normal de la cuenta."
+        : err.message;
+    return { ok: false, detalle };
+  }
+}
+
 export async function enviarEmail({
   to,
   subject,

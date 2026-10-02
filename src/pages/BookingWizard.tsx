@@ -24,7 +24,7 @@ import {
 } from "lucide-react";
 import { LogoIcon } from "../components/LogoIcon";
 import { api } from "../api";
-import { formatPrecio, hoyLocal } from "../format";
+import { formatFecha, formatFechaLarga, formatPrecio, hoyLocal } from "../format";
 
 interface BookingWizardProps {
   navigate: (path: string) => void;
@@ -273,7 +273,8 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({ navigate }) => {
             Reservamos el turno de{" "}
             <strong>{confirmedTurno.servicio_nombre}</strong> para{" "}
             <strong>{confirmedTurno.mascota_nombre}</strong> el{" "}
-            {confirmedTurno.fecha} a las {confirmedTurno.hora} hs.
+            {formatFecha(confirmedTurno.fecha)} a las {confirmedTurno.hora} hs.
+            {confirmedTurno.email_enviado && " Te enviamos la confirmación por email."}
           </p>
 
           {confirmedTurno.es_especializado && (
@@ -358,7 +359,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({ navigate }) => {
                     {user?.rol === "veterinario"
                       ? "Todavía no hay pacientes registrados."
                       : "Todavía no tenés mascotas registradas."}
-                    <div className="mt-20">
+                    <div className="mt-5">
                       <button
                         type="button"
                         onClick={() => navigate("/mascota-nueva")}
@@ -636,7 +637,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({ navigate }) => {
                   ) : (
                     <div>
                       <p style={{ color: "var(--texto-muted)", marginTop: "6px" }}>
-                        Fecha elegida: {selectedDate}
+                        Fecha elegida: {formatFechaLarga(selectedDate)}
                       </p>
                       {loadingTimes ? (
                         <p style={{ color: "var(--texto-muted)", marginTop: "14px" }}>
@@ -697,7 +698,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({ navigate }) => {
                   <div className="summary-selected">
                     <small>Horario Seleccionado</small>
                     <strong>
-                      {selectedDate} {selectedTime ? `a las ${selectedTime} hs` : ""}
+                      {formatFecha(selectedDate)} {selectedTime ? `a las ${selectedTime} hs` : ""}
                     </strong>
                     {selectedTime && (
                       <div className="ok">✓ Selección Confirmada</div>
@@ -791,7 +792,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({ navigate }) => {
                 <div className="review-block">
                   <h4>Fecha y hora</h4>
                   <p>
-                    <strong>{selectedDate}</strong> a las {selectedTime} hs
+                    <strong>{formatFechaLarga(selectedDate)}</strong> a las {selectedTime} hs
                   </p>
                 </div>
 
@@ -829,7 +830,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({ navigate }) => {
                 <div className="summary-selected">
                   <small>Turno</small>
                   <strong>
-                    {selectedDate} · {selectedTime} hs
+                    {formatFecha(selectedDate)} · {selectedTime} hs
                   </strong>
                 </div>
               </div>

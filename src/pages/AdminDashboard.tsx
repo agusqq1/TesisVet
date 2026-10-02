@@ -3,7 +3,7 @@ import { useAuth } from "../context/AuthContext";
 import { AdminStats, Turno, TurnoEstado } from "../types";
 import { AdminSidebar } from "../components/AdminSidebar";
 import { api } from "../api";
-import { hoyLocal } from "../format";
+import { formatFechaLarga, hoyLocal } from "../format";
 
 interface AdminDashboardProps {
   navigate: (path: string) => void;
@@ -54,7 +54,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
           <div>
             <h1 className="text-2xl font-bold text-slate-900">Panel Veterinario</h1>
             <p className="text-sm text-slate-500">
-              Bienvenido/a, {user?.nombre}. Hoy es {hoyStr}.
+              Bienvenido/a, {user?.nombre}. Hoy es {formatFechaLarga(hoyStr)}.
             </p>
           </div>
           <button
@@ -118,7 +118,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
                         <strong>{t.hora} hs</strong>
                       </td>
                       <td>{t.mascota_nombre}</td>
-                      <td>{t.dueno}</td>
+                      <td className="whitespace-nowrap">{t.dueno}</td>
                       <td>{t.servicio_nombre}</td>
                       <td>{t.veterinario_nombre}</td>
                       <td>

@@ -78,6 +78,8 @@ export interface Turno {
   derivado?: boolean;
   derivacion_id?: number;
   derivacion_codigo?: string;
+  // Solo en la respuesta de la reserva: indica si salió el email de confirmación
+  email_enviado?: boolean;
 }
 
 export type ConsultaTipo = 'CONTROL' | 'EMERGENCIA' | 'VACUNA' | 'CIRUGIA' | 'DIAGNOSTICO';

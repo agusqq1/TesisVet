@@ -3,7 +3,7 @@ import { useAuth } from "../context/AuthContext";
 import { Pet, Consulta, Vacuna, Estudio, OrdenDerivacion } from "../types";
 import { LogoIcon } from "../components/LogoIcon";
 import { api } from "../api";
-import { hoyLocal } from "../format";
+import { formatFecha, hoyLocal } from "../format";
 import { RadiografiaViewerModal } from "../components/RadiografiaViewerModal";
 import { AdjuntarRadiografiaModal } from "../components/AdjuntarRadiografiaModal";
 import { OrdenMedicaModal } from "../components/OrdenMedicaModal";
@@ -349,7 +349,7 @@ export const HistorialClinico: React.FC<HistorialClinicoProps> = ({
                     <div className="timeline-dot"></div>
                     <div className="timeline-body">
                       <div className="timeline-top">
-                        <span className="timeline-date">{c.fecha}</span>
+                        <span className="timeline-date">{formatFecha(c.fecha)}</span>
                         <span
                           className={`tag tag-${c.tipo.toLowerCase()}`}
                         >
@@ -400,7 +400,7 @@ export const HistorialClinico: React.FC<HistorialClinicoProps> = ({
                 <div>
                   <strong>{v.nombre}</strong>
                   <small>
-                    Aplicada: {v.fecha_aplicacion || "Pendiente"} · Refuerzo: {v.fecha_refuerzo || "No programado"}
+                    Aplicada: {formatFecha(v.fecha_aplicacion) || "Pendiente"} · Refuerzo: {formatFecha(v.fecha_refuerzo) || "No programado"}
                   </small>
                 </div>
                 <span
@@ -434,7 +434,7 @@ export const HistorialClinico: React.FC<HistorialClinicoProps> = ({
               <div key={t.id} className="mini-card">
                 <div>
                   <strong>{t.servicio_nombre || "Consulta Médica"}</strong>
-                  <small>{t.fecha} • {t.hora} hs</small>
+                  <small>{formatFecha(t.fecha)} • {t.hora} hs</small>
                 </div>
                 <span
                   className={`tag ${
@@ -473,7 +473,7 @@ export const HistorialClinico: React.FC<HistorialClinicoProps> = ({
               <div key={e.id} className="mini-card">
                 <div>
                   <strong className="block text-slate-900">{e.nombre}</strong>
-                  <small className="text-slate-500">{e.fecha} &bull; {e.tipo || 'Imagen'}</small>
+                  <small className="text-slate-500">{formatFecha(e.fecha)} &bull; {e.tipo || 'Imagen'}</small>
                 </div>
                 <button
                   type="button"
@@ -611,7 +611,7 @@ export const HistorialClinico: React.FC<HistorialClinicoProps> = ({
                   </div>
 
                   <div className="pt-3 border-t border-slate-800 text-[11px] text-slate-400 flex items-center justify-between">
-                    <span>{est.fecha}</span>
+                    <span>{formatFecha(est.fecha)}</span>
                     <span className="font-medium text-slate-300">
                       {est.veterinario_nombre || ''}
                     </span>
@@ -685,7 +685,7 @@ export const HistorialClinico: React.FC<HistorialClinicoProps> = ({
                       {orden.especialidad_derivada}
                     </span>
                     <span className="text-xs text-slate-500">
-                      Emitida el {orden.fecha_emision} &bull; Válida hasta {orden.fecha_validez_hasta}
+                      Emitida el {formatFecha(orden.fecha_emision)} &bull; Válida hasta {formatFecha(orden.fecha_validez_hasta)}
                     </span>
                   </div>
 
@@ -741,7 +741,7 @@ export const HistorialClinico: React.FC<HistorialClinicoProps> = ({
       {/* Modal for adding clinical record */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl border border-[#e1e0d8]">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl border border-slate-200">
             <h2 className="text-xl font-bold mb-4">
               Nuevo Registro Médico para {pet?.nombre}
             </h2>
@@ -810,7 +810,7 @@ export const HistorialClinico: React.FC<HistorialClinicoProps> = ({
       {/* Modal para registrar una vacuna */}
       {showVacunaModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl border border-[#e1e0d8]">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl border border-slate-200">
             <h2 className="text-xl font-bold mb-4">Registrar vacuna de {pet?.nombre}</h2>
             {vacError && <div className="alert alert-error mb-4">{vacError}</div>}
             <form onSubmit={handleAddVacuna}>

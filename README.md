@@ -33,6 +33,8 @@ npm run dev
 | http://localhost:3000 | La aplicación |
 | http://localhost:8080 | phpMyAdmin, para ver y editar las tablas |
 
+`npm run dev` se reinicia solo cuando cambia el código del servidor o el archivo `.env`.
+
 ## Cuentas de demostración
 
 Las crea `npm run db:setup`. En modo desarrollo, la pantalla de login tiene un botón para entrar con cada una.
@@ -73,8 +75,10 @@ Los datos de MySQL viven en el volumen de Docker `mysql_data`. Para borrarlo por
 
 1. Activar la verificación en dos pasos de la cuenta
 2. Crear una contraseña de aplicación en https://myaccount.google.com/apppasswords
-3. Agregar en `.env`: `SMTP_USER=la-cuenta@gmail.com` y `SMTP_PASS=la-contraseña-de-aplicación`
-4. Reiniciar la app
+3. Completar en `.env`: `SMTP_USER=la-cuenta@gmail.com` y `SMTP_PASS=la-contraseña-de-aplicación` (las 16 letras, sin espacios)
+4. Probar con `npm run email:test`: envía un email de prueba a la casilla de la clínica y, si algo falla, dice por qué
+
+Al arrancar, la consola del servidor indica si el envío real está activado.
 
 ## Seguridad
 

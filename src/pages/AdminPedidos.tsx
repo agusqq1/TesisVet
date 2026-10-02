@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Order, OrderEstado } from "../types";
 import { AdminSidebar } from "../components/AdminSidebar";
 import { api } from "../api";
-import { formatPrecio } from "../format";
+import { formatFecha, formatPrecio } from "../format";
 import { Store, Truck, AlertTriangle } from "lucide-react";
 
 interface AdminPedidosProps {
@@ -85,7 +85,7 @@ export const AdminPedidos: React.FC<AdminPedidosProps> = ({ navigate }) => {
               <select
                 value={filtro}
                 onChange={(e) => setFiltro(e.target.value as OrderEstado | "todos")}
-                className="border border-[#e1e0d8] rounded-lg px-3 py-2 bg-white text-sm"
+                className="border border-slate-200 rounded-lg px-3 py-2 bg-white text-sm"
               >
                 <option value="todos">Todos</option>
                 {ESTADOS.map((e) => (
@@ -121,7 +121,7 @@ export const AdminPedidos: React.FC<AdminPedidosProps> = ({ navigate }) => {
                       <td>
                         <strong className="font-mono">#{p.order_code}</strong>
                         <br />
-                        <small className="text-gray-500">{p.creado_en}</small>
+                        <small className="text-gray-500 whitespace-nowrap">{formatFecha(p.creado_en)} · {p.creado_en.substring(11, 16)} hs</small>
                       </td>
                       <td>
                         <strong className="block text-slate-900">{p.cliente_nombre}</strong>

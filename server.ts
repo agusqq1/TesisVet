@@ -22,6 +22,7 @@ import {
 import { horariosDisponibles, hoyLocal, sumarDias } from "./server/agenda";
 import {
   CLINICA,
+  emailConfigurado,
   emailBienvenida,
   emailDerivacion,
   emailPedido,
@@ -683,8 +684,10 @@ app.post("/api/turnos", requireAuth, wrap(async (req, res) => {
 
   const turno = mapTurno(await queryOne(`${TURNO_SELECT} WHERE t.id = ?`, [turnoId]));
 
+  // El turno ya quedó reservado: si el email falla, la respuesta lo informa pero no se revierte nada
+  let emailEnviado = false;
   if (turno.dueno_email) {
-    enviarEmail({
+    const { delivered } = await enviarEmail({
       to: turno.dueno_email,
       copiaClinica: true,
       ...emailTurno({
@@ -698,10 +701,11 @@ app.post("/api/turnos", requireAuth, wrap(async (req, res) => {
         esCirugia: isSurgery,
         sintomas: turno.sintomas_observados,
       }),
-    }).catch(() => {});
+    });
+    emailEnviado = delivered;
   }
 
-  res.json(turno);
+  res.json({ ...turno, email_enviado: emailEnviado });
 }));
 
 app.patch("/api/turnos/:id/estado", requireAuth, wrap(async (req, res) => {
@@ -1499,7 +1503,12 @@ async function startServer() {
   }
 
   app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Server running on http://0.0.0.0:${PORT}`);
+    console.log(`\nVetAnimal listo en http://localhost:${PORT}`);
+    console.log(
+      emailConfigurado()
+        ? `[EMAIL] Envío real activado desde ${CLINICA.email}`
+        : "[EMAIL] Envío desactivado: falta SMTP_PASS en .env (los emails solo se anotan en esta consola)"
+    );
   });
 }
 
