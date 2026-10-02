@@ -230,13 +230,13 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ navigate }) => {
           style={{ boxShadow: "0 20px 40px -15px rgba(15, 23, 42, 0.25)" }}
         >
           {/* Cabecera del Chat */}
-          <div className="bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-700 p-4 text-white flex items-center justify-between shadow-sm">
+          <div className="bg-gradient-to-r from-brand-700 via-brand-600 to-brand-700 p-4 text-white flex items-center justify-between shadow-sm">
             <div className="flex items-center gap-3">
               <div className="relative">
                 <div className="w-10 h-10 rounded-full bg-white/15 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white font-bold shadow-inner">
                   <Bot size={22} className="text-white" />
                 </div>
-                <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-400 border-2 border-blue-700 rounded-full"></span>
+                <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-400 border-2 border-brand-700 rounded-full"></span>
               </div>
               <div>
                 <div className="flex items-center gap-1.5">
@@ -245,7 +245,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ navigate }) => {
                     <Sparkles size={10} className="mr-0.5" /> Clínico
                   </span>
                 </div>
-                <p className="text-xs text-blue-100 flex items-center gap-1 mt-0.5">
+                <p className="text-xs text-brand-100 flex items-center gap-1 mt-0.5">
                   <MapPin size={11} /> VetAnimal Del Viso · En línea
                 </p>
               </div>
@@ -284,7 +284,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ navigate }) => {
               >
                 <div className="flex items-start gap-2 max-w-[88%]">
                   {msg.role === "assistant" && (
-                    <div className="w-7 h-7 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center shrink-0 mt-0.5">
+                    <div className="w-7 h-7 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center shrink-0 mt-0.5">
                       <Bot size={15} />
                     </div>
                   )}
@@ -292,7 +292,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ navigate }) => {
                   <div
                     className={`rounded-2xl px-3.5 py-2.5 text-sm ${
                       msg.role === "user"
-                        ? "bg-blue-600 text-white rounded-tr-none shadow-sm"
+                        ? "bg-brand-600 text-white rounded-tr-none shadow-sm"
                         : "bg-white text-slate-800 border border-slate-200 rounded-tl-none shadow-sm"
                     }`}
                   >
@@ -313,7 +313,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ navigate }) => {
                               navigate(btn.path);
                               setIsOpen(false);
                             }}
-                            className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 transition-colors shadow-2xs"
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-lg bg-brand-50 hover:bg-brand-100 text-brand-700 border border-brand-200 transition-colors shadow-2xs"
                           >
                             {btn.icon === "calendar" && <Calendar size={13} />}
                             {btn.icon === "file" && <FileText size={13} />}
@@ -328,7 +328,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ navigate }) => {
                 <div className="flex items-center gap-1 text-[10px] text-slate-400 mt-1 px-1">
                   <span>{msg.timestamp}</span>
                   {msg.source === "gemini-ai" && (
-                    <span className="flex items-center gap-0.5 text-indigo-500 font-medium ml-1">
+                    <span className="flex items-center gap-0.5 text-brand-500 font-medium ml-1">
                       <Sparkles size={9} /> IA
                     </span>
                   )}
@@ -339,13 +339,13 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ navigate }) => {
             {/* Indicador de escritura */}
             {isLoading && (
               <div className="flex items-start gap-2 max-w-[85%]">
-                <div className="w-7 h-7 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center shrink-0">
+                <div className="w-7 h-7 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center shrink-0">
                   <Bot size={15} />
                 </div>
                 <div className="bg-white border border-slate-200 rounded-2xl rounded-tl-none px-4 py-3 shadow-xs flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-blue-600 animate-bounce"></span>
-                  <span className="w-2 h-2 rounded-full bg-blue-600 animate-bounce [animation-delay:0.2s]"></span>
-                  <span className="w-2 h-2 rounded-full bg-blue-600 animate-bounce [animation-delay:0.4s]"></span>
+                  <span className="w-2 h-2 rounded-full bg-brand-600 animate-bounce"></span>
+                  <span className="w-2 h-2 rounded-full bg-brand-600 animate-bounce [animation-delay:0.2s]"></span>
+                  <span className="w-2 h-2 rounded-full bg-brand-600 animate-bounce [animation-delay:0.4s]"></span>
                   <span className="text-xs text-slate-500 font-medium ml-1.5">
                     VetBot está respondiendo...
                   </span>
@@ -368,7 +368,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ navigate }) => {
                   type="button"
                   onClick={() => handleSendMessage(chip.prompt)}
                   disabled={isLoading}
-                  className="text-xs px-2.5 py-1 bg-slate-100 hover:bg-blue-50 hover:text-blue-700 text-slate-700 rounded-full border border-slate-200 transition-colors shrink-0 disabled:opacity-50"
+                  className="text-xs px-2.5 py-1 bg-slate-100 hover:bg-brand-50 hover:text-brand-700 text-slate-700 rounded-full border border-slate-200 transition-colors shrink-0 disabled:opacity-50"
                 >
                   {chip.label}
                 </button>
@@ -393,12 +393,12 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ navigate }) => {
                 onKeyDown={handleKeyDown}
                 placeholder="Escribí tu consulta sobre cuidados, estudios o turnos..."
                 disabled={isLoading}
-                className="flex-1 bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white transition-all disabled:opacity-60"
+                className="flex-1 bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-600 focus:bg-white transition-all disabled:opacity-60"
               />
               <button
                 type="submit"
                 disabled={!inputValue.trim() || isLoading}
-                className="w-10 h-10 rounded-xl bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center shrink-0 transition-colors disabled:opacity-40 disabled:cursor-not-allowed shadow-xs"
+                className="w-10 h-10 rounded-xl bg-brand-600 hover:bg-brand-700 text-white flex items-center justify-center shrink-0 transition-colors disabled:opacity-40 disabled:cursor-not-allowed shadow-xs"
                 title="Enviar consulta"
                 aria-label="Enviar consulta"
               >
@@ -420,9 +420,9 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ navigate }) => {
         className={`group relative flex items-center gap-2.5 px-4 py-3 rounded-full text-white font-semibold text-sm shadow-xl transition-all duration-300 transform active:scale-95 ${
           isOpen
             ? "bg-slate-800 hover:bg-slate-900"
-            : "bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 hover:shadow-blue-500/25"
+            : "bg-gradient-to-r from-brand-600 via-brand-700 to-brand-700 hover:from-brand-700 hover:to-brand-800 hover:shadow-brand-500/25"
         }`}
-        style={{ boxShadow: "0 10px 25px -5px rgba(37, 99, 235, 0.4)" }}
+        style={{ boxShadow: "0 10px 25px -5px rgba(23, 125, 106, 0.4)" }}
         aria-label="Abrir asistente de chat"
       >
         <div className="relative">
@@ -433,7 +433,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ navigate }) => {
           )}
 
           {!isOpen && (
-            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-400 border-2 border-blue-700 rounded-full animate-pulse"></span>
+            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-400 border-2 border-brand-700 rounded-full animate-pulse"></span>
           )}
         </div>
 
@@ -448,7 +448,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ navigate }) => {
 
         {/* Notificación no leída en el botón si está cerrado */}
         {!isOpen && unreadCount > 0 && (
-          <span className="absolute -top-1.5 -left-1.5 w-5 h-5 bg-amber-500 text-white text-[11px] font-black rounded-full flex items-center justify-center border-2 border-white shadow-xs">
+          <span className="absolute -top-1.5 -left-1.5 w-5 h-5 bg-amber-500 text-white text-[11px] font-bold rounded-full flex items-center justify-center border-2 border-white shadow-xs">
             1
           </span>
         )}

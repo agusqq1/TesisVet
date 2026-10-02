@@ -37,7 +37,7 @@ npm run dev
 
 ## Cuentas de demostración
 
-Las crea `npm run db:setup`. En modo desarrollo, la pantalla de login tiene un botón para entrar con cada una.
+Las crea `npm run db:setup`. Se ingresa escribiendo el email y la contraseña en la pantalla de login.
 
 | Rol | Email | Contraseña |
 |---|---|---|

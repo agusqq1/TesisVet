@@ -75,7 +75,7 @@ export const Carrito: React.FC<CarritoProps> = ({ navigate }) => {
               ¡Pedido Recibido!
             </span>
 
-            <h1 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-blue-900 via-blue-800 to-indigo-900 bg-clip-text text-transparent mb-1">
+            <h1 className="text-lg sm:text-xl font-bold text-slate-900 mb-1">
               ¡Gracias por tu pedido, {completedOrder.cliente_nombre.split(" ")[0]}!
             </h1>
 
@@ -85,8 +85,8 @@ export const Carrito: React.FC<CarritoProps> = ({ navigate }) => {
           </div>
 
           {/* Entrega y pago */}
-          <div className="bg-blue-50/70 border border-blue-200 rounded-2xl p-5 text-left shadow-sm text-xs text-slate-700 space-y-2">
-            <p className="flex items-center gap-2 font-bold text-sm text-blue-950">
+          <div className="bg-brand-50/70 border border-brand-200 rounded-2xl p-5 text-left shadow-sm text-xs text-slate-700 space-y-2">
+            <p className="flex items-center gap-2 font-bold text-sm text-brand-950">
               {completedOrder.entrega === "envio" ? <Truck size={16} /> : <Store size={16} />}
               <span>
                 {completedOrder.entrega === "envio"
@@ -98,7 +98,7 @@ export const Carrito: React.FC<CarritoProps> = ({ navigate }) => {
               El pago se realiza al {completedOrder.entrega === "envio" ? "recibir" : "retirar"} el pedido. Te vamos a contactar para coordinar la entrega.
             </p>
             {completedOrder.email_enviado && (
-              <p className="flex items-center gap-1.5 text-blue-900">
+              <p className="flex items-center gap-1.5 text-brand-900">
                 <Mail size={14} />
                 <span>Te enviamos el detalle a <strong>{completedOrder.cliente_email}</strong>.</span>
               </p>
@@ -114,7 +114,7 @@ export const Carrito: React.FC<CarritoProps> = ({ navigate }) => {
           {/* Order items summary card */}
           <div className="border border-slate-200 rounded-2xl p-5 text-left bg-slate-50">
             <h3 className="font-bold text-xs uppercase tracking-wider text-slate-700 mb-3 flex items-center gap-1.5">
-              <ShoppingBag size={14} className="text-blue-600" />
+              <ShoppingBag size={14} className="text-brand-600" />
               <span>Detalle del Pedido #{completedOrder.order_code}</span>
             </h3>
             <div className="divide-y divide-slate-200 text-xs bg-white rounded-xl p-3 border border-slate-200/80">
@@ -133,7 +133,7 @@ export const Carrito: React.FC<CarritoProps> = ({ navigate }) => {
               ))}
               <div className="pt-3 flex items-center justify-between font-bold text-sm">
                 <span className="text-slate-800">Total a pagar:</span>
-                <span className="text-blue-700 text-lg font-extrabold">{formatPrecio(completedOrder.total)}</span>
+                <span className="text-brand-700 text-lg font-bold">{formatPrecio(completedOrder.total)}</span>
               </div>
             </div>
           </div>
@@ -161,7 +161,7 @@ export const Carrito: React.FC<CarritoProps> = ({ navigate }) => {
     <div className="container section" style={{ maxWidth: "800px" }}>
       <button
         onClick={() => navigate("/tienda")}
-        className="text-xs font-bold text-blue-600 hover:text-blue-800 mb-6 flex items-center gap-1.5 cursor-pointer"
+        className="text-xs font-bold text-brand-600 hover:text-brand-800 mb-6 flex items-center gap-1.5 cursor-pointer"
       >
         <ArrowLeft size={14} />
         <span>Volver a la Tienda</span>
@@ -169,13 +169,13 @@ export const Carrito: React.FC<CarritoProps> = ({ navigate }) => {
 
       <div className="flex items-center gap-2 mb-3">
         <LogoIcon size={24} />
-        <span className="text-xs font-bold uppercase tracking-wider text-blue-700 bg-blue-50 px-3.5 py-1 rounded-full border border-blue-200">
+        <span className="text-xs font-bold uppercase tracking-wider text-brand-700 bg-brand-50 px-3.5 py-1 rounded-full border border-brand-200">
           Tienda &amp; Farmacia
         </span>
       </div>
 
       <div className="space-y-1 mb-8">
-        <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-blue-900 via-blue-800 to-indigo-900 bg-clip-text text-transparent">
+        <h1 className="text-xl sm:text-2xl font-bold text-slate-900">
           Carrito de Compras
         </h1>
         <p className="text-slate-500 text-xs sm:text-sm">
@@ -187,7 +187,7 @@ export const Carrito: React.FC<CarritoProps> = ({ navigate }) => {
 
       {items.length === 0 ? (
         <div className="bg-white rounded-3xl border border-slate-200 p-12 text-center shadow-sm">
-          <div className="w-16 h-16 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mx-auto mb-4 border border-blue-100">
+          <div className="w-16 h-16 rounded-2xl bg-brand-50 text-brand-600 flex items-center justify-center mx-auto mb-4 border border-brand-100">
             <ShoppingBag size={32} />
           </div>
           <h2 className="text-xl font-bold text-slate-800 mb-2">Tu carrito está vacío</h2>
@@ -245,7 +245,7 @@ export const Carrito: React.FC<CarritoProps> = ({ navigate }) => {
                   </div>
                 </div>
                 <div className="flex items-center gap-4">
-                  <span className="font-extrabold text-base text-slate-900">
+                  <span className="font-bold text-base text-slate-900">
                     {formatPrecio(item.product.precio * item.quantity)}
                   </span>
                   <button
@@ -276,7 +276,7 @@ export const Carrito: React.FC<CarritoProps> = ({ navigate }) => {
                 onClick={() => setEntrega("retiro")}
                 className={`p-3 rounded-xl border text-left text-xs flex items-center gap-2.5 cursor-pointer transition-all ${
                   entrega === "retiro"
-                    ? "bg-blue-50 border-blue-600 ring-2 ring-blue-600/20 text-blue-900"
+                    ? "bg-brand-50 border-brand-600 ring-2 ring-brand-600/20 text-brand-900"
                     : "bg-white border-slate-200 text-slate-700 hover:border-slate-300"
                 }`}
               >
@@ -288,7 +288,7 @@ export const Carrito: React.FC<CarritoProps> = ({ navigate }) => {
                 onClick={() => setEntrega("envio")}
                 className={`p-3 rounded-xl border text-left text-xs flex items-center gap-2.5 cursor-pointer transition-all ${
                   entrega === "envio"
-                    ? "bg-blue-50 border-blue-600 ring-2 ring-blue-600/20 text-blue-900"
+                    ? "bg-brand-50 border-brand-600 ring-2 ring-brand-600/20 text-brand-900"
                     : "bg-white border-slate-200 text-slate-700 hover:border-slate-300"
                 }`}
               >
@@ -306,7 +306,7 @@ export const Carrito: React.FC<CarritoProps> = ({ navigate }) => {
                     value={direccion}
                     onChange={(e) => setDireccion(e.target.value)}
                     placeholder="Calle, número y localidad"
-                    className="w-full text-sm p-2.5 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-600"
+                    className="w-full text-sm p-2.5 border border-slate-300 rounded-lg focus:outline-none focus:border-brand-600"
                   />
                 </div>
               )}
@@ -317,7 +317,7 @@ export const Carrito: React.FC<CarritoProps> = ({ navigate }) => {
                   value={telefono}
                   onChange={(e) => setTelefono(e.target.value)}
                   placeholder="11-1234-5678"
-                  className="w-full text-sm p-2.5 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-600"
+                  className="w-full text-sm p-2.5 border border-slate-300 rounded-lg focus:outline-none focus:border-brand-600"
                 />
               </div>
             </div>
@@ -326,7 +326,7 @@ export const Carrito: React.FC<CarritoProps> = ({ navigate }) => {
           <div className="mt-6 pt-6 border-t border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <span className="text-xs text-slate-500 block uppercase font-bold tracking-wider">Total a Pagar:</span>
-              <span className="text-3xl font-extrabold text-blue-700">
+              <span className="text-3xl font-bold text-brand-700">
                 {formatPrecio(total)}
               </span>
             </div>
@@ -347,7 +347,7 @@ export const Carrito: React.FC<CarritoProps> = ({ navigate }) => {
             <button
               onClick={handleCheckout}
               disabled={submitting}
-              className="btn btn-primary text-xs font-bold py-2.5 px-6 shadow-lg shadow-blue-600/25 flex items-center gap-2"
+              className="btn btn-primary text-xs font-bold py-2.5 px-6 shadow-lg shadow-brand-600/25 flex items-center gap-2"
             >
               <span>{submitting ? "Procesando pedido..." : user ? "Confirmar Pedido" : "Iniciar sesión para comprar"}</span>
               <ArrowRight size={14} />

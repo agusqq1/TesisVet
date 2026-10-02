@@ -260,17 +260,17 @@ export const AdminTienda: React.FC<AdminTiendaProps> = ({ navigate }) => {
                         </div>
                       </td>
                       <td>
-                        <span className="inline-block text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-gray-800">
+                        <span className="inline-block text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 whitespace-nowrap">
                           {p.categoria}
                         </span>
                         {p.etiqueta && (
-                          <span className="block mt-1 text-[10px] font-bold text-blue-700">
+                          <span className="block mt-1 text-[10px] font-bold text-brand-700">
                             {p.etiqueta}
                           </span>
                         )}
                       </td>
                       <td>
-                        <strong className="text-base text-blue-700">
+                        <strong className="text-base text-brand-700">
                           {formatPrecio(p.precio)}
                         </strong>
                       </td>
@@ -336,7 +336,7 @@ export const AdminTienda: React.FC<AdminTiendaProps> = ({ navigate }) => {
             </button>
 
             <h2 className="text-xl font-bold mb-1 flex items-center gap-2">
-              {editingProduct ? "✏️ Modificar Producto" : "✨ Nuevo Producto en Tienda"}
+              {editingProduct ? "Editar producto" : "Nuevo producto"}
             </h2>
             <p className="text-xs text-gray-500 mb-4">
               Completá los datos para que el producto esté disponible en la tienda online.
@@ -451,7 +451,7 @@ export const AdminTienda: React.FC<AdminTiendaProps> = ({ navigate }) => {
                     type="checkbox"
                     checked={requiereReceta}
                     onChange={(e) => setRequiereReceta(e.target.checked)}
-                    className="rounded text-blue-700"
+                    className="rounded text-brand-700"
                   />
                   <span>Requiere prescripción o receta médica veterinaria</span>
                 </label>
@@ -471,7 +471,7 @@ export const AdminTienda: React.FC<AdminTiendaProps> = ({ navigate }) => {
                         }}
                         className={`flex items-center gap-2 px-2.5 py-1 rounded-lg border text-xs font-semibold ${
                           imagen === preset.url && !customImg
-                            ? "bg-blue-600 text-white border-blue-600"
+                            ? "bg-brand-600 text-white border-brand-600"
                             : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100"
                         }`}
                       >

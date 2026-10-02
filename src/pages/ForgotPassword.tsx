@@ -66,7 +66,7 @@ export const ForgotPassword: React.FC<ForgotPasswordProps> = ({ navigate }) => {
         <div className="mt-6 pt-4 border-t border-slate-100">
           <button
             type="button"
-            className="text-blue-600 hover:text-blue-700 text-sm font-semibold flex items-center justify-center gap-1.5 mx-auto cursor-pointer"
+            className="text-brand-600 hover:text-brand-700 text-sm font-semibold flex items-center justify-center gap-1.5 mx-auto cursor-pointer"
             onClick={() => navigate("/login")}
           >
             <ArrowLeft size={15} />

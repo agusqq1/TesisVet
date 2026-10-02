@@ -188,7 +188,7 @@ export const Perfil: React.FC<PerfilProps> = ({ navigate }) => {
         {user.rol === "veterinario" && (
           <button
             onClick={() => navigate("/admin/dashboard")}
-            className="btn btn-primary shadow-md shadow-blue-600/20"
+            className="btn btn-primary shadow-md shadow-brand-600/20"
           >
             Ir al Panel Veterinario →
           </button>
@@ -199,12 +199,12 @@ export const Perfil: React.FC<PerfilProps> = ({ navigate }) => {
         {/* User Card */}
         <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
           <div className="flex items-center gap-4 mb-4">
-            <div className="w-16 h-16 rounded-full bg-blue-50 text-blue-700 flex items-center justify-center font-bold text-2xl border border-slate-200">
+            <div className="w-16 h-16 rounded-full bg-brand-50 text-brand-700 flex items-center justify-center font-bold text-2xl border border-slate-200">
               {user.nombre.substring(0, 1).toUpperCase()}
             </div>
             <div>
               <h2 className="font-bold text-lg">{user.nombre}</h2>
-              <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">
+              <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-brand-100 text-brand-700">
                 {user.rol === "veterinario" ? "Veterinario / Admin" : "Cliente"}
               </span>
             </div>
@@ -227,7 +227,7 @@ export const Perfil: React.FC<PerfilProps> = ({ navigate }) => {
             </h2>
             <button
               onClick={() => navigate("/mascota-nueva")}
-              className="btn btn-primary btn-sm flex items-center gap-1.5 cursor-pointer bg-blue-600 hover:bg-blue-500"
+              className="btn btn-primary btn-sm flex items-center gap-1.5 cursor-pointer bg-brand-600 hover:bg-brand-500"
             >
               <Plus size={14} />
               <span>Agregar Mascota</span>
@@ -243,7 +243,7 @@ export const Perfil: React.FC<PerfilProps> = ({ navigate }) => {
               {pets.map((p) => (
                 <div
                   key={p.id}
-                  className="flex flex-col justify-between p-4 border border-slate-200 rounded-2xl hover:border-blue-400 transition-all bg-slate-50"
+                  className="flex flex-col justify-between p-4 border border-slate-200 rounded-2xl hover:border-brand-400 transition-all bg-slate-50"
                 >
                   <div className="flex items-start gap-3">
                     <img
@@ -264,11 +264,11 @@ export const Perfil: React.FC<PerfilProps> = ({ navigate }) => {
                             p.especie === "Gato"
                               ? "bg-amber-100 text-amber-900 border border-amber-200"
                               : p.especie === "Perro"
-                              ? "bg-blue-100 text-blue-900 border border-blue-200"
-                              : "bg-blue-50 text-blue-700"
+                              ? "bg-brand-100 text-brand-900 border border-brand-200"
+                              : "bg-brand-50 text-brand-700"
                           }`}
                         >
-                          {p.especie === "Gato" ? "🐱 Gato" : p.especie === "Perro" ? "🐶 Perro" : p.especie}
+                          {p.especie}
                         </span>
                       </div>
                       <p className="text-xs text-gray-500 truncate mt-0.5">
@@ -288,7 +288,7 @@ export const Perfil: React.FC<PerfilProps> = ({ navigate }) => {
                   <div className="flex items-center justify-between gap-2 mt-4 pt-3 border-t border-slate-200">
                     <button
                       onClick={() => navigate(`/historial?mascota_id=${p.id}`)}
-                      className="text-xs text-blue-600 font-semibold hover:underline cursor-pointer flex items-center gap-1.5"
+                      className="text-xs text-brand-600 font-semibold hover:underline cursor-pointer flex items-center gap-1.5"
                     >
                       <FileText size={13} />
                       <span>Historial</span>
@@ -331,8 +331,8 @@ export const Perfil: React.FC<PerfilProps> = ({ navigate }) => {
             </button>
 
             <h2 className="text-xl font-bold mb-1 flex items-center gap-2">
-              <Pencil size={18} className="text-blue-600" />
-              <span>Editar Mascota: <strong className="text-blue-600">{editingPet.nombre}</strong></span>
+              <Pencil size={18} className="text-brand-600" />
+              <span>Editar Mascota: <strong className="text-brand-600">{editingPet.nombre}</strong></span>
             </h2>
             <p className="text-xs text-gray-500 mb-4">
               Modificá los datos personales, avatar o foto de tu mascota.
@@ -359,7 +359,7 @@ export const Perfil: React.FC<PerfilProps> = ({ navigate }) => {
                     value={editNombre}
                     onChange={(e) => setEditNombre(e.target.value)}
                     required
-                    className="w-full text-sm p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600"
+                    className="w-full text-sm p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-brand-600"
                   />
                 </div>
 
@@ -368,7 +368,7 @@ export const Perfil: React.FC<PerfilProps> = ({ navigate }) => {
                   <select
                     value={editEspecie}
                     onChange={(e) => setEditEspecie(e.target.value)}
-                    className="w-full text-sm p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600"
+                    className="w-full text-sm p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-brand-600"
                   >
                     <option value="Perro">Perro</option>
                     <option value="Gato">Gato</option>
@@ -383,7 +383,7 @@ export const Perfil: React.FC<PerfilProps> = ({ navigate }) => {
                     type="text"
                     value={editRaza}
                     onChange={(e) => setEditRaza(e.target.value)}
-                    className="w-full text-sm p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600"
+                    className="w-full text-sm p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-brand-600"
                   />
                 </div>
 
@@ -395,7 +395,7 @@ export const Perfil: React.FC<PerfilProps> = ({ navigate }) => {
                       value={editEdad}
                       onChange={(e) => setEditEdad(e.target.value === "" ? "" : Number(e.target.value))}
                       min="0"
-                      className="w-full text-sm p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600"
+                      className="w-full text-sm p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-brand-600"
                     />
                   </div>
                   <div>
@@ -406,7 +406,7 @@ export const Perfil: React.FC<PerfilProps> = ({ navigate }) => {
                       value={editPeso}
                       onChange={(e) => setEditPeso(e.target.value === "" ? "" : Number(e.target.value))}
                       min="0"
-                      className="w-full text-sm p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600"
+                      className="w-full text-sm p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-brand-600"
                     />
                   </div>
                 </div>
@@ -430,7 +430,7 @@ export const Perfil: React.FC<PerfilProps> = ({ navigate }) => {
                       }}
                       className={`flex items-center gap-1.5 p-1 px-2.5 rounded-lg border text-xs font-medium transition-all ${
                         (customFotoUrl ? customFotoUrl : editFoto) === p.url
-                          ? "border-blue-600 bg-blue-50 text-blue-700 font-bold"
+                          ? "border-brand-600 bg-brand-50 text-brand-700 font-bold"
                           : "border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100"
                       }`}
                     >
@@ -447,7 +447,7 @@ export const Perfil: React.FC<PerfilProps> = ({ navigate }) => {
                       type="file"
                       accept="image/*"
                       onChange={handleFileUpload}
-                      className="block w-full text-xs text-gray-500 file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700"
+                      className="block w-full text-xs text-gray-500 file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-brand-600 file:text-white hover:file:bg-brand-700"
                     />
                   </div>
 
@@ -458,7 +458,7 @@ export const Perfil: React.FC<PerfilProps> = ({ navigate }) => {
                       placeholder="https://..."
                       value={customFotoUrl}
                       onChange={(e) => setCustomFotoUrl(e.target.value)}
-                      className="w-full text-xs p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600"
+                      className="w-full text-xs p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-brand-600"
                     />
                   </div>
                 </div>
@@ -487,7 +487,7 @@ export const Perfil: React.FC<PerfilProps> = ({ navigate }) => {
                     value={editAlergias}
                     onChange={(e) => setEditAlergias(e.target.value)}
                     placeholder="Ej: Polen, Algún fármaco..."
-                    className="w-full text-xs p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600"
+                    className="w-full text-xs p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-brand-600"
                   />
                 </div>
                 <div>
@@ -497,7 +497,7 @@ export const Perfil: React.FC<PerfilProps> = ({ navigate }) => {
                     value={editCondiciones}
                     onChange={(e) => setEditCondiciones(e.target.value)}
                     placeholder="Ej: Displasia leve..."
-                    className="w-full text-xs p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-600"
+                    className="w-full text-xs p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-brand-600"
                   />
                 </div>
               </div>
@@ -536,7 +536,7 @@ export const Perfil: React.FC<PerfilProps> = ({ navigate }) => {
           <div className="flex flex-wrap items-center gap-2.5">
             <button
               onClick={() => navigate("/booking?tipo=especializado")}
-              className="btn btn-outline btn-sm flex items-center gap-1.5 border-blue-600 text-blue-600 hover:bg-blue-50 font-bold"
+              className="btn btn-outline btn-sm flex items-center gap-1.5 border-brand-600 text-brand-600 hover:bg-brand-50 font-bold"
             >
               <Sparkles size={14} className="text-amber-500" />
               <span>+ Turno Especializado</span>
@@ -619,7 +619,7 @@ export const Perfil: React.FC<PerfilProps> = ({ navigate }) => {
                           <button
                             onClick={() => navigate(`/historial?mascota_id=${t.mascota_id}`)}
                             title="Ver orden de derivación en historial"
-                            className="p-1.5 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 text-xs font-semibold flex items-center gap-1 cursor-pointer"
+                            className="p-1.5 rounded-lg bg-brand-50 text-brand-700 hover:bg-brand-100 border border-brand-200 text-xs font-semibold flex items-center gap-1 cursor-pointer"
                           >
                             <ExternalLink size={13} />
                             <span>Ver Orden</span>

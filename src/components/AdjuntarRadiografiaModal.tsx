@@ -95,7 +95,7 @@ export const AdjuntarRadiografiaModal: React.FC<AdjuntarRadiografiaModalProps> =
         {/* Header */}
         <div className="bg-slate-900 text-white px-6 py-5 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-blue-600/30 border border-blue-400/40 flex items-center justify-center text-blue-400">
+            <div className="w-10 h-10 rounded-xl bg-brand-600/30 border border-brand-400/40 flex items-center justify-center text-brand-400">
               <ImageIcon size={20} />
             </div>
             <div>
@@ -129,7 +129,7 @@ export const AdjuntarRadiografiaModal: React.FC<AdjuntarRadiografiaModalProps> =
               <select
                 value={petId}
                 onChange={(e) => setPetId(Number(e.target.value))}
-                className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm bg-slate-50 focus:bg-white focus:border-blue-600 focus:outline-none"
+                className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm bg-slate-50 focus:bg-white focus:border-brand-600 focus:outline-none"
               >
                 {pets.map((p) => (
                   <option key={p.id} value={p.id}>
@@ -147,7 +147,7 @@ export const AdjuntarRadiografiaModal: React.FC<AdjuntarRadiografiaModalProps> =
                 type="date"
                 value={fecha}
                 onChange={(e) => setFecha(e.target.value)}
-                className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm bg-slate-50 focus:bg-white focus:border-blue-600 focus:outline-none"
+                className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm bg-slate-50 focus:bg-white focus:border-brand-600 focus:outline-none"
               />
             </div>
           </div>
@@ -162,7 +162,7 @@ export const AdjuntarRadiografiaModal: React.FC<AdjuntarRadiografiaModalProps> =
                 value={nombre}
                 onChange={(e) => setNombre(e.target.value)}
                 placeholder="Ej. Radiografía Digital de Tórax"
-                className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:border-blue-600 focus:outline-none"
+                className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:border-brand-600 focus:outline-none"
                 required
               />
             </div>
@@ -176,7 +176,7 @@ export const AdjuntarRadiografiaModal: React.FC<AdjuntarRadiografiaModalProps> =
                 value={zonaAnatomica}
                 onChange={(e) => setZonaAnatomica(e.target.value)}
                 placeholder="Ej. Tórax Frente y Perfil"
-                className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:border-blue-600 focus:outline-none"
+                className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:border-brand-600 focus:outline-none"
               />
             </div>
           </div>
@@ -188,7 +188,7 @@ export const AdjuntarRadiografiaModal: React.FC<AdjuntarRadiografiaModalProps> =
             </label>
             
             <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
-              <div className="sm:col-span-8 border-2 border-dashed border-slate-200 hover:border-blue-400 rounded-2xl p-4 text-center bg-slate-50 transition-colors">
+              <div className="sm:col-span-8 border-2 border-dashed border-slate-200 hover:border-brand-400 rounded-2xl p-4 text-center bg-slate-50 transition-colors">
                 <input
                   type="file"
                   id="radiografia-file-upload"
@@ -198,9 +198,9 @@ export const AdjuntarRadiografiaModal: React.FC<AdjuntarRadiografiaModalProps> =
                 />
                 <label
                   htmlFor="radiografia-file-upload"
-                  className="cursor-pointer flex flex-col items-center justify-center gap-1.5 text-slate-600 hover:text-blue-600"
+                  className="cursor-pointer flex flex-col items-center justify-center gap-1.5 text-slate-600 hover:text-brand-600"
                 >
-                  <Upload size={24} className="text-blue-600" />
+                  <Upload size={24} className="text-brand-600" />
                   <span className="text-xs font-bold">Hacé clic para subir la placa o imagen</span>
                   <span className="text-[11px] text-slate-400">JPG, PNG, WebP o GIF (hasta 15 MB)</span>
                 </label>
@@ -229,7 +229,7 @@ export const AdjuntarRadiografiaModal: React.FC<AdjuntarRadiografiaModalProps> =
               onChange={(e) => setObservaciones(e.target.value)}
               rows={3}
               placeholder="Describí los hallazgos radiológicos (silueta cardíaca, campos pulmonares, estructuras óseas)..."
-              className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:border-blue-600 focus:outline-none"
+              className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:border-brand-600 focus:outline-none"
             />
           </div>
 
@@ -242,7 +242,7 @@ export const AdjuntarRadiografiaModal: React.FC<AdjuntarRadiografiaModalProps> =
                 type="text"
                 value={institucion}
                 onChange={(e) => setInstitucion(e.target.value)}
-                className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:border-blue-600 focus:outline-none text-slate-600"
+                className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm focus:border-brand-600 focus:outline-none text-slate-600"
               />
             </div>
 
@@ -253,7 +253,7 @@ export const AdjuntarRadiografiaModal: React.FC<AdjuntarRadiografiaModalProps> =
               <select
                 value={tipo}
                 onChange={(e) => setTipo(e.target.value)}
-                className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm bg-slate-50 focus:bg-white focus:border-blue-600 focus:outline-none"
+                className="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-sm bg-slate-50 focus:bg-white focus:border-brand-600 focus:outline-none"
               >
                 <option value="Radiografía">Radiografía Digital</option>
                 <option value="Cardiografía / ECG">Cardiografía / ECG</option>
@@ -276,7 +276,7 @@ export const AdjuntarRadiografiaModal: React.FC<AdjuntarRadiografiaModalProps> =
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center gap-2 shadow-md shadow-blue-600/20 transition-all cursor-pointer disabled:opacity-50"
+              className="px-6 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs flex items-center gap-2 shadow-md shadow-brand-600/20 transition-all cursor-pointer disabled:opacity-50"
             >
               <CheckCircle2 size={16} />
               <span>{isSubmitting ? 'Guardando...' : 'Adjuntar al Historial'}</span>

@@ -192,7 +192,7 @@ export const HistorialClinico: React.FC<HistorialClinicoProps> = ({
         <div className="mb-4 flex items-center justify-between">
           <button
             onClick={() => navigate("/admin/pacientes")}
-            className="text-xs font-bold text-blue-800 bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-200 hover:bg-blue-100 flex items-center gap-1 cursor-pointer"
+            className="text-xs font-bold text-brand-800 bg-brand-50 px-3 py-1.5 rounded-lg border border-brand-200 hover:bg-brand-100 flex items-center gap-1 cursor-pointer"
           >
             ← Volver a Pacientes / Clientes
           </button>
@@ -219,11 +219,11 @@ export const HistorialClinico: React.FC<HistorialClinicoProps> = ({
             <select
               value={selectedPetId || ""}
               onChange={(e) => setSelectedPetId(Number(e.target.value))}
-              className="border-0 bg-transparent text-sm font-bold text-blue-700 focus:outline-none cursor-pointer"
+              className="border-0 bg-transparent text-sm font-bold text-brand-700 focus:outline-none cursor-pointer"
             >
               {pets.map((p) => (
                 <option key={p.id} value={p.id}>
-                  {p.especie === 'Gato' ? '🐱' : p.especie === 'Perro' ? '🐶' : '🐾'} {p.nombre} ({p.especie} {p.raza ? `· ${p.raza}` : ''})
+                  {p.nombre} ({p.especie} {p.raza ? `· ${p.raza}` : ''})
                 </option>
               ))}
             </select>
@@ -231,7 +231,7 @@ export const HistorialClinico: React.FC<HistorialClinicoProps> = ({
 
           <button
             onClick={() => navigate("/mascota-nueva")}
-            className="btn btn-primary text-xs font-bold px-3.5 py-2 flex items-center gap-1.5 bg-blue-600 hover:bg-blue-500 shadow-sm cursor-pointer"
+            className="btn btn-primary text-xs font-bold px-3.5 py-2 flex items-center gap-1.5 bg-brand-600 hover:bg-brand-500 shadow-sm cursor-pointer"
           >
             <Plus size={15} />
             <span>Agregar Mascota</span>
@@ -248,8 +248,8 @@ export const HistorialClinico: React.FC<HistorialClinicoProps> = ({
               onClick={() => setSelectedPetId(p.id)}
               className={`flex items-center gap-2.5 px-3.5 py-2 rounded-2xl border transition-all cursor-pointer whitespace-nowrap text-xs font-bold ${
                 selectedPetId === p.id
-                  ? "bg-blue-600 text-white border-blue-600 shadow-md"
-                  : "bg-white text-slate-700 border-slate-200 hover:border-blue-400 hover:bg-blue-50/50"
+                  ? "bg-brand-600 text-white border-brand-600 shadow-md"
+                  : "bg-white text-slate-700 border-slate-200 hover:border-brand-400 hover:bg-brand-50/50"
               }`}
             >
               <img
@@ -269,7 +269,7 @@ export const HistorialClinico: React.FC<HistorialClinicoProps> = ({
                     ? "bg-white/20 text-white"
                     : p.especie === "Gato"
                     ? "bg-amber-100 text-amber-800"
-                    : "bg-blue-50 text-blue-700"
+                    : "bg-brand-50 text-brand-700"
                 }`}
               >
                 {p.especie}
@@ -359,7 +359,7 @@ export const HistorialClinico: React.FC<HistorialClinicoProps> = ({
                       <h4>{c.titulo}</h4>
                       <p>{c.descripcion}</p>
                       <div className="timeline-doc flex items-center gap-1.5 text-xs text-slate-600 mt-2">
-                        <Stethoscope size={14} className="text-blue-600" />
+                        <Stethoscope size={14} className="text-brand-600" />
                         <span>Atendido por: <strong>{c.vet_nombre}</strong></span>
                       </div>
                     </div>
@@ -376,7 +376,7 @@ export const HistorialClinico: React.FC<HistorialClinicoProps> = ({
         <div className="info-card">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <Syringe size={18} className="text-blue-600" />
+              <Syringe size={18} className="text-brand-600" />
               <h3 className="font-bold text-slate-900 m-0">Registro de Vacunas</h3>
             </div>
             {user?.rol === "veterinario" && (
@@ -386,7 +386,7 @@ export const HistorialClinico: React.FC<HistorialClinicoProps> = ({
                   setVacError("");
                   setShowVacunaModal(true);
                 }}
-                className="text-[11px] font-bold text-blue-700 hover:text-blue-800 bg-blue-50 px-2.5 py-1 rounded-md border border-blue-200 cursor-pointer"
+                className="text-[11px] font-bold text-brand-700 hover:text-brand-800 bg-brand-50 px-2.5 py-1 rounded-md border border-brand-200 cursor-pointer"
               >
                 + Registrar
               </button>
@@ -421,7 +421,7 @@ export const HistorialClinico: React.FC<HistorialClinicoProps> = ({
 
         <div className="info-card">
           <div className="flex items-center gap-2 mb-1">
-            <Calendar size={18} className="text-blue-600" />
+            <Calendar size={18} className="text-brand-600" />
             <h3 className="font-bold text-slate-900 m-0">Citas &amp; Turnos en Historial</h3>
           </div>
           <p className="text-xs text-gray-500 mb-3">
@@ -453,14 +453,14 @@ export const HistorialClinico: React.FC<HistorialClinicoProps> = ({
         <div className="info-card">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <FlaskConical size={18} className="text-blue-600" />
+              <FlaskConical size={18} className="text-brand-600" />
               <h3 className="font-bold text-slate-900 m-0">Estudios y Laboratorio</h3>
             </div>
             {user?.rol === "veterinario" && (
               <button
                 type="button"
                 onClick={() => setShowAdjuntarRadio(true)}
-                className="text-[11px] font-bold text-blue-700 hover:text-blue-800 bg-blue-50 px-2.5 py-1 rounded-md border border-blue-200 cursor-pointer"
+                className="text-[11px] font-bold text-brand-700 hover:text-brand-800 bg-brand-50 px-2.5 py-1 rounded-md border border-brand-200 cursor-pointer"
               >
                 + Adjuntar
               </button>
@@ -481,7 +481,7 @@ export const HistorialClinico: React.FC<HistorialClinicoProps> = ({
                   className="icon-btn flex items-center justify-center cursor-pointer"
                   title="Ver Placa / Negatoscopio Digital"
                 >
-                  <Sliders size={16} className="text-blue-600" />
+                  <Sliders size={16} className="text-brand-600" />
                 </button>
               </div>
             ))
@@ -520,15 +520,15 @@ export const HistorialClinico: React.FC<HistorialClinicoProps> = ({
       <div className="mt-10 bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-xs">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-100">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600">
+            <div className="w-12 h-12 rounded-2xl bg-brand-50 border border-brand-200 flex items-center justify-center text-brand-600">
               <Sliders size={24} />
             </div>
             <div>
               <div className="flex items-center gap-2.5">
-                <h2 className="text-lg sm:text-xl font-black text-slate-950">
+                <h2 className="text-lg sm:text-xl font-bold text-slate-950">
                   Radiografías &amp; Diagnóstico por Imágenes
                 </h2>
-                <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-800">
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-brand-100 text-brand-800">
                   {estudios.length} {estudios.length === 1 ? 'estudio' : 'estudios'}
                 </span>
               </div>
@@ -541,7 +541,7 @@ export const HistorialClinico: React.FC<HistorialClinicoProps> = ({
           {user?.rol === "veterinario" && (
             <button
               onClick={() => setShowAdjuntarRadio(true)}
-              className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center gap-2 shadow-sm transition-all cursor-pointer shrink-0"
+              className="px-4 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs flex items-center gap-2 shadow-sm transition-all cursor-pointer shrink-0"
             >
               <Plus size={16} />
               <span>+ Adjuntar Radiografía</span>
@@ -556,7 +556,7 @@ export const HistorialClinico: React.FC<HistorialClinicoProps> = ({
             {user?.rol === "veterinario" && (
               <button
                 onClick={() => setShowAdjuntarRadio(true)}
-                className="mt-3 text-xs font-bold text-blue-600 hover:underline cursor-pointer"
+                className="mt-3 text-xs font-bold text-brand-600 hover:underline cursor-pointer"
               >
                 Hacé clic aquí para adjuntar la primera radiografía
               </button>
@@ -568,7 +568,7 @@ export const HistorialClinico: React.FC<HistorialClinicoProps> = ({
               <div
                 key={est.id}
                 onClick={() => setViewingEstudio(est)}
-                className="group bg-slate-900 text-white rounded-2xl overflow-hidden border border-slate-800 hover:border-blue-500/60 transition-all cursor-pointer flex flex-col shadow-md hover:shadow-xl"
+                className="group bg-slate-900 text-white rounded-2xl overflow-hidden border border-slate-800 hover:border-brand-500/60 transition-all cursor-pointer flex flex-col shadow-md hover:shadow-xl"
               >
                 {/* Image plate viewport */}
                 <div className="h-44 bg-black relative flex items-center justify-center overflow-hidden">
@@ -586,11 +586,11 @@ export const HistorialClinico: React.FC<HistorialClinicoProps> = ({
                   )}
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-black/40" />
                   
-                  <span className="absolute top-3 left-3 px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wider bg-black/70 backdrop-blur-md text-blue-300 border border-white/10 uppercase">
+                  <span className="absolute top-3 left-3 px-2.5 py-1 rounded-md text-[10px] font-bold tracking-wider bg-black/70 backdrop-blur-md text-brand-300 border border-white/10 uppercase">
                     {est.tipo || 'Radiografía'}
                   </span>
 
-                  <span className="absolute bottom-3 right-3 px-3 py-1 rounded-full text-xs font-bold bg-blue-600/90 text-white flex items-center gap-1.5 shadow-lg group-hover:bg-blue-500 transition-colors">
+                  <span className="absolute bottom-3 right-3 px-3 py-1 rounded-full text-xs font-bold bg-brand-600/90 text-white flex items-center gap-1.5 shadow-lg group-hover:bg-brand-500 transition-colors">
                     <Sliders size={13} />
                     <span>{est.imagen_url ? "Abrir Negatoscopio" : "Ver Informe"}</span>
                   </span>
@@ -599,10 +599,10 @@ export const HistorialClinico: React.FC<HistorialClinicoProps> = ({
                 {/* Card Content */}
                 <div className="p-5 flex-1 flex flex-col justify-between space-y-3">
                   <div>
-                    <h3 className="font-bold text-sm text-white group-hover:text-blue-300 transition-colors">
+                    <h3 className="font-bold text-sm text-white group-hover:text-brand-300 transition-colors">
                       {est.nombre}
                     </h3>
-                    <p className="text-xs text-blue-400 font-medium mt-0.5">
+                    <p className="text-xs text-brand-400 font-medium mt-0.5">
                       Zona: {est.zona_anatomica || 'No especificada'}
                     </p>
                     <p className="text-xs text-slate-300 mt-2 line-clamp-2 leading-relaxed">
@@ -627,15 +627,15 @@ export const HistorialClinico: React.FC<HistorialClinicoProps> = ({
       <div className="mt-10 bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-xs">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-100">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-indigo-50 border border-indigo-200 flex items-center justify-center text-indigo-700">
+            <div className="w-12 h-12 rounded-2xl bg-brand-50 border border-brand-200 flex items-center justify-center text-brand-700">
               <Building2 size={24} />
             </div>
             <div>
               <div className="flex items-center gap-2.5">
-                <h2 className="text-lg sm:text-xl font-black text-slate-950">
+                <h2 className="text-lg sm:text-xl font-bold text-slate-950">
                   Órdenes de Derivación e Interconsultas Externas
                 </h2>
-                <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-100 text-indigo-900">
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-brand-100 text-brand-900">
                   {derivaciones.length} {derivaciones.length === 1 ? 'orden' : 'órdenes'}
                 </span>
               </div>
@@ -648,7 +648,7 @@ export const HistorialClinico: React.FC<HistorialClinicoProps> = ({
           {user?.rol === "veterinario" && (
             <button
               onClick={() => setShowGenerarDerivacion(true)}
-              className="px-4 py-2.5 rounded-xl bg-indigo-700 hover:bg-indigo-600 text-white font-bold text-xs flex items-center gap-2 shadow-sm transition-all cursor-pointer shrink-0"
+              className="px-4 py-2.5 rounded-xl bg-brand-700 hover:bg-brand-600 text-white font-bold text-xs flex items-center gap-2 shadow-sm transition-all cursor-pointer shrink-0"
             >
               <Plus size={16} />
               <span>+ Generar Orden de Derivación</span>
@@ -663,7 +663,7 @@ export const HistorialClinico: React.FC<HistorialClinicoProps> = ({
             {user?.rol === "veterinario" && (
               <button
                 onClick={() => setShowGenerarDerivacion(true)}
-                className="mt-3 text-xs font-bold text-indigo-700 hover:underline cursor-pointer"
+                className="mt-3 text-xs font-bold text-brand-700 hover:underline cursor-pointer"
               >
                 Emitir una orden para derivar a Tortuguitas u otro centro especializado
               </button>
@@ -674,14 +674,14 @@ export const HistorialClinico: React.FC<HistorialClinicoProps> = ({
             {derivaciones.map((orden) => (
               <div
                 key={orden.id}
-                className="p-5 sm:p-6 rounded-2xl border-2 border-slate-200 hover:border-indigo-500/60 bg-gradient-to-br from-slate-50/50 to-white transition-all shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-5"
+                className="p-5 sm:p-6 rounded-2xl border-2 border-slate-200 hover:border-brand-500/60 bg-gradient-to-br from-slate-50/50 to-white transition-all shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-5"
               >
                 <div className="space-y-2 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="px-2.5 py-0.5 rounded-md text-xs font-black font-mono bg-blue-950 text-white">
+                    <span className="px-2.5 py-0.5 rounded-md text-xs font-bold font-mono bg-brand-950 text-white">
                       {orden.codigo}
                     </span>
-                    <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-900">
+                    <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-brand-100 text-brand-900">
                       {orden.especialidad_derivada}
                     </span>
                     <span className="text-xs text-slate-500">
@@ -694,22 +694,22 @@ export const HistorialClinico: React.FC<HistorialClinicoProps> = ({
                   </h3>
 
                   {/* Destination Clinic Recommendation Highlight */}
-                  <div className="p-3.5 rounded-xl bg-blue-50/80 border border-blue-200 text-xs text-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="p-3.5 rounded-xl bg-brand-50/80 border border-brand-200 text-xs text-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
-                      <span className="text-[10px] font-bold text-blue-800 uppercase tracking-wider block">
+                      <span className="text-[10px] font-bold text-brand-800 uppercase tracking-wider block">
                         Centro Recomendado para Atención:
                       </span>
                       <strong className="text-sm text-slate-950 block mt-0.5">
                         {orden.centro_destino.nombre}
                       </strong>
                       <p className="text-slate-600 mt-0.5 flex items-center gap-1.5 text-[11px]">
-                        <MapPin size={13} className="text-blue-600 shrink-0" />
+                        <MapPin size={13} className="text-brand-600 shrink-0" />
                         {orden.centro_destino.direccion} ({orden.centro_destino.localidad}) &bull; Tel: {orden.centro_destino.telefono}
                       </p>
                     </div>
 
                     <div className="sm:text-right shrink-0">
-                      <span className="px-2.5 py-1 rounded-lg text-xs font-bold bg-white text-blue-800 border border-blue-200 inline-block shadow-xs">
+                      <span className="px-2.5 py-1 rounded-lg text-xs font-bold bg-white text-brand-800 border border-brand-200 inline-block shadow-xs">
                         {orden.centro_destino.distancia_estimada || 'Zona Norte'}
                       </span>
                     </div>
@@ -723,7 +723,7 @@ export const HistorialClinico: React.FC<HistorialClinicoProps> = ({
                 <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-2 pt-3 lg:pt-0 border-t lg:border-t-0 border-slate-100 shrink-0">
                   <button
                     onClick={() => setViewingOrden(orden)}
-                    className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-blue-900 hover:bg-blue-800 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-xs transition-colors cursor-pointer"
+                    className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-brand-900 hover:bg-brand-800 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-xs transition-colors cursor-pointer"
                   >
                     <FileText size={15} />
                     <span>Ver Orden Oficial</span>

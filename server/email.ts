@@ -132,7 +132,7 @@ const pesos = (monto: number) =>
 function plantilla(titulo: string, subtitulo: string, cuerpo: string) {
   return `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #1e293b; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden;">
-      <div style="background-color: #1e3a8a; color: white; padding: 24px; text-align: center;">
+      <div style="background-color: #12423b; color: white; padding: 24px; text-align: center;">
         <h2 style="margin: 0; font-size: 20px;">${titulo}</h2>
         <p style="margin: 4px 0 0; font-size: 13px; opacity: 0.9;">${subtitulo}</p>
       </div>
@@ -147,7 +147,7 @@ function plantilla(titulo: string, subtitulo: string, cuerpo: string) {
 }
 
 const caja = (contenido: string) =>
-  `<div style="background-color: #f8fafc; border-left: 4px solid #2563eb; padding: 16px; margin: 16px 0; border-radius: 6px;">${contenido}</div>`;
+  `<div style="background-color: #f8fafc; border-left: 4px solid #177d6a; padding: 16px; margin: 16px 0; border-radius: 6px;">${contenido}</div>`;
 
 const fila = (etiqueta: string, valor: unknown) =>
   `<p style="margin: 0 0 6px;"><strong>${etiqueta}:</strong> ${esc(valor)}</p>`;
@@ -220,7 +220,7 @@ export function emailDerivacion(orden: any) {
         <p>Estimado/a <strong>${esc(orden.dueno_nombre)}</strong>,</p>
         <p>El equipo veterinario de ${CLINICA.nombre} emitió una <strong>orden de derivación médica</strong> para tu mascota <strong>${esc(orden.mascota_nombre)}</strong>.</p>
         ${caja(`
-          <p style="margin: 0 0 8px; font-weight: bold; color: #1e3a8a;">Centro receptor:</p>
+          <p style="margin: 0 0 8px; font-weight: bold; color: #12423b;">Centro receptor:</p>
           <p style="margin: 0; font-size: 15px; font-weight: bold;">${esc(centro.nombre)}</p>
           <p style="margin: 4px 0 0; color: #475569; font-size: 13px;">Dirección: ${esc(centro.direccion)} (${esc(centro.localidad)})</p>
           <p style="margin: 4px 0 0; color: #475569; font-size: 13px;">Tel: ${esc(centro.telefono)} &bull; WhatsApp: ${esc(centro.whatsapp || "-")}</p>
@@ -308,7 +308,7 @@ export function emailRecuperacion(nombre: string, enlace: string) {
         <p>Hola <strong>${esc(nombre)}</strong>,</p>
         <p>Recibimos un pedido para cambiar la contraseña de tu cuenta. Para elegir una nueva, entrá a este enlace (vence en 1 hora):</p>
         <p style="margin: 20px 0;">
-          <a href="${esc(enlace)}" style="background-color: #2563eb; color: white; padding: 12px 20px; border-radius: 8px; text-decoration: none; font-weight: bold;">Elegir nueva contraseña</a>
+          <a href="${esc(enlace)}" style="background-color: #177d6a; color: white; padding: 12px 20px; border-radius: 8px; text-decoration: none; font-weight: bold;">Elegir nueva contraseña</a>
         </p>
         <p style="font-size: 12px; color: #64748b; word-break: break-all;">Si el botón no funciona, copiá esta dirección en tu navegador: ${esc(enlace)}</p>
         <p style="font-size: 13px; color: #64748b;">Si no fuiste vos, ignorá este mensaje: tu contraseña no cambia.</p>

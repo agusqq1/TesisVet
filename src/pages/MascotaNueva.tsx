@@ -140,7 +140,7 @@ export const MascotaNueva: React.FC<MascotaNuevaProps> = ({ navigate }) => {
           <div className="field">
             <label>Nombre de la mascota *</label>
             <div className="input-wrap">
-              <span className="flex items-center justify-center text-blue-600">
+              <span className="flex items-center justify-center text-brand-600">
                 <LogoIcon size={16} />
               </span>
               <input
@@ -227,7 +227,7 @@ export const MascotaNueva: React.FC<MascotaNuevaProps> = ({ navigate }) => {
                   }}
                   className={`flex items-center gap-1.5 p-1 px-2.5 rounded-lg border text-xs font-medium transition-all ${
                     foto === p.url
-                      ? "border-blue-600 bg-blue-50 text-blue-700 font-bold"
+                      ? "border-brand-600 bg-brand-50 text-brand-700 font-bold"
                       : "border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100"
                   }`}
                 >
@@ -244,7 +244,7 @@ export const MascotaNueva: React.FC<MascotaNuevaProps> = ({ navigate }) => {
                   type="file"
                   accept="image/*"
                   onChange={handleFileUpload}
-                  className="block w-full text-xs text-gray-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700"
+                  className="block w-full text-xs text-gray-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-brand-600 file:text-white hover:file:bg-brand-700"
                 />
               </div>
 

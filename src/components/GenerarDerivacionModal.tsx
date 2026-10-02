@@ -123,21 +123,21 @@ export const GenerarDerivacionModal: React.FC<GenerarDerivacionModalProps> = ({
       <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-3xl overflow-hidden my-auto flex flex-col max-h-[92vh]">
         
         {/* Header */}
-        <div className="bg-blue-950 text-white px-6 py-5 flex items-center justify-between border-b border-blue-900">
+        <div className="bg-brand-950 text-white px-6 py-5 flex items-center justify-between border-b border-brand-900">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-blue-600/30 border border-blue-400/40 flex items-center justify-center text-blue-400">
+            <div className="w-10 h-10 rounded-xl bg-brand-600/30 border border-brand-400/40 flex items-center justify-center text-brand-400">
               <Stethoscope size={20} />
             </div>
             <div>
               <div className="flex items-center gap-2 flex-wrap">
                 <h3 className="font-bold text-lg leading-tight">Generar Orden Médica de Derivación / Interconsulta</h3>
                 {turnoId && (
-                  <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-amber-400 text-blue-950">
+                  <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-amber-400 text-brand-950">
                     Vinculada a Turno #{turnoId}
                   </span>
                 )}
               </div>
-              <p className="text-xs text-blue-200">
+              <p className="text-xs text-brand-200">
                 Para especialistas externos (Cardiología, Radiología) cuando la sede está saturada o no cuenta con la especialidad
               </p>
             </div>
@@ -162,7 +162,7 @@ export const GenerarDerivacionModal: React.FC<GenerarDerivacionModalProps> = ({
 
           {/* Quick Context Reason Notice */}
           <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex items-start gap-3 text-xs text-slate-700">
-            <ShieldAlert size={18} className="text-blue-600 shrink-0 mt-0.5" />
+            <ShieldAlert size={18} className="text-brand-600 shrink-0 mt-0.5" />
             <div>
               <p className="font-bold text-slate-900 mb-0.5">Protocolo de Red de Atención Externa</p>
               <p className="text-slate-600 leading-relaxed">
@@ -180,7 +180,7 @@ export const GenerarDerivacionModal: React.FC<GenerarDerivacionModalProps> = ({
               <select
                 value={petId}
                 onChange={(e) => setPetId(Number(e.target.value))}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm bg-slate-50 focus:bg-white focus:border-blue-600 focus:outline-none"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm bg-slate-50 focus:bg-white focus:border-brand-600 focus:outline-none"
               >
                 {pets.map((p) => (
                   <option key={p.id} value={p.id}>
@@ -197,7 +197,7 @@ export const GenerarDerivacionModal: React.FC<GenerarDerivacionModalProps> = ({
               <select
                 value={motivoDerivacion}
                 onChange={(e) => setMotivoDerivacion(e.target.value as any)}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm bg-slate-50 focus:bg-white focus:border-blue-600 focus:outline-none"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm bg-slate-50 focus:bg-white focus:border-brand-600 focus:outline-none"
               >
                 <option value="Falta de especialista cardiólogo en sede">Falta de especialista cardiólogo en sede</option>
                 <option value="Saturación de turnos / derivación prioritaria">Saturación de turnos / derivación prioritaria</option>
@@ -224,7 +224,7 @@ export const GenerarDerivacionModal: React.FC<GenerarDerivacionModalProps> = ({
                   onClick={() => handleEspecialidadChange(item.key as any)}
                   className={`p-3 text-left rounded-xl border transition-all cursor-pointer ${
                     especialidad === item.key
-                      ? 'bg-blue-50 border-blue-600 ring-2 ring-blue-600/20 text-blue-900'
+                      ? 'bg-brand-50 border-brand-600 ring-2 ring-brand-600/20 text-brand-900'
                       : 'bg-white border-slate-200 hover:border-slate-300 text-slate-700'
                   }`}
                 >
@@ -239,7 +239,7 @@ export const GenerarDerivacionModal: React.FC<GenerarDerivacionModalProps> = ({
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2 flex items-center justify-between">
               <span>Centro de Destino Recomendado (Alrededores de Pilar / Del Viso)</span>
-              <span className="text-blue-600 text-[11px] font-semibold flex items-center gap-1">
+              <span className="text-brand-600 text-[11px] font-semibold flex items-center gap-1">
                 <Sparkles size={12} /> Red Asociada VetAnimal
               </span>
             </label>
@@ -250,7 +250,7 @@ export const GenerarDerivacionModal: React.FC<GenerarDerivacionModalProps> = ({
                   onClick={() => setSelectedCentroId(centro.id)}
                   className={`p-4 rounded-2xl border transition-all cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
                     selectedCentroId === centro.id
-                      ? 'bg-blue-50/80 border-blue-600 ring-2 ring-blue-600/20'
+                      ? 'bg-brand-50/80 border-brand-600 ring-2 ring-brand-600/20'
                       : 'bg-white border-slate-200 hover:border-slate-300'
                   }`}
                 >
@@ -258,22 +258,22 @@ export const GenerarDerivacionModal: React.FC<GenerarDerivacionModalProps> = ({
                     <div className="flex items-center gap-2">
                       <span className="font-bold text-sm text-slate-950">{centro.nombre}</span>
                       {centro.id.includes('tortuguitas') && (
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-600 text-white">
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-brand-600 text-white">
                           Recomendada por proximidad
                         </span>
                       )}
                     </div>
                     <p className="text-xs text-slate-600 mt-1 flex items-center gap-1.5">
-                      <MapPin size={13} className="text-blue-600 shrink-0" />
+                      <MapPin size={13} className="text-brand-600 shrink-0" />
                       <strong>{centro.direccion}</strong> &bull; {centro.localidad}
                     </p>
                     <p className="text-[11px] text-slate-500 mt-0.5">
-                      📞 {centro.telefono} &bull; Horarios: {centro.horarios}
+                      Tel. {centro.telefono} &bull; Horarios: {centro.horarios}
                     </p>
                   </div>
 
                   <div className="text-right sm:shrink-0">
-                    <span className="text-xs font-semibold text-blue-700 bg-white px-2.5 py-1 rounded-lg border border-blue-200 inline-block">
+                    <span className="text-xs font-semibold text-brand-700 bg-white px-2.5 py-1 rounded-lg border border-brand-200 inline-block">
                       {centro.distancia_estimada}
                     </span>
                   </div>
@@ -291,7 +291,7 @@ export const GenerarDerivacionModal: React.FC<GenerarDerivacionModalProps> = ({
               type="text"
               value={estudioSolicitado}
               onChange={(e) => setEstudioSolicitado(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:border-blue-600 focus:outline-none"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:border-brand-600 focus:outline-none"
               placeholder="Ej. Cardiografía / Ecocardiograma Doppler Color + Electrocardiograma"
               required
             />
@@ -307,7 +307,7 @@ export const GenerarDerivacionModal: React.FC<GenerarDerivacionModalProps> = ({
                 value={sospechaDiagnostica}
                 onChange={(e) => setSospechaDiagnostica(e.target.value)}
                 rows={3}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:border-blue-600 focus:outline-none"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:border-brand-600 focus:outline-none"
                 placeholder="Indique los hallazgos en auscultación o examen físico que motivan la interconsulta..."
                 required
               />
@@ -321,7 +321,7 @@ export const GenerarDerivacionModal: React.FC<GenerarDerivacionModalProps> = ({
                 value={resumenClinico}
                 onChange={(e) => setResumenClinico(e.target.value)}
                 rows={3}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:border-blue-600 focus:outline-none"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:border-brand-600 focus:outline-none"
                 placeholder="Evolución clínica previa, medicaciones actuales, tolerancia..."
               />
             </div>
@@ -336,7 +336,7 @@ export const GenerarDerivacionModal: React.FC<GenerarDerivacionModalProps> = ({
               type="text"
               value={indicacionesPrevias}
               onChange={(e) => setIndicacionesPrevias(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:border-blue-600 focus:outline-none"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:border-brand-600 focus:outline-none"
               placeholder="Ej. Ayuno de 6 horas de sólidos. Concurrir con la orden médica oficial..."
             />
           </div>
@@ -357,7 +357,7 @@ export const GenerarDerivacionModal: React.FC<GenerarDerivacionModalProps> = ({
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center gap-2 shadow-md shadow-blue-600/20 transition-all cursor-pointer disabled:opacity-50"
+                className="px-6 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs flex items-center gap-2 shadow-md shadow-brand-600/20 transition-all cursor-pointer disabled:opacity-50"
               >
                 <CheckCircle2 size={16} />
                 <span>{isSubmitting ? 'Emitiendo Orden...' : 'Emitir Orden de Derivación'}</span>

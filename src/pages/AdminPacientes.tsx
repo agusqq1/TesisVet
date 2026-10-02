@@ -169,7 +169,7 @@ export const AdminPacientes: React.FC<AdminPacientesProps> = ({ navigate }) => {
           <div>
             <h1 className="text-2xl font-bold text-slate-900">Registro de Pacientes</h1>
             <p className="text-sm text-slate-600">
-              Listado completo de animales atendidos, gatos, perros y legajos médicos en Del Viso.
+              Pacientes de la clínica, con acceso a la historia clínica de cada uno.
             </p>
           </div>
 
@@ -179,10 +179,10 @@ export const AdminPacientes: React.FC<AdminPacientesProps> = ({ navigate }) => {
               setSuccessMsg("");
               setShowModal(true);
             }}
-            className="btn btn-primary px-4 py-2.5 text-xs font-bold flex items-center gap-2 bg-blue-600 hover:bg-blue-500 shadow-md cursor-pointer"
+            className="btn btn-primary px-4 py-2.5 text-xs font-bold flex items-center gap-2 bg-brand-600 hover:bg-brand-500 shadow-md cursor-pointer"
           >
             <Plus size={16} />
-            <span>Registrar Nuevo Paciente (Gato / Perro)</span>
+            <span>Nuevo paciente</span>
           </button>
         </div>
 
@@ -190,29 +190,29 @@ export const AdminPacientes: React.FC<AdminPacientesProps> = ({ navigate }) => {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
           <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col">
             <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Pacientes</span>
-            <span className="text-2xl font-black text-slate-900 mt-1">{pets.length}</span>
+            <span className="text-2xl font-bold text-slate-900 mt-1">{pets.length}</span>
             <span className="text-[11px] text-slate-400 mt-0.5">En base de datos</span>
           </div>
 
           <div className="bg-white p-4 rounded-2xl border border-amber-200 shadow-sm flex flex-col bg-amber-50/40">
             <span className="text-xs font-bold text-amber-800 uppercase tracking-wider flex items-center gap-1">
-              🐱 Felinos (Gatos)
+              Gatos
             </span>
-            <span className="text-2xl font-black text-amber-900 mt-1">{countGatos}</span>
+            <span className="text-2xl font-bold text-amber-900 mt-1">{countGatos}</span>
             <span className="text-[11px] text-amber-700 mt-0.5">Pacientes felinos</span>
           </div>
 
-          <div className="bg-white p-4 rounded-2xl border border-blue-200 shadow-sm flex flex-col bg-blue-50/40">
-            <span className="text-xs font-bold text-blue-800 uppercase tracking-wider flex items-center gap-1">
-              🐶 Caninos (Perros)
+          <div className="bg-white p-4 rounded-2xl border border-brand-200 shadow-sm flex flex-col bg-brand-50/40">
+            <span className="text-xs font-bold text-brand-800 uppercase tracking-wider flex items-center gap-1">
+              Perros
             </span>
-            <span className="text-2xl font-black text-blue-900 mt-1">{countPerros}</span>
-            <span className="text-[11px] text-blue-700 mt-0.5">Pacientes caninos</span>
+            <span className="text-2xl font-bold text-brand-900 mt-1">{countPerros}</span>
+            <span className="text-[11px] text-brand-700 mt-0.5">Pacientes caninos</span>
           </div>
 
           <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col">
             <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Otras Especies</span>
-            <span className="text-2xl font-black text-slate-900 mt-1">{countOtros}</span>
+            <span className="text-2xl font-bold text-slate-900 mt-1">{countOtros}</span>
             <span className="text-[11px] text-slate-400 mt-0.5">Aves y exóticos</span>
           </div>
         </div>
@@ -270,11 +270,11 @@ export const AdminPacientes: React.FC<AdminPacientesProps> = ({ navigate }) => {
                             p.especie.toLowerCase() === "gato"
                               ? "bg-amber-100 text-amber-900 border border-amber-200"
                               : p.especie.toLowerCase() === "perro"
-                              ? "bg-blue-100 text-blue-900 border border-blue-200"
+                              ? "bg-brand-100 text-brand-900 border border-brand-200"
                               : "bg-purple-100 text-purple-900 border border-purple-200"
                           }`}
                         >
-                          {p.especie === "Gato" ? "🐱 Gato" : p.especie === "Perro" ? "🐶 Perro" : p.especie}
+                          {p.especie}
                         </span>
                       </div>
                       <small className="text-slate-500 font-medium mt-0.5 block">{p.raza || "Mestizo / Sin especificar"}</small>
@@ -307,7 +307,7 @@ export const AdminPacientes: React.FC<AdminPacientesProps> = ({ navigate }) => {
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => navigate(`/historial?mascota_id=${p.id}`)}
-                          className="btn btn-outline btn-sm text-xs font-bold py-1.5 px-3 flex items-center gap-1 hover:bg-blue-600 hover:text-white transition-colors cursor-pointer"
+                          className="btn btn-outline btn-sm text-xs font-bold py-1.5 px-3 flex items-center gap-1 hover:bg-brand-600 hover:text-white transition-colors cursor-pointer"
                           title={`Abrir historial clínico de ${p.nombre}`}
                         >
                           <FileText size={14} />
@@ -342,7 +342,7 @@ export const AdminPacientes: React.FC<AdminPacientesProps> = ({ navigate }) => {
             </button>
 
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-2xl bg-blue-100 text-blue-700 flex items-center justify-center font-bold">
+              <div className="w-10 h-10 rounded-2xl bg-brand-100 text-brand-700 flex items-center justify-center font-bold">
                 <Plus size={22} />
               </div>
               <div>
@@ -379,7 +379,7 @@ export const AdminPacientes: React.FC<AdminPacientesProps> = ({ navigate }) => {
                     placeholder="Ej: Oliver, Simba, Kira..."
                     value={nombre}
                     onChange={(e) => setNombre(e.target.value)}
-                    className="w-full border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                   />
                 </div>
 
@@ -390,12 +390,12 @@ export const AdminPacientes: React.FC<AdminPacientesProps> = ({ navigate }) => {
                   <select
                     value={especie}
                     onChange={(e) => setEspecie(e.target.value)}
-                    className="w-full border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-semibold text-slate-800"
+                    className="w-full border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 font-semibold text-slate-800"
                   >
-                    <option value="Gato">🐱 Gato (Felino)</option>
-                    <option value="Perro">🐶 Perro (Canino)</option>
-                    <option value="Ave">🦜 Ave</option>
-                    <option value="Exótico">🦎 Exótico / Roedor / Otro</option>
+                    <option value="Gato">Gato</option>
+                    <option value="Perro">Perro</option>
+                    <option value="Ave">Ave</option>
+                    <option value="Exótico">Exótico / Otro</option>
                   </select>
                 </div>
               </div>
@@ -410,7 +410,7 @@ export const AdminPacientes: React.FC<AdminPacientesProps> = ({ navigate }) => {
                     placeholder="Ej: Siamés, Mestizo..."
                     value={raza}
                     onChange={(e) => setRaza(e.target.value)}
-                    className="w-full border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                   />
                 </div>
 
@@ -425,7 +425,7 @@ export const AdminPacientes: React.FC<AdminPacientesProps> = ({ navigate }) => {
                     placeholder="Ej: 2"
                     value={edad}
                     onChange={(e) => setEdad(e.target.value)}
-                    className="w-full border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                   />
                 </div>
 
@@ -440,7 +440,7 @@ export const AdminPacientes: React.FC<AdminPacientesProps> = ({ navigate }) => {
                     placeholder="Ej: 4.5"
                     value={peso}
                     onChange={(e) => setPeso(e.target.value)}
-                    className="w-full border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                   />
                 </div>
               </div>
@@ -452,7 +452,7 @@ export const AdminPacientes: React.FC<AdminPacientesProps> = ({ navigate }) => {
                 <select
                   value={duenoId}
                   onChange={(e) => setDuenoId(e.target.value)}
-                  className="w-full border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
+                  className="w-full border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 text-slate-800"
                 >
                   <option value="">Elegí un cliente...</option>
                   {clientes.map((c) => (
@@ -472,7 +472,7 @@ export const AdminPacientes: React.FC<AdminPacientesProps> = ({ navigate }) => {
                         placeholder="Nombre y apellido *"
                         value={nuevoCliente.nombre}
                         onChange={(e) => setNuevoCliente({ ...nuevoCliente, nombre: e.target.value })}
-                        className="border border-slate-300 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="border border-slate-300 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500"
                       />
                       <input
                         type="email"
@@ -480,14 +480,14 @@ export const AdminPacientes: React.FC<AdminPacientesProps> = ({ navigate }) => {
                         placeholder="Email *"
                         value={nuevoCliente.email}
                         onChange={(e) => setNuevoCliente({ ...nuevoCliente, email: e.target.value })}
-                        className="border border-slate-300 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="border border-slate-300 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500"
                       />
                       <input
                         type="text"
                         placeholder="Teléfono"
                         value={nuevoCliente.telefono}
                         onChange={(e) => setNuevoCliente({ ...nuevoCliente, telefono: e.target.value })}
-                        className="border border-slate-300 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="border border-slate-300 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500"
                       />
                     </div>
                     <p className="text-[11px] text-slate-500">
@@ -513,7 +513,7 @@ export const AdminPacientes: React.FC<AdminPacientesProps> = ({ navigate }) => {
                       }}
                       className={`relative rounded-xl overflow-hidden aspect-square border-2 transition-all cursor-pointer ${
                         (customFotoUrl ? "" : foto) === p.url
-                          ? "border-blue-600 scale-105 shadow-md"
+                          ? "border-brand-600 scale-105 shadow-md"
                           : "border-transparent opacity-75 hover:opacity-100"
                       }`}
                     >
@@ -531,7 +531,7 @@ export const AdminPacientes: React.FC<AdminPacientesProps> = ({ navigate }) => {
                       setCustomFotoUrl(e.target.value);
                       setFoto("");
                     }}
-                    className="flex-1 border border-slate-300 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="flex-1 border border-slate-300 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500"
                   />
                   <label className="px-3 py-2 bg-slate-100 hover:bg-slate-200 rounded-xl text-xs font-semibold text-slate-700 flex items-center gap-1.5 cursor-pointer border border-slate-200">
                     <Upload size={13} />
@@ -552,7 +552,7 @@ export const AdminPacientes: React.FC<AdminPacientesProps> = ({ navigate }) => {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="btn btn-primary px-5 py-2.5 text-xs font-bold flex items-center gap-2 bg-blue-600 hover:bg-blue-500 shadow-md cursor-pointer disabled:opacity-50"
+                  className="btn btn-primary px-5 py-2.5 text-xs font-bold flex items-center gap-2 bg-brand-600 hover:bg-brand-500 shadow-md cursor-pointer disabled:opacity-50"
                 >
                   {submitting ? "Guardando..." : "Registrar Paciente"}
                 </button>

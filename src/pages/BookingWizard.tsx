@@ -43,13 +43,13 @@ const renderServiceIcon = (iconName: string) => {
     case "heart-pulse":
       return <Activity size={20} className="text-rose-600" />;
     case "scan":
-      return <Scan size={20} className="text-blue-600" />;
+      return <Scan size={20} className="text-brand-600" />;
     case "activity":
-      return <Activity size={20} className="text-indigo-600" />;
+      return <Activity size={20} className="text-brand-600" />;
     case "bone":
       return <Bone size={20} className="text-amber-700" />;
     default:
-      return <Stethoscope size={20} className="text-blue-600" />;
+      return <Stethoscope size={20} className="text-brand-600" />;
   }
 };
 
@@ -264,7 +264,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({ navigate }) => {
       <div className="wizard-page">
         <div style={{ maxWidth: "560px", margin: "60px auto", textAlign: "center" }}>
           <div className="flex justify-center mb-4">
-            <div className="w-16 h-16 rounded-full bg-blue-100 border border-blue-200 flex items-center justify-center text-blue-600 shadow-lg">
+            <div className="w-16 h-16 rounded-full bg-brand-100 border border-brand-200 flex items-center justify-center text-brand-600 shadow-lg">
               <CheckCircle2 size={36} />
             </div>
           </div>
@@ -278,12 +278,12 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({ navigate }) => {
           </p>
 
           {confirmedTurno.es_especializado && (
-            <div className="mb-6 p-4 rounded-2xl bg-blue-50 border border-blue-200 text-left text-xs text-blue-900">
-              <div className="flex items-center gap-2 font-bold text-blue-950 mb-1.5">
+            <div className="mb-6 p-4 rounded-2xl bg-brand-50 border border-brand-200 text-left text-xs text-brand-900">
+              <div className="flex items-center gap-2 font-bold text-brand-950 mb-1.5">
                 <Sparkles size={16} className="text-amber-500" />
                 <span>Estudio Especializado & Protocolo de Derivación Activo</span>
               </div>
-              <p className="m-0 leading-relaxed text-blue-800">
+              <p className="m-0 leading-relaxed text-brand-800">
                 Tu cita médica ha sido registrada como estudio de alta complejidad. El veterinario evaluará a {confirmedTurno.mascota_nombre} en sede y, de ser necesario por equipamiento o saturación de agenda, emitirá una <strong>Orden Oficial de Derivación</strong> con recomendación prioritaria a la sede de <strong>Centro Tortuguitas</strong>.
               </p>
             </div>
@@ -417,47 +417,38 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({ navigate }) => {
                     </div>
 
                     {/* Segmented control / Tabs */}
-                    <div className="inline-flex p-1 bg-slate-100 rounded-xl border border-slate-200 self-start sm:self-auto">
-                      <button
-                        type="button"
-                        onClick={() => handleCategoryTabChange("general")}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                          selectedCategory === "general"
-                            ? "bg-white text-slate-900 shadow-sm border border-slate-200"
-                            : "text-slate-600 hover:text-slate-900"
-                        }`}
-                      >
-                        Consultas Generales
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleCategoryTabChange("especializado")}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
-                          selectedCategory === "especializado"
-                            ? "bg-blue-600 text-white shadow-sm"
-                            : "text-slate-600 hover:text-slate-900"
-                        }`}
-                      >
-                        <Sparkles size={13} className="text-amber-300" />
-                        <span>Turnos Especializados (Cardiografía, etc.)</span>
-                        <span className="bg-amber-400 text-blue-950 text-[10px] font-black px-1.5 py-0.2 rounded-full uppercase tracking-wider">
-                          Alta Complejidad
-                        </span>
-                      </button>
+                    <div className="inline-flex p-1 bg-slate-100 rounded-lg self-start sm:self-auto">
+                      {([
+                        ["general", "Consultas generales"],
+                        ["especializado", "Estudios especializados"],
+                      ] as const).map(([valor, etiqueta]) => (
+                        <button
+                          key={valor}
+                          type="button"
+                          onClick={() => handleCategoryTabChange(valor)}
+                          className={`px-4 py-2 rounded-md text-sm font-semibold transition-colors cursor-pointer ${
+                            selectedCategory === valor
+                              ? "bg-white text-slate-900 shadow-sm"
+                              : "text-slate-600 hover:text-slate-900"
+                          }`}
+                        >
+                          {etiqueta}
+                        </button>
+                      ))}
                     </div>
                   </div>
 
                   {/* Banner explicativo para la sección especializada */}
                   {selectedCategory === "especializado" && (
-                    <div className="mb-4 p-3.5 rounded-xl bg-blue-50 border border-blue-200 text-xs text-blue-900 flex items-start gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center shrink-0 mt-0.5">
+                    <div className="mb-4 p-3.5 rounded-xl bg-brand-50 border border-brand-200 text-xs text-brand-900 flex items-start gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-brand-600 text-white flex items-center justify-center shrink-0 mt-0.5">
                         <Activity size={18} />
                       </div>
                       <div className="space-y-1">
-                        <p className="font-bold text-blue-950 m-0">
-                          🩺 Unidad de Especialidades & Interconsultas Médicas
+                        <p className="font-bold text-brand-950 m-0">
+                          Estudios especializados e interconsultas
                         </p>
-                        <p className="text-blue-800 leading-relaxed m-0">
+                        <p className="text-brand-800 leading-relaxed m-0">
                           Al solicitar un turno para <strong>Cardiografía, Ecocardiograma Doppler o Radiología de Alta Frecuencia</strong>, tu veterinario de VetAnimal evaluará a tu mascota. Si la sede se encuentra saturada o se requiere aparatología específica, se emitirá una <strong>Orden Oficial de Derivación prioritaria</strong> al <em>Centro Veterinario & Diagnóstico Tortuguitas (Cura Brochero 1420)</em> sin demoras.
                         </p>
                       </div>
@@ -486,7 +477,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({ navigate }) => {
                           <div className="flex-1">
                             <div className="flex items-center justify-between gap-1">
                               <strong>{s.nombre}</strong>
-                              <span className="text-xs font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md">
+                              <span className="text-xs font-bold text-brand-700 bg-brand-50 px-2 py-0.5 rounded-md">
                                 {formatPrecio(s.precio)}
                               </span>
                             </div>
@@ -506,7 +497,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({ navigate }) => {
                   {selectedCategory === "especializado" && (
                     <div className="mt-4 p-4 rounded-xl bg-slate-50 border border-slate-200">
                       <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                        <AlertCircle size={14} className="text-blue-600" />
+                        <AlertCircle size={14} className="text-brand-600" />
                         Detalles para el Especialista Veterinario (Opcional)
                       </h4>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -519,7 +510,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({ navigate }) => {
                             value={sintomasObservados}
                             onChange={(e) => setSintomasObservados(e.target.value)}
                             placeholder="Ej. Tos nocturna, soplo detectado en consulta previa, cansancio"
-                            className="w-full text-xs p-2.5 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-600 bg-white"
+                            className="w-full text-xs p-2.5 border border-slate-300 rounded-lg focus:outline-none focus:border-brand-600 bg-white"
                           />
                         </div>
                         <div className="flex flex-col justify-end">
@@ -528,7 +519,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({ navigate }) => {
                               type="checkbox"
                               checked={tieneEstudiosPrevios}
                               onChange={(e) => setTieneEstudiosPrevios(e.target.checked)}
-                              className="rounded text-blue-600 focus:ring-blue-500"
+                              className="rounded text-brand-600 focus:ring-brand-500"
                             />
                             <span>¿Cuenta con placas o estudios previos de otra clínica?</span>
                           </label>
@@ -687,7 +678,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({ navigate }) => {
                 </div>
                 <div className="summary-divider"></div>
                 <div className="summary-row">
-                  <div className="icon-badge">🩺</div>
+                  <div className="icon-badge"><Stethoscope size={18} /></div>
                   <div>
                     <small>Servicio</small>
                     <strong>{selectedService?.nombre}</strong>
@@ -770,9 +761,9 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({ navigate }) => {
                     )}
                   </div>
                   {isSpecializedService && (
-                    <div className="mt-2.5 p-3 rounded-xl bg-blue-50/80 border border-blue-200 text-xs space-y-1">
-                      <p className="text-blue-900 font-semibold m-0 flex items-center gap-1.5">
-                        <Activity size={14} className="text-blue-600" />
+                    <div className="mt-2.5 p-3 rounded-xl bg-brand-50/80 border border-brand-200 text-xs space-y-1">
+                      <p className="text-brand-900 font-semibold m-0 flex items-center gap-1.5">
+                        <Activity size={14} className="text-brand-600" />
                         Estudio con protocolo de derivación interclínica a Centro Tortuguitas
                       </p>
                       {sintomasObservados && (
@@ -820,7 +811,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({ navigate }) => {
                 </div>
                 <div className="summary-row">
                   <div className="icon-badge">
-                    <Stethoscope size={18} className="text-blue-600" />
+                    <Stethoscope size={18} className="text-brand-600" />
                   </div>
                   <div>
                     <small>Servicio</small>

@@ -39,7 +39,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ active, navigate }) 
         <LogoIcon size={34} />
         <div>
           <div className="font-bold text-base leading-tight">VetAnimal</div>
-          <div className="text-[10px] text-blue-200 uppercase font-semibold">Panel Veterinario</div>
+          <div className="text-[10px] text-brand-200 uppercase font-semibold">Panel Veterinario</div>
         </div>
       </div>
 
@@ -59,7 +59,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ active, navigate }) 
       <div className="mt-auto pt-6 border-t border-white/20">
         <p className="text-xs text-white/70">Sesión iniciada como:</p>
         <p className="font-semibold text-sm">{user?.nombre}</p>
-        <p className="text-xs text-blue-200 font-mono mt-0.5">{user?.email}</p>
+        <p className="text-xs text-brand-200 font-mono mt-0.5">{user?.email}</p>
         <button
           onClick={() => navigate("/")}
           className="btn btn-outline btn-sm text-white border-white/40 hover:bg-white/10 mt-4 w-full"

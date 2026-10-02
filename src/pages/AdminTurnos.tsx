@@ -88,9 +88,9 @@ export const AdminTurnos: React.FC<AdminTurnosProps> = ({ navigate }) => {
       <div className="admin-main">
         <div className="admin-topbar">
           <div>
-            <h1 className="text-2xl font-bold">Gestión Global de Turnos</h1>
+            <h1 className="text-2xl font-bold">Turnos</h1>
             <p className="text-sm text-gray-600">
-              Visualizá, confirmá, atendé o derivá citas a centros aliados con equipamiento de alta complejidad.
+              Agenda completa de la clínica: marcá atendidos, cancelá o derivá a otro centro.
             </p>
           </div>
           <div className="flex gap-2">
@@ -176,7 +176,7 @@ export const AdminTurnos: React.FC<AdminTurnosProps> = ({ navigate }) => {
                 onClick={() => setFilterEspecializado(!filterEspecializado)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all ${
                   filterEspecializado
-                    ? "bg-blue-600 text-white shadow-sm"
+                    ? "bg-brand-600 text-white shadow-sm"
                     : "bg-slate-100 text-slate-700 hover:bg-slate-200"
                 }`}
               >
@@ -187,16 +187,16 @@ export const AdminTurnos: React.FC<AdminTurnosProps> = ({ navigate }) => {
           </div>
 
           <div className="overflow-x-auto">
-            <table className="data-table">
+            <table className="data-table [&_th]:px-3 [&_td]:px-3">
               <thead>
                 <tr>
                   <th>ID</th>
                   <th>Fecha y Hora</th>
                   <th>Mascota</th>
                   <th>Dueño</th>
-                  <th>Servicio / Estudio</th>
+                  <th>Servicio</th>
                   <th>Estado</th>
-                  <th>Acciones Veterinarias</th>
+                  <th>Acciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -218,8 +218,8 @@ export const AdminTurnos: React.FC<AdminTurnosProps> = ({ navigate }) => {
                       <td>
                         <strong className="text-gray-900">{t.mascota_nombre}</strong>
                         {t.sintomas_observados && (
-                          <div className="text-[11px] text-slate-500 truncate max-w-[220px] mt-0.5" title={t.sintomas_observados}>
-                            🩺 {t.sintomas_observados}
+                          <div className="text-[11px] text-slate-500 truncate max-w-[130px] mt-0.5" title={t.sintomas_observados}>
+                            {t.sintomas_observados}
                           </div>
                         )}
                       </td>
@@ -228,8 +228,8 @@ export const AdminTurnos: React.FC<AdminTurnosProps> = ({ navigate }) => {
                         <div className="font-semibold text-slate-900">{t.servicio_nombre}</div>
                         <div className="flex items-center gap-1.5 mt-1 flex-wrap">
                           {t.es_especializado && (
-                            <span className="text-[10px] font-bold bg-blue-100 text-blue-900 px-2 py-0.5 rounded-full inline-flex items-center gap-1">
-                              <Sparkles size={10} className="text-blue-600" />
+                            <span className="text-[10px] font-bold bg-brand-100 text-brand-900 px-2 py-0.5 rounded-full inline-flex items-center gap-1">
+                              <Sparkles size={10} className="text-brand-600" />
                               Especializado
                             </span>
                           )}
@@ -254,7 +254,7 @@ export const AdminTurnos: React.FC<AdminTurnosProps> = ({ navigate }) => {
                         </span>
                       </td>
                       <td>
-                        <div className="table-actions flex items-center gap-1.5 flex-wrap">
+                        <div className="flex items-center gap-1.5 flex-nowrap">
                           {/* BOTÓN CLAVE: DERIVAR A CENTRO ALIADO */}
                           {t.estado !== "cancelado" && (
                             <button
@@ -263,12 +263,12 @@ export const AdminTurnos: React.FC<AdminTurnosProps> = ({ navigate }) => {
                               className={`btn btn-sm text-xs py-1 px-2.5 font-medium flex items-center gap-1.5 border-0 transition-all ${
                                 t.derivado
                                   ? "bg-slate-100 hover:bg-slate-200 text-slate-700"
-                                  : "bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
+                                  : "bg-brand-600 hover:bg-brand-700 text-white shadow-sm"
                               }`}
                               title="Emitir orden de derivación médica a Centro Tortuguitas u otro centro"
                             >
                               <Stethoscope size={13} className={t.derivado ? "text-slate-500" : "text-amber-300"} />
-                              <span>{t.derivado ? "Nueva Orden" : "Derivar a Centro"}</span>
+                              <span>{t.derivado ? "Nueva orden" : "Derivar"}</span>
                             </button>
                           )}
 

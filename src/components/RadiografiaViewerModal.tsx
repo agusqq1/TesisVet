@@ -42,7 +42,7 @@ export const RadiografiaViewerModal: React.FC<RadiografiaViewerModalProps> = ({
         {/* Header Bar */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-950/60">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400">
+            <div className="w-9 h-9 rounded-xl bg-brand-600/20 border border-brand-500/30 flex items-center justify-center text-brand-400">
               <Sliders size={18} />
             </div>
             <div>
@@ -50,7 +50,7 @@ export const RadiografiaViewerModal: React.FC<RadiografiaViewerModalProps> = ({
                 <h3 className="font-bold text-base sm:text-lg text-white">
                   {estudio.nombre}
                 </h3>
-                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-brand-500/20 text-brand-300 border border-brand-500/30">
                   {estudio.tipo || 'Radiografía'}
                 </span>
               </div>
@@ -105,7 +105,7 @@ export const RadiografiaViewerModal: React.FC<RadiografiaViewerModalProps> = ({
 
             {/* Diagnostic Plate Overlay Watermark */}
             <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-md border border-white/10 text-[11px] font-mono text-slate-300 pointer-events-none">
-              <span className="text-blue-400 font-bold">VETANIMAL</span> | {formatFecha(estudio.fecha)} | ZOOM: {Math.round(zoom * 100)}%
+              <span className="text-brand-400 font-bold">VETANIMAL</span> | {formatFecha(estudio.fecha)} | ZOOM: {Math.round(zoom * 100)}%
             </div>
 
             {/* Floating Toolbar */}
@@ -136,7 +136,7 @@ export const RadiografiaViewerModal: React.FC<RadiografiaViewerModalProps> = ({
                 onClick={() => setInverted(!inverted)}
                 className={`px-2.5 py-1 text-xs font-semibold rounded-full border transition-all ${
                   inverted
-                    ? 'bg-blue-600 border-blue-400 text-white'
+                    ? 'bg-brand-600 border-brand-400 text-white'
                     : 'bg-slate-800 border-slate-700 text-slate-300 hover:text-white'
                 }`}
                 title="Invertir contraste positivo/negativo"
@@ -159,7 +159,7 @@ export const RadiografiaViewerModal: React.FC<RadiografiaViewerModalProps> = ({
             <div className="space-y-5">
               
               <div>
-                <h4 className="text-xs font-bold uppercase tracking-wider text-blue-400 mb-2">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-brand-400 mb-2">
                   Informe Radiológico & Diagnóstico
                 </h4>
                 <div className="bg-slate-950/70 border border-slate-800 rounded-xl p-4 text-xs sm:text-sm text-slate-200 leading-relaxed">
@@ -187,7 +187,7 @@ export const RadiografiaViewerModal: React.FC<RadiografiaViewerModalProps> = ({
 
                 <div className="flex items-center justify-between py-1.5 border-b border-slate-800">
                   <span className="text-slate-400 flex items-center gap-1.5">
-                    <ShieldCheck size={13} className="text-blue-400" /> Centro emisor
+                    <ShieldCheck size={13} className="text-brand-400" /> Centro emisor
                   </span>
                   <span className="font-semibold text-slate-200 text-right text-[11px]">
                     {estudio.institucion || 'No registrado'}
@@ -196,7 +196,7 @@ export const RadiografiaViewerModal: React.FC<RadiografiaViewerModalProps> = ({
 
                 <div className="flex items-center justify-between py-1.5">
                   <span className="text-slate-400">Región anatómica</span>
-                  <span className="font-semibold text-blue-300">
+                  <span className="font-semibold text-brand-300">
                     {estudio.zona_anatomica || 'No especificada'}
                   </span>
                 </div>
@@ -211,7 +211,7 @@ export const RadiografiaViewerModal: React.FC<RadiografiaViewerModalProps> = ({
                   target="_blank"
                   rel="noreferrer"
                   download={`estudio_${pet?.nombre || 'mascota'}`}
-                  className="flex-1 py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                  className="flex-1 py-2.5 px-4 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-semibold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer"
                 >
                   <Download size={14} />
                   <span>Descargar Imagen</span>
