@@ -1296,6 +1296,60 @@ function getGeminiClient(): GoogleGenAI | null {
   return geminiAiClient;
 }
 
+const MODELOS_CHAT = ["gemini-3.8-flash", "gemini-3.1-flash-lite"];
+
+// Google devuelve 503 o 429 cuando un modelo está saturado, y pasa seguido. Por eso se
+// alterna entre los dos modelos hasta que alguno responda o se agote el tiempo: nadie
+// espera más de TIEMPO_MAXIMO_CHAT_MS. Si devuelve null, el chat responde con los textos fijos.
+const TIEMPO_MAXIMO_CHAT_MS = 15000;
+const TIEMPO_POR_INTENTO_MS = 8000;
+
+async function generarRespuestaIA(
+  ai: GoogleGenAI,
+  contents: any[],
+  systemInstruction: string
+): Promise<string | null> {
+  const limite = Date.now() + TIEMPO_MAXIMO_CHAT_MS;
+  let ultimoError: any = null;
+
+  for (let intento = 0; ; intento++) {
+    const restante = limite - Date.now();
+    if (restante < 1000) break;
+
+    try {
+      const respuesta = await ai.models.generateContent({
+        model: MODELOS_CHAT[intento % MODELOS_CHAT.length],
+        contents,
+        config: {
+          systemInstruction,
+          temperature: 0.6,
+          // Corta el intento si el modelo no contesta a tiempo
+          abortSignal: AbortSignal.timeout(Math.min(TIEMPO_POR_INTENTO_MS, restante)),
+        },
+      });
+      const texto = respuesta.text?.trim();
+      if (texto) return texto;
+    } catch (err: any) {
+      ultimoError = err;
+      // Clave inválida, permisos o pedido mal armado: reintentar no lo arregla
+      if (err?.status && ![429, 500, 503].includes(err.status)) {
+        console.warn(`[CHAT] Gemini rechazó el pedido (${err.status}): ${String(err.message).slice(0, 200)}`);
+        return null;
+      }
+    }
+
+    // Pausa corta después de probar los dos modelos
+    if (intento % MODELOS_CHAT.length === MODELOS_CHAT.length - 1) {
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    }
+  }
+
+  console.warn(
+    `[CHAT] Gemini no respondió a tiempo (${ultimoError?.status ?? ultimoError?.name ?? "sin detalle"}). Se usa la respuesta fija.`
+  );
+  return null;
+}
+
 const CLINICAL_VET_FALLBACKS: Array<{ keywords: string[]; response: string }> = [
   {
     keywords: ["ayuno", "ecografia", "ecografía", "estudio", "analisis", "sangre", "preparar", "preparacion"],
@@ -1369,6 +1423,23 @@ app.post("/api/chat", limiteChat, async (req, res) => {
             .join("; ")}.`
         : "El usuario no tiene mascotas registradas o no inició sesión.";
 
+      // Servicios y precios leídos de la base: el asistente responde con los datos reales
+      const servicios = await query(
+        "SELECT nombre, categoria, duracion_min, precio FROM servicios ORDER BY id"
+      );
+      const pesos = new Intl.NumberFormat("es-AR", { style: "currency", currency: "ARS" });
+      const serviceDetails = servicios.length
+        ? `5. Servicios y precios vigentes de la clínica (en pesos argentinos):
+${servicios
+  .map(
+    (s) =>
+      `   - ${s.nombre}${s.categoria === "especializado" ? " (estudio especializado)" : ""}: ${pesos.format(s.precio)}, turno de ${s.duracion_min} minutos.`
+  )
+  .join("\n")}
+   - Si preguntan cuánto sale un servicio, respondé con el precio de esta lista y aclará que se confirma al reservar el turno.
+   - Si el servicio no figura en la lista, decí que no tenés ese dato y sugerí consultar en la clínica. NUNCA inventes precios.`
+        : "";
+
       const systemInstruction = `Sos "VetBot", el asistente clínico virtual inteligente de "VetAnimal Clínica Veterinaria", ubicada en Av. Eduardo Madero 1250, Del Viso (Partido del Pilar, Buenos Aires).
 
 Tu rol es responder de forma concisa, cálida, profesional y empática a preguntas simples y frecuentes de tutores de mascotas (perros, gatos y otros animales):
@@ -1389,6 +1460,8 @@ Tu rol es responder de forma concisa, cálida, profesional y empática a pregunt
    - Sé breve, cercano y fácil de leer en pantallas de celular (usá viñetas cortas y emojis sutiles).
    - Español rioplatense o neutro cálido.
    - Podés invitar al usuario a usar las secciones de la app: "Reservar Turno" (/booking), "Historial Clínico" (/historial) o "Tienda" (/tienda).
+   - No uses enlaces en formato markdown: nombrá la sección tal como figura arriba.
+${serviceDetails}
 ${petDetails}`;
 
       // Armar contenido para Gemini
@@ -1410,40 +1483,9 @@ ${petDetails}`;
         parts: [{ text: userMessage }],
       });
 
-      // Intento 1: gemini-3.8-flash
-      try {
-        const geminiRes = await ai.models.generateContent({
-          model: "gemini-3.8-flash",
-          contents: contentsPayload,
-          config: {
-            systemInstruction,
-            temperature: 0.6,
-          },
-        });
-
-        const replyText = geminiRes.text?.trim();
-        if (replyText) {
-          return res.json({ reply: replyText, source: "gemini-ai" });
-        }
-      } catch (geminiError: any) {
-        console.warn("gemini-3.8-flash con sobrecarga temporal, reintentando con gemini-3.1-flash-lite...");
-        // Intento 2 de rescate con gemini-3.1-flash-lite
-        try {
-          const fallbackModelRes = await ai.models.generateContent({
-            model: "gemini-3.1-flash-lite",
-            contents: contentsPayload,
-            config: {
-              systemInstruction,
-              temperature: 0.6,
-            },
-          });
-          const liteReply = fallbackModelRes.text?.trim();
-          if (liteReply) {
-            return res.json({ reply: liteReply, source: "gemini-ai" });
-          }
-        } catch (liteError: any) {
-          console.warn("Fallo secundario en flash-lite, usando base de conocimiento clínica:", liteError?.message || liteError);
-        }
+      const replyText = await generarRespuestaIA(ai, contentsPayload, systemInstruction);
+      if (replyText) {
+        return res.json({ reply: replyText, source: "gemini-ai" });
       }
     }
 
