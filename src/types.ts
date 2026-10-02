@@ -58,6 +58,8 @@ export interface OperativoMovil {
   // Solo en la respuesta del alta: a cuántos anotados se avisa y si el envío de emails está activo
   avisos?: number;
   email_activo?: boolean;
+  // Solo en la respuesta de una edición: si cambió el día, el horario o el lugar y se volvió a avisar
+  cambio_avisado?: boolean;
 }
 
 export interface Pet {

@@ -1437,84 +1437,8 @@ app.get("/api/operativos", wrap(async (req, res) => {
   res.json(await query(`${OPERATIVO_SELECT} WHERE fecha >= ? ORDER BY fecha, hora_inicio`, [hoy]));
 }));
 
-// Al publicar un operativo se avisa por email a quienes se anotaron en esa localidad.
-app.post("/api/operativos", requireVet, wrap(async (req, res) => {
-  const {
-    titulo,
-    organizador,
-    servicios,
-    fecha,
-    hora_inicio,
-    hora_fin,
-    direccion,
-    localidad,
-    latitud,
-    longitud,
-    requisitos,
-  } = req.body;
-
-  if (![titulo, servicios, direccion].every((v) => typeof v === "string" && v.trim())) {
-    return res.status(400).json({ error: "Completá el título, los servicios y la dirección del operativo." });
-  }
-  if (!esZona(localidad)) {
-    return res.status(400).json({ error: "Elegí la localidad del operativo." });
-  }
-  const hoy = hoyLocal();
-  if (!esFecha(fecha) || fecha < hoy || fecha > sumarDias(hoy, 365)) {
-    return res.status(400).json({ error: "La fecha del operativo tiene que ser de hoy en adelante." });
-  }
-  if (!esHora(hora_inicio) || !esHora(hora_fin) || hora_inicio >= hora_fin) {
-    return res
-      .status(400)
-      .json({ error: "El horario no es válido: la hora de fin tiene que ser posterior a la de inicio." });
-  }
-  if (!esCoordenada(latitud, 90) || !esCoordenada(longitud, 180)) {
-    return res.status(400).json({ error: "Marcá en el mapa el punto donde va a estar la veterinaria móvil." });
-  }
-
-  const result = await execute("INSERT INTO operativos_moviles SET ?", [
-    {
-      titulo: titulo.trim(),
-      organizador: str(organizador).trim(),
-      servicios: servicios.trim(),
-      fecha,
-      hora_inicio,
-      hora_fin,
-      direccion: direccion.trim(),
-      localidad,
-      latitud,
-      longitud,
-      requisitos: str(requisitos).trim() || null,
-    },
-  ]);
-  const operativo = await queryOne(`${OPERATIVO_SELECT} WHERE id = ?`, [result.insertId]);
-
-  const suscriptores = await query(
-    `SELECT u.nombre, u.email
-     FROM avisos_operativos a JOIN usuarios u ON u.id = a.usuario_id
-     WHERE a.localidad = ?`,
-    [localidad]
-  );
-  // Los avisos salen de a uno y en segundo plano: la respuesta no espera a que terminen
-  const enlaceMapa = `${urlBase(req)}/veterinarias-moviles`;
-  (async () => {
-    for (const s of suscriptores) {
-      await enviarEmail({ to: s.email, ...emailOperativo(s.nombre, operativo, enlaceMapa) });
-    }
-  })().catch(() => {});
-
-  res.status(201).json({ ...operativo, avisos: suscriptores.length, email_activo: emailConfigurado() });
-}));
-
-app.delete("/api/operativos/:id", requireVet, wrap(async (req, res) => {
-  const result = await execute("DELETE FROM operativos_moviles WHERE id = ?", [toId(req.params.id)]);
-  if (result.affectedRows === 0) {
-    return res.status(404).json({ error: "Operativo no encontrado." });
-  }
-  res.json({ message: "Operativo eliminado." });
-}));
-
-// Localidades de las que el usuario quiere recibir avisos
+// Localidades de las que el usuario quiere recibir avisos. Estas rutas van antes que
+// las de /api/operativos/:id: si no, "avisos" se tomaría como el id de un operativo.
 app.get("/api/operativos/avisos", requireAuth, wrap(async (req, res) => {
   const filas = await query("SELECT localidad FROM avisos_operativos WHERE usuario_id = ?", [req.user!.id]);
   res.json(filas.map((f) => f.localidad));
@@ -1531,6 +1455,110 @@ app.put("/api/operativos/avisos", requireAuth, wrap(async (req, res) => {
     }
   });
   res.json(localidades);
+}));
+
+// Valida los datos de un operativo y los deja listos para guardar; si falta algo, lanza el motivo
+function leerOperativo(body: any) {
+  const {
+    titulo,
+    organizador,
+    servicios,
+    fecha,
+    hora_inicio,
+    hora_fin,
+    direccion,
+    localidad,
+    latitud,
+    longitud,
+    requisitos,
+  } = body;
+
+  if (![titulo, servicios, direccion].every((v) => typeof v === "string" && v.trim())) {
+    throw httpError(400, "Completá el título, los servicios y la dirección del operativo.");
+  }
+  if (!esZona(localidad)) {
+    throw httpError(400, "Elegí la localidad del operativo.");
+  }
+  const hoy = hoyLocal();
+  if (!esFecha(fecha) || fecha < hoy || fecha > sumarDias(hoy, 365)) {
+    throw httpError(400, "La fecha del operativo tiene que ser de hoy en adelante.");
+  }
+  if (!esHora(hora_inicio) || !esHora(hora_fin) || hora_inicio >= hora_fin) {
+    throw httpError(400, "El horario no es válido: la hora de fin tiene que ser posterior a la de inicio.");
+  }
+  if (!esCoordenada(latitud, 90) || !esCoordenada(longitud, 180)) {
+    throw httpError(400, "Marcá en el mapa el punto donde va a estar la veterinaria móvil.");
+  }
+
+  return {
+    titulo: titulo.trim() as string,
+    organizador: str(organizador).trim(),
+    servicios: servicios.trim() as string,
+    fecha,
+    hora_inicio,
+    hora_fin,
+    direccion: direccion.trim() as string,
+    localidad,
+    latitud,
+    longitud,
+    requisitos: str(requisitos).trim() || null,
+  };
+}
+
+// Avisa por email a quienes se anotaron en esas localidades y devuelve a cuántos. Los
+// avisos salen de a uno y en segundo plano: la respuesta no espera a que terminen.
+async function avisarOperativo(req: Request, operativo: any, localidades: string[], esCambio = false) {
+  const suscriptores = await query(
+    `SELECT DISTINCT u.nombre, u.email
+     FROM avisos_operativos a JOIN usuarios u ON u.id = a.usuario_id
+     WHERE a.localidad IN (?)`,
+    [localidades]
+  );
+  const enlaceMapa = `${urlBase(req)}/veterinarias-moviles`;
+  (async () => {
+    for (const s of suscriptores) {
+      await enviarEmail({ to: s.email, ...emailOperativo(s.nombre, operativo, enlaceMapa, esCambio) });
+    }
+  })().catch(() => {});
+  return suscriptores.length;
+}
+
+// Al publicar un operativo se avisa a quienes se anotaron en esa localidad.
+app.post("/api/operativos", requireVet, wrap(async (req, res) => {
+  const result = await execute("INSERT INTO operativos_moviles SET ?", [leerOperativo(req.body)]);
+  const operativo = await queryOne(`${OPERATIVO_SELECT} WHERE id = ?`, [result.insertId]);
+
+  const avisos = await avisarOperativo(req, operativo, [operativo.localidad]);
+  res.status(201).json({ ...operativo, avisos, email_activo: emailConfigurado() });
+}));
+
+// Si cambia el día, el horario o el lugar, se vuelve a avisar: quienes recibieron el
+// primer aviso tienen que enterarse. Corregir el título o mover el punto no avisa.
+const CAMBIOS_QUE_AVISAN = ["fecha", "hora_inicio", "hora_fin", "direccion", "localidad"];
+
+app.put("/api/operativos/:id", requireVet, wrap(async (req, res) => {
+  const id = toId(req.params.id);
+  const anterior = await queryOne(`${OPERATIVO_SELECT} WHERE id = ?`, [id]);
+  if (!anterior) {
+    return res.status(404).json({ error: "Operativo no encontrado." });
+  }
+
+  await execute("UPDATE operativos_moviles SET ? WHERE id = ?", [leerOperativo(req.body), id]);
+  const operativo = await queryOne(`${OPERATIVO_SELECT} WHERE id = ?`, [id]);
+
+  const cambio = CAMBIOS_QUE_AVISAN.some((campo) => operativo[campo] !== anterior[campo]);
+  // Si se mudó de localidad, también se enteran los anotados en la anterior
+  const localidades = [...new Set([anterior.localidad, operativo.localidad])];
+  const avisos = cambio ? await avisarOperativo(req, operativo, localidades, true) : 0;
+  res.json({ ...operativo, avisos, cambio_avisado: cambio, email_activo: emailConfigurado() });
+}));
+
+app.delete("/api/operativos/:id", requireVet, wrap(async (req, res) => {
+  const result = await execute("DELETE FROM operativos_moviles WHERE id = ?", [toId(req.params.id)]);
+  if (result.affectedRows === 0) {
+    return res.status(404).json({ error: "Operativo no encontrado." });
+  }
+  res.json({ message: "Operativo eliminado." });
 }));
 
 // --- ADMIN STATS ---

@@ -296,16 +296,23 @@ const fechaLarga = (fecha: string) =>
   }).format(new Date(`${fecha}T12:00:00Z`));
 
 // Aviso a quien pidió enterarse de los operativos de veterinarias móviles de su
-// localidad. `o` es un operativo tal como lo devuelve la API.
-export function emailOperativo(nombre: string, o: any, enlaceMapa: string) {
+// localidad. `o` es un operativo tal como lo devuelve la API. Con `esCambio` avisa
+// que cambió el día, el horario o el lugar de uno ya anunciado.
+export function emailOperativo(nombre: string, o: any, enlaceMapa: string, esCambio = false) {
   return {
-    subject: `Veterinaria móvil en ${o.localidad}: ${fechaLarga(o.fecha)}`,
+    subject: esCambio
+      ? `Cambio en la veterinaria móvil de ${o.localidad}: ahora es el ${fechaLarga(o.fecha)}`
+      : `Veterinaria móvil en ${o.localidad}: ${fechaLarga(o.fecha)}`,
     html: plantilla(
-      "VETERINARIA MÓVIL CERCA TUYO",
+      esCambio ? "CAMBIO EN UNA VETERINARIA MÓVIL" : "VETERINARIA MÓVIL CERCA TUYO",
       `${CLINICA.nombre} &bull; Aviso para ${esc(o.localidad)}`,
       `
         <p>Hola <strong>${esc(nombre)}</strong>,</p>
-        <p>Se publicó un operativo de veterinaria móvil en <strong>${esc(o.localidad)}</strong>:</p>
+        <p>${
+          esCambio
+            ? "Cambió el día, el horario o el lugar de un operativo de veterinaria móvil. Estos son los datos actualizados:"
+            : `Se publicó un operativo de veterinaria móvil en <strong>${esc(o.localidad)}</strong>:`
+        }</p>
         ${caja(
           `<p style="margin: 0 0 8px; font-size: 15px; font-weight: bold; color: #1e3a8a;">${esc(o.titulo)}</p>` +
             fila("Servicios", o.servicios) +
@@ -319,7 +326,7 @@ export function emailOperativo(nombre: string, o: any, enlaceMapa: string) {
           <a href="${esc(enlaceMapa)}" style="background-color: #2563eb; color: white; padding: 12px 20px; border-radius: 8px; text-decoration: none; font-weight: bold;">Ver en el mapa</a>
         </p>
         <p style="font-size: 12px; color: #64748b;">
-          Recibís este aviso porque te anotaste a los operativos de ${esc(o.localidad)}. Podés dejar de recibirlos desde la sección "Veterinarias móviles" de la web.
+          Recibís este aviso porque te anotaste a los avisos de veterinarias móviles de tu zona. Podés dejar de recibirlos desde la sección "Veterinarias móviles" de la web.
         </p>
       `
     ),

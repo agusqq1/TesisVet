@@ -6,7 +6,7 @@ import { RUTA_MAPA } from "../components/AvisoOperativos";
 import { api } from "../api";
 import { formatFecha, hoyLocal } from "../format";
 import { ZONAS } from "../zonas";
-import { Plus, X, AlertCircle, MapPin, Search, Trash2, ExternalLink } from "lucide-react";
+import { Plus, X, AlertCircle, MapPin, Search, Trash2, Pencil, ExternalLink } from "lucide-react";
 
 interface AdminOperativosProps {
   navigate: (path: string) => void;
@@ -41,6 +41,8 @@ export const AdminOperativos: React.FC<AdminOperativosProps> = ({ navigate }) =>
   const [aviso, setAviso] = useState("");
 
   const [showModal, setShowModal] = useState(false);
+  // Operativo que se está corrigiendo; null si el formulario es de un alta
+  const [editando, setEditando] = useState<OperativoMovil | null>(null);
   const [form, setForm] = useState(FORM_VACIO);
   // Punto exacto del operativo y lugar donde está centrado el mapa del formulario
   const [punto, setPunto] = useState<[number, number] | null>(null);
@@ -63,10 +65,25 @@ export const AdminOperativos: React.FC<AdminOperativosProps> = ({ navigate }) =>
     [punto]
   );
 
-  const abrirModal = () => {
-    setForm(FORM_VACIO);
-    setPunto(null);
-    setCentroMapa(centroDe(FORM_VACIO.localidad));
+  const abrirModal = (o: OperativoMovil | null = null) => {
+    setEditando(o);
+    setForm(
+      o
+        ? {
+            titulo: o.titulo,
+            organizador: o.organizador,
+            servicios: o.servicios,
+            fecha: o.fecha,
+            hora_inicio: o.hora_inicio,
+            hora_fin: o.hora_fin,
+            localidad: o.localidad,
+            direccion: o.direccion,
+            requisitos: o.requisitos ?? "",
+          }
+        : FORM_VACIO
+    );
+    setPunto(o ? [o.latitud, o.longitud] : null);
+    setCentroMapa(o ? [o.latitud, o.longitud] : centroDe(FORM_VACIO.localidad));
     setErrorForm("");
     setShowModal(true);
   };
@@ -101,7 +118,7 @@ export const AdminOperativos: React.FC<AdminOperativosProps> = ({ navigate }) =>
     }
   };
 
-  const handleCrear = async (e: React.FormEvent) => {
+  const handleGuardar = async (e: React.FormEvent) => {
     e.preventDefault();
     if (form.hora_inicio >= form.hora_fin) {
       setErrorForm("La hora de fin tiene que ser posterior a la de inicio.");
@@ -115,15 +132,23 @@ export const AdminOperativos: React.FC<AdminOperativosProps> = ({ navigate }) =>
     setSubmitting(true);
     setErrorForm("");
     try {
-      const { avisos = 0, email_activo, ...nuevo } = await api<OperativoMovil>("/api/operativos", {
-        method: "POST",
-        body: { ...form, latitud: punto[0], longitud: punto[1] },
-      });
+      const { avisos = 0, email_activo, cambio_avisado, ...nuevo } = await api<OperativoMovil>(
+        editando ? `/api/operativos/${editando.id}` : "/api/operativos",
+        { method: editando ? "PUT" : "POST", body: { ...form, latitud: punto[0], longitud: punto[1] } }
+      );
       // Se vuelve a pedir la lista para que el nuevo quede en su lugar por fecha
       setOperativos(await api<OperativoMovil[]>("/api/operativos?todos=true").catch(() => [nuevo, ...operativos]));
       const anotados = avisos === 1 ? "1 cliente anotado" : `${avisos} clientes anotados`;
       setAviso(
-        avisos === 0
+        editando
+          ? !cambio_avisado
+            ? "Cambios guardados."
+            : avisos === 0
+            ? "Cambios guardados. No hay clientes anotados a quienes avisarles del cambio."
+            : email_activo
+            ? `Cambios guardados. Se le está avisando del cambio por email a ${anotados}.`
+            : `Cambios guardados. Hay ${anotados}, pero el envío de emails no está configurado: no se les pudo avisar del cambio.`
+          : avisos === 0
           ? `Operativo publicado en el mapa. Todavía no hay clientes anotados para recibir avisos de ${nuevo.localidad}.`
           : email_activo
           ? `Operativo publicado en el mapa. Se le está avisando por email a ${anotados} en ${nuevo.localidad}.`
@@ -131,7 +156,7 @@ export const AdminOperativos: React.FC<AdminOperativosProps> = ({ navigate }) =>
       );
       setShowModal(false);
     } catch (err: any) {
-      setErrorForm(err.message || "No se pudo publicar el operativo.");
+      setErrorForm(err.message || "No se pudo guardar el operativo.");
     } finally {
       setSubmitting(false);
     }
@@ -168,7 +193,7 @@ export const AdminOperativos: React.FC<AdminOperativosProps> = ({ navigate }) =>
               <span>Ver mapa público</span>
             </button>
             <button
-              onClick={abrirModal}
+              onClick={() => abrirModal()}
               className="btn btn-primary px-4 py-2.5 text-xs font-bold flex items-center gap-2 bg-brand-600 hover:bg-brand-500 shadow-md cursor-pointer"
             >
               <Plus size={16} />
@@ -237,13 +262,24 @@ export const AdminOperativos: React.FC<AdminOperativosProps> = ({ navigate }) =>
                           </span>
                         </td>
                         <td>
-                          <button
-                            onClick={() => handleEliminar(o)}
-                            className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition-colors cursor-pointer"
-                            title="Eliminar operativo"
-                          >
-                            <Trash2 size={16} />
-                          </button>
+                          <div className="flex items-center gap-1">
+                            {!pasado && (
+                              <button
+                                onClick={() => abrirModal(o)}
+                                className="p-1.5 text-slate-400 hover:text-brand-700 rounded-lg hover:bg-brand-50 transition-colors cursor-pointer"
+                                title="Editar operativo"
+                              >
+                                <Pencil size={16} />
+                              </button>
+                            )}
+                            <button
+                              onClick={() => handleEliminar(o)}
+                              className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition-colors cursor-pointer"
+                              title="Eliminar operativo"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     );
@@ -270,8 +306,12 @@ export const AdminOperativos: React.FC<AdminOperativosProps> = ({ navigate }) =>
                 <MapPin size={20} />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-slate-900">Nuevo operativo</h2>
-                <p className="text-xs text-slate-500">Se publica en el mapa y se avisa a los clientes anotados</p>
+                <h2 className="text-xl font-bold text-slate-900">{editando ? "Editar operativo" : "Nuevo operativo"}</h2>
+                <p className="text-xs text-slate-500">
+                  {editando
+                    ? "Si cambia el día, el horario o el lugar, se les avisa a los clientes anotados"
+                    : "Se publica en el mapa y se avisa a los clientes anotados"}
+                </p>
               </div>
             </div>
 
@@ -282,7 +322,7 @@ export const AdminOperativos: React.FC<AdminOperativosProps> = ({ navigate }) =>
               </div>
             )}
 
-            <form onSubmit={handleCrear} className="space-y-4">
+            <form onSubmit={handleGuardar} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className={LABEL}>Título *</label>
@@ -439,7 +479,7 @@ export const AdminOperativos: React.FC<AdminOperativosProps> = ({ navigate }) =>
                   disabled={submitting}
                   className="btn btn-primary px-5 py-2.5 text-xs font-bold flex items-center gap-2 bg-brand-600 hover:bg-brand-500 shadow-md cursor-pointer disabled:opacity-50"
                 >
-                  {submitting ? "Publicando..." : "Publicar operativo"}
+                  {submitting ? "Guardando..." : editando ? "Guardar cambios" : "Publicar operativo"}
                 </button>
               </div>
             </form>
