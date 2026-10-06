@@ -9,9 +9,8 @@
 import fs from "fs";
 import path from "path";
 import bcrypt from "bcryptjs";
-import mysql from "mysql2/promise";
-import type { Connection } from "mysql2/promise";
-import { dbConfig } from "./pool.js";
+import type { PoolClient } from "pg";
+import { ejecutar, withClient } from "./pool.js";
 import { guardarImagen } from "./imagenes.js";
 import { hoyLocal, sumarDias } from "../server/agenda.js";
 import * as seed from "./seed-data.js";
@@ -36,20 +35,6 @@ const TABLAS = [
   "mascotas",
   "usuarios",
 ];
-
-// La primera vez, el contenedor de MySQL tarda unos segundos en aceptar conexiones.
-async function conectar(): Promise<Connection> {
-  const reintentables = ["ECONNREFUSED", "ECONNRESET", "ETIMEDOUT", "PROTOCOL_CONNECTION_LOST"];
-  for (let intento = 1; ; intento++) {
-    try {
-      return await mysql.createConnection({ ...dbConfig, multipleStatements: true });
-    } catch (err: any) {
-      if (!reintentables.includes(err.code) || intento >= 30) throw err;
-      if (intento === 1) console.log("Esperando a que MySQL termine de iniciar...");
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-    }
-  }
-}
 
 function leerDatos() {
   const datos: Record<string, any[]> = {
@@ -78,10 +63,10 @@ function leerDatos() {
   return datos;
 }
 
-async function cargarDatos(conn: Connection) {
+async function cargarDatos(conn: PoolClient) {
   const datos = leerDatos();
   const insertar = (tabla: string, fila: Record<string, any>) =>
-    conn.query(`INSERT INTO ${tabla} SET ?`, [fila]);
+    ejecutar(conn, `INSERT INTO ${tabla} SET ?`, [fila]);
 
   const matriculas = new Map(seed.users.map((u: any) => [u.id, u.matricula ?? null]));
   const usuarios = new Set<number>();
@@ -310,57 +295,58 @@ async function cargarDatos(conn: Connection) {
 }
 
 // Varias instancias (por ejemplo, funciones de Vercel en frío) pueden arrancar a la vez:
-// un lock con nombre de MySQL evita que dos carguen los datos iniciales en paralelo.
-const LOCK = "vetanimal_init";
+// un advisory lock de Postgres evita que dos carguen los datos iniciales en paralelo.
+const LOCK_ID = 727274;
+
+const SIN_ID = ["avisos_operativos", "sesiones", "recuperaciones_password", "centros_derivacion"];
 
 export async function prepararBaseDeDatos({ reset = false } = {}) {
-  const conn = await conectar();
-  try {
-    const [lock] = await conn.query("SELECT GET_LOCK(?, 60) AS ok", [LOCK]);
-    if ((lock as any[])[0].ok !== 1) throw new Error("No se pudo obtener el lock de inicialización de la base");
+  await withClient(async (conn) => {
+    await conn.query("SELECT pg_advisory_lock($1)", [LOCK_ID]);
     try {
       await aplicar(conn, reset);
     } finally {
-      await conn.query("SELECT RELEASE_LOCK(?)", [LOCK]);
+      await conn.query("SELECT pg_advisory_unlock($1)", [LOCK_ID]);
     }
-  } finally {
-    await conn.end();
-  }
+  });
 }
 
-async function aplicar(conn: Connection, reset: boolean) {
-  {
-    if (reset) {
-      await conn.query(
-        `SET FOREIGN_KEY_CHECKS = 0; DROP TABLE IF EXISTS ${TABLAS.join(", ")}; SET FOREIGN_KEY_CHECKS = 1;`
-      );
-      console.log("Tablas anteriores eliminadas.");
-    }
-
-    await conn.query(fs.readFileSync(path.join(process.cwd(), "db", "schema.sql"), "utf-8"));
-
-    const [filas] = await conn.query("SELECT COUNT(*) AS total FROM usuarios");
-    if ((filas as any[])[0].total > 0) return;
-
-    console.log(`[DB] Base "${dbConfig.database}" vacía: cargando datos iniciales...`);
-
-    await conn.beginTransaction();
-    try {
-      const omitidos = await cargarDatos(conn);
-      await conn.commit();
-      if (omitidos > 0) {
-        console.log(`Se omitieron ${omitidos} registros que apuntaban a datos inexistentes.`);
-      }
-    } catch (err) {
-      await conn.rollback();
-      throw err;
-    }
-
-    const resumen: string[] = [];
-    for (const tabla of [...TABLAS].reverse()) {
-      const [conteo] = await conn.query(`SELECT COUNT(*) AS total FROM ${tabla}`);
-      resumen.push(`${tabla}: ${(conteo as any[])[0].total}`);
-    }
-    console.log(`[DB] Datos cargados → ${resumen.join(" · ")}`);
+async function aplicar(conn: PoolClient, reset: boolean) {
+  if (reset) {
+    await conn.query(`DROP TABLE IF EXISTS ${TABLAS.join(", ")} CASCADE`);
+    console.log("Tablas anteriores eliminadas.");
   }
+
+  // Si las tablas ya existen (como en Supabase), las sentencias no cambian nada.
+  await conn.query(fs.readFileSync(path.join(process.cwd(), "db", "schema.sql"), "utf-8"));
+
+  const { rows } = await conn.query("SELECT COUNT(*)::int AS total FROM usuarios");
+  if (rows[0].total > 0) return;
+
+  console.log("[DB] Base vacía: cargando datos iniciales...");
+
+  await conn.query("BEGIN");
+  try {
+    const omitidos = await cargarDatos(conn);
+    // Los datos iniciales traen ids explícitos: se adelantan las secuencias para que
+    // los registros nuevos no choquen con ellos.
+    for (const tabla of TABLAS.filter((t) => !SIN_ID.includes(t))) {
+      const minimo = tabla === "pedidos" ? 1000 : 0;
+      await conn.query(
+        `SELECT setval(pg_get_serial_sequence('${tabla}', 'id'), GREATEST((SELECT COALESCE(MAX(id), 0) FROM ${tabla}), ${minimo}) + 1, false)`
+      );
+    }
+    await conn.query("COMMIT");
+    if (omitidos > 0) console.log(`Se omitieron ${omitidos} registros que apuntaban a datos inexistentes.`);
+  } catch (err) {
+    await conn.query("ROLLBACK");
+    throw err;
+  }
+
+  const resumen: string[] = [];
+  for (const tabla of [...TABLAS].reverse()) {
+    const { rows: conteo } = await conn.query(`SELECT COUNT(*)::int AS total FROM ${tabla}`);
+    resumen.push(`${tabla}: ${conteo[0].total}`);
+  }
+  console.log(`[DB] Datos cargados → ${resumen.join(" · ")}`);
 }

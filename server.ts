@@ -5,7 +5,7 @@ import type { Request, Response, NextFunction } from "express";
 import fs from "fs";
 import path from "path";
 import bcrypt from "bcryptjs";
-import type { ResultSetHeader } from "mysql2/promise";
+import type { ResultSetHeader } from "./db/pool.js";
 import { GoogleGenAI } from "@google/genai";
 import { dbConfig, execute, query, queryOne, transaction } from "./db/pool.js";
 import { guardarImagen, UPLOADS_DIR } from "./db/imagenes.js";
@@ -85,7 +85,7 @@ const wrap = (fn: Handler) => (req: Request, res: Response, next: NextFunction) 
 const httpError = (status: number, message: string) =>
   Object.assign(new Error(message), { status });
 
-const isDup = (err: any) => err?.code === "ER_DUP_ENTRY";
+const isDup = (err: any) => err?.code === "23505";
 
 const esVet = (req: Request) => req.user!.rol === "veterinario";
 
@@ -155,7 +155,7 @@ function mapPet(row: any, withOwner = true) {
 // Devuelve la mascota solo si existe y el usuario puede verla: su dueño o el personal de la clínica
 async function mascotaAccesible(req: Request, id: unknown) {
   const pet = await queryOne(
-    "SELECT id, usuario_id, nombre, especie, raza, edad, peso FROM mascotas WHERE id = ? AND activo = 1",
+    "SELECT id, usuario_id, nombre, especie, raza, edad, peso FROM mascotas WHERE id = ? AND activo",
     [toId(id)]
   );
   if (!pet) return null;
@@ -165,7 +165,7 @@ async function mascotaAccesible(req: Request, id: unknown) {
 
 const TURNO_SELECT = `
   SELECT t.id, t.mascota_id, t.servicio_id, t.veterinario_id, t.fecha,
-         TIME_FORMAT(t.hora, '%H:%i') AS hora, t.duracion_min, t.estado, t.notas, t.creado_en,
+         to_char(t.hora, 'HH24:MI') AS hora, t.duracion_min, t.estado, t.notas, t.creado_en,
          t.es_especializado, t.especialidad, t.estudio_solicitado, t.sintomas_observados,
          t.tiene_estudios_previos, t.derivacion_id, d.codigo AS derivacion_codigo,
          m.nombre AS mascota_nombre, s.nombre AS servicio_nombre,
@@ -370,7 +370,7 @@ app.post("/api/auth/forgot-password", limiteCuentas, wrap(async (req, res) => {
   if (user) {
     const token = nuevoToken();
     await execute(
-      "INSERT INTO recuperaciones_password (token_hash, usuario_id, expira_en) VALUES (?, ?, NOW() + INTERVAL 1 HOUR)",
+      "INSERT INTO recuperaciones_password (token_hash, usuario_id, expira_en) VALUES (?, ?, NOW() + INTERVAL '1 hour')",
       [hashToken(token), user.id]
     );
     const enlace = enlaceClave(req, token);
@@ -403,7 +403,7 @@ app.post("/api/auth/reset-password", limiteCuentas, wrap(async (req, res) => {
   const pedido =
     typeof token === "string"
       ? await queryOne(
-          "SELECT usuario_id FROM recuperaciones_password WHERE token_hash = ? AND usado = 0 AND expira_en > NOW()",
+          "SELECT usuario_id FROM recuperaciones_password WHERE token_hash = ? AND NOT usado AND expira_en > NOW()",
           [hashToken(token)]
         )
       : null;
@@ -416,7 +416,7 @@ app.post("/api/auth/reset-password", limiteCuentas, wrap(async (req, res) => {
   const passwordHash = await bcrypt.hash(password, 10);
   await transaction(async (conn) => {
     await conn.query("UPDATE usuarios SET password_hash = ? WHERE id = ?", [passwordHash, pedido.usuario_id]);
-    await conn.query("UPDATE recuperaciones_password SET usado = 1 WHERE usuario_id = ?", [pedido.usuario_id]);
+    await conn.query("UPDATE recuperaciones_password SET usado = true WHERE usuario_id = ?", [pedido.usuario_id]);
     // Cierra las sesiones abiertas: quien tenía la clave anterior queda afuera
     await conn.query("DELETE FROM sesiones WHERE usuario_id = ?", [pedido.usuario_id]);
   });
@@ -474,8 +474,8 @@ async function fetchVeterinarios(where = "", params: any[] = []) {
   if (vets.length === 0) return [];
   const horarios = await query(
     `SELECT veterinario_id, dia_semana,
-            TIME_FORMAT(hora_inicio, '%H:%i') AS hora_inicio,
-            TIME_FORMAT(hora_fin, '%H:%i') AS hora_fin
+            to_char(hora_inicio, 'HH24:MI') AS hora_inicio,
+            to_char(hora_fin, 'HH24:MI') AS hora_fin
      FROM horarios_veterinario WHERE veterinario_id IN (?)
      ORDER BY dia_semana, hora_inicio`,
     [vets.map((v) => v.id)]
@@ -559,7 +559,7 @@ app.post("/api/veterinarios", requireVet, wrap(async (req, res) => {
   if (!conPassword) {
     const token = nuevoToken();
     await execute(
-      "INSERT INTO recuperaciones_password (token_hash, usuario_id, expira_en) VALUES (?, ?, NOW() + INTERVAL 3 DAY)",
+      "INSERT INTO recuperaciones_password (token_hash, usuario_id, expira_en) VALUES (?, ?, NOW() + INTERVAL '3 days')",
       [hashToken(token), vetId]
     );
     enlace = enlaceClave(req, token);
@@ -583,7 +583,7 @@ app.get("/api/pets", requireAuth, wrap(async (req, res) => {
   // Un cliente solo ve sus mascotas, pida lo que pida
   if (!esVet(req)) {
     const rows = await query(
-      `${PET_SELECT} WHERE m.activo = 1 AND m.usuario_id = ? ORDER BY m.id`,
+      `${PET_SELECT} WHERE m.activo AND m.usuario_id = ? ORDER BY m.id`,
       [req.user!.id]
     );
     return res.json(rows.map((r) => mapPet(r, false)));
@@ -592,13 +592,13 @@ app.get("/api/pets", requireAuth, wrap(async (req, res) => {
   const userId = toId(req.query.userId);
   if (userId && req.query.all !== "true") {
     const rows = await query(
-      `${PET_SELECT} WHERE m.activo = 1 AND m.usuario_id = ? ORDER BY m.id`,
+      `${PET_SELECT} WHERE m.activo AND m.usuario_id = ? ORDER BY m.id`,
       [userId]
     );
     return res.json(rows.map((r) => mapPet(r)));
   }
 
-  const rows = await query(`${PET_SELECT} WHERE m.activo = 1 ORDER BY m.id`);
+  const rows = await query(`${PET_SELECT} WHERE m.activo ORDER BY m.id`);
   res.json(rows.map((r) => mapPet(r)));
 }));
 
@@ -701,7 +701,7 @@ app.delete("/api/pets/:id", requireAuth, wrap(async (req, res) => {
   if (!pet) {
     return res.status(404).json({ error: "Mascota no encontrada." });
   }
-  await execute("UPDATE mascotas SET activo = 0 WHERE id = ?", [pet.id]);
+  await execute("UPDATE mascotas SET activo = false WHERE id = ?", [pet.id]);
   // Libera los horarios que la mascota tenía reservados a futuro
   await execute(
     "UPDATE turnos SET estado = 'cancelado' WHERE mascota_id = ? AND estado IN ('pendiente', 'confirmado') AND fecha >= ?",
@@ -748,7 +748,7 @@ app.get("/api/turnos/booked-dates", requireAuth, wrap(async (req, res) => {
   const mesParam = req.query.mes ? String(req.query.mes) : hoyLocal().substring(0, 7);
   if (!/^\d{4}-\d{2}$/.test(mesParam)) return res.json([]);
   const rows = await query(
-    "SELECT DISTINCT DAY(fecha) AS dia FROM turnos WHERE DATE_FORMAT(fecha, '%Y-%m') = ? AND estado <> 'cancelado' ORDER BY dia",
+    "SELECT DISTINCT EXTRACT(DAY FROM fecha)::int AS dia FROM turnos WHERE to_char(fecha, 'YYYY-MM') = ? AND estado <> 'cancelado' ORDER BY dia",
     [mesParam]
   );
   res.json(rows.map((r) => r.dia));
@@ -865,7 +865,7 @@ app.patch("/api/turnos/:id/estado", requireAuth, wrap(async (req, res) => {
   const turnoId = toId(req.params.id);
   const { estado } = req.body;
   const turno = await queryOne(
-    `SELECT t.id, t.estado, t.veterinario_id, t.fecha, TIME_FORMAT(t.hora, '%H:%i') AS hora,
+    `SELECT t.id, t.estado, t.veterinario_id, t.fecha, to_char(t.hora, 'HH24:MI') AS hora,
             t.duracion_min, m.usuario_id
      FROM turnos t JOIN mascotas m ON m.id = t.mascota_id
      WHERE t.id = ?`,
@@ -899,8 +899,8 @@ app.patch("/api/turnos/:id/estado", requireAuth, wrap(async (req, res) => {
         const [solapados] = await conn.query(
           `SELECT id FROM turnos
            WHERE veterinario_id = ? AND fecha = ? AND estado <> 'cancelado' AND id <> ?
-             AND hora < ADDTIME(?, SEC_TO_TIME(? * 60))
-             AND ADDTIME(hora, SEC_TO_TIME(duracion_min * 60)) > ?`,
+             AND hora < (?::time + make_interval(mins => ?::int))
+             AND (hora + make_interval(mins => duracion_min)) > ?`,
           [turno.veterinario_id, turno.fecha, turno.id, turno.hora, turno.duracion_min, turno.hora]
         );
         if ((solapados as any[]).length > 0) throw httpError(400, horarioTomado);
@@ -1433,8 +1433,8 @@ app.patch("/api/orders/:id/estado", requireVet, wrap(async (req, res) => {
 // --- VETERINARIAS MÓVILES (operativos de castración y vacunación) ---
 const OPERATIVO_SELECT = `
   SELECT id, titulo, organizador, servicios, fecha,
-         TIME_FORMAT(hora_inicio, '%H:%i') AS hora_inicio,
-         TIME_FORMAT(hora_fin, '%H:%i') AS hora_fin,
+         to_char(hora_inicio, 'HH24:MI') AS hora_inicio,
+         to_char(hora_fin, 'HH24:MI') AS hora_fin,
          direccion, localidad, latitud, longitud, requisitos
   FROM operativos_moviles`;
 
@@ -1449,7 +1449,7 @@ app.get("/api/operativos", wrap(async (req, res) => {
   // El personal también ve los que ya pasaron: primero los próximos, del más cercano al más lejano
   if (req.query.todos === "true" && req.user?.rol === "veterinario") {
     return res.json(
-      await query(`${OPERATIVO_SELECT} ORDER BY fecha < ?, ABS(DATEDIFF(fecha, ?)), hora_inicio`, [hoy, hoy])
+      await query(`${OPERATIVO_SELECT} ORDER BY fecha < ?, ABS(fecha - ?::date), hora_inicio`, [hoy, hoy])
     );
   }
   res.json(await query(`${OPERATIVO_SELECT} WHERE fecha >= ? ORDER BY fecha, hora_inicio`, [hoy]));
@@ -1584,20 +1584,20 @@ app.get("/api/admin/stats", requireVet, wrap(async (req, res) => {
   const hoy = hoyLocal();
   const stats = await queryOne(
     `SELECT
-       (SELECT COUNT(*) FROM turnos WHERE fecha = ? AND estado <> 'cancelado') AS totalHoy,
+       (SELECT COUNT(*) FROM turnos WHERE fecha = ? AND estado <> 'cancelado') AS "totalHoy",
        (SELECT COUNT(*) FROM turnos WHERE fecha >= ? AND estado IN ('pendiente', 'confirmado')) AS pendientes,
-       (SELECT COUNT(*) FROM mascotas WHERE activo = 1) AS totalPacientes,
-       (SELECT COUNT(*) FROM usuarios WHERE rol = 'cliente') AS totalClientes,
-       (SELECT COUNT(*) FROM pedidos WHERE estado IN ('pendiente', 'pagado')) AS pedidosPendientes`,
+       (SELECT COUNT(*) FROM mascotas WHERE activo) AS "totalPacientes",
+       (SELECT COUNT(*) FROM usuarios WHERE rol = 'cliente') AS "totalClientes",
+       (SELECT COUNT(*) FROM pedidos WHERE estado IN ('pendiente', 'pagado')) AS "pedidosPendientes"`,
     [hoy, hoy]
   );
   res.json(stats);
 }));
 
 // --- MANEJO DE ERRORES DE LA API ---
-// Códigos de MySQL que indican un dato inválido enviado por el cliente
+// Códigos de Postgres que indican un dato inválido enviado por el cliente
 // (fuera de rango, texto demasiado largo, valor o fecha incorrectos).
-const ERRORES_DE_DATOS = [1264, 1265, 1292, 1366, 1406];
+const ERRORES_DE_DATOS = ["22001", "22003", "22007", "22008", "22P02", "23514"];
 
 app.use("/api", (err: any, req: Request, res: Response, next: NextFunction) => {
   if (res.headersSent) return next(err);
@@ -1606,7 +1606,7 @@ app.use("/api", (err: any, req: Request, res: Response, next: NextFunction) => {
   if (status >= 400 && status < 500) {
     return res.status(status).json({ error: err.message });
   }
-  if (ERRORES_DE_DATOS.includes(err.errno)) {
+  if (ERRORES_DE_DATOS.includes(err.code)) {
     return res.status(400).json({ error: "Alguno de los datos enviados no es válido." });
   }
 
@@ -1751,7 +1751,7 @@ app.post("/api/chat", limiteChat, async (req, res) => {
       // Si el usuario inició sesión, el asistente conoce sus mascotas registradas
       const mascotas = req.user
         ? await query(
-            "SELECT nombre, especie, raza, edad FROM mascotas WHERE usuario_id = ? AND activo = 1",
+            "SELECT nombre, especie, raza, edad FROM mascotas WHERE usuario_id = ? AND activo",
             [req.user.id]
           )
         : [];
@@ -1857,7 +1857,7 @@ async function checkDatabase() {
     await asegurarBase();
   } catch (err: any) {
     console.error(`\n[DB] No se pudo usar la base "${dbConfig.database}" en ${dbConfig.host}:${dbConfig.port} (${err.code || err.message}).`);
-    console.error("[DB] Levantá MySQL con `npm run db:up` y revisá los datos DB_* del archivo .env\n");
+    console.error("[DB] Revisá que POSTGRES_URL (Supabase) esté configurada en el entorno.\n");
     process.exit(1);
   }
 }

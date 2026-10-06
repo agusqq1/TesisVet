@@ -65,7 +65,7 @@ function opcionesCookie(req: Request) {
 export async function crearSesion(req: Request, res: Response, usuarioId: number) {
   const token = nuevoToken();
   await execute(
-    "INSERT INTO sesiones (token_hash, usuario_id, expira_en) VALUES (?, ?, NOW() + INTERVAL ? DAY)",
+    "INSERT INTO sesiones (token_hash, usuario_id, expira_en) VALUES (?, ?, NOW() + make_interval(days => ?::int))",
     [hashToken(token), usuarioId, DIAS_SESION]
   );
   // De paso se limpian las sesiones vencidas

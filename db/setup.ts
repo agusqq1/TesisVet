@@ -10,9 +10,6 @@ prepararBaseDeDatos({ reset: process.argv.includes("--reset") })
   .then(() => console.log("Base de datos lista."))
   .catch((err) => {
     console.error("\nNo se pudo preparar la base de datos:", err.message);
-    if (err.code === "ECONNREFUSED") {
-      console.error("¿Está corriendo MySQL? Probá con `npm run db:up` y esperá unos segundos.");
-    }
     process.exitCode = 1;
   })
   .finally(() => pool.end());
