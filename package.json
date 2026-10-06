@@ -11,7 +11,6 @@
     "lint": "tsc --noEmit",
     "db:up": "docker compose up -d",
     "db:down": "docker compose stop",
-    "db:setup": "tsx db/setup.ts",
     "db:reset": "tsx db/setup.ts --reset",
     "db:backup": "tsx db/backup.ts",
     "email:test": "tsx server/email-test.ts"

@@ -16,8 +16,7 @@ Sistema de gestión veterinaria: turnos online, historia clínica, mascotas, der
 1. Instalar dependencias: `npm install`
 2. Copiar `.env.example` como `.env` y elegir las contraseñas `DB_PASSWORD` y `DB_ROOT_PASSWORD`
 3. Abrir Docker Desktop y levantar la base: `npm run db:up`
-4. Crear las tablas y cargar los datos iniciales: `npm run db:setup`
-5. Iniciar la app: `npm run dev`
+4. Iniciar la app: `npm run dev` (la primera vez crea las tablas y carga los datos iniciales sola)
 
 ## Uso diario
 
@@ -37,7 +36,7 @@ npm run dev
 
 ## Cuentas de demostración
 
-Las crea `npm run db:setup`. Se ingresa escribiendo el email y la contraseña en la pantalla de login.
+Se crean solas la primera vez que arranca la app con la base vacía. Se ingresa escribiendo el email y la contraseña en la pantalla de login.
 
 | Rol | Email | Contraseña |
 |---|---|---|
@@ -52,7 +51,6 @@ Las crea `npm run db:setup`. Se ingresa escribiendo el email y la contraseña en
 |---|---|
 | `npm run db:up` | Levanta MySQL y phpMyAdmin en Docker |
 | `npm run db:down` | Los detiene (los datos no se pierden) |
-| `npm run db:setup` | Crea las tablas que falten y carga datos si la base está vacía. Hay que correrlo después de actualizar el código si se agregaron tablas |
 | `npm run db:reset` | Borra todo y vuelve a cargar los datos iniciales |
 | `npm run db:backup` | Guarda una copia de la base en `backups/` |
 

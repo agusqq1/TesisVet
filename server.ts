@@ -9,6 +9,7 @@ import type { ResultSetHeader } from "mysql2/promise";
 import { GoogleGenAI } from "@google/genai";
 import { dbConfig, execute, query, queryOne, transaction } from "./db/pool.js";
 import { guardarImagen, UPLOADS_DIR } from "./db/imagenes.js";
+import { prepararBaseDeDatos } from "./db/init.js";
 import {
   cargarUsuario,
   cerrarSesion,
@@ -48,13 +49,31 @@ app.use(express.json({ limit: "25mb" }));
 // Las imágenes subidas se guardan como archivos en /uploads (ver db/imagenes.ts)
 app.use("/uploads", express.static(UPLOADS_DIR));
 
+// Crea las tablas que falten y carga los datos iniciales si la base está vacía.
+// Se ejecuta una sola vez por proceso; si falla, se reintenta en el próximo pedido.
+let baseLista: Promise<void> | null = null;
+function asegurarBase() {
+  baseLista ??= prepararBaseDeDatos().catch((err) => {
+    baseLista = null;
+    throw err;
+  });
+  return baseLista;
+}
+
+app.use("/api", (req, res, next) => {
+  asegurarBase().then(() => next(), (err) => {
+    console.error("[DB] No se pudo preparar la base:", err.code || err.message);
+    res.status(503).json({ error: "La base de datos no está disponible. Intentá de nuevo en unos segundos." });
+  });
+});
+
 // Identifica al usuario de cada pedido a partir de su cookie de sesión
 app.use("/api", cargarUsuario);
 
 // ==========================================
 // HELPERS
 // ==========================================
-// Las tablas están definidas en db/schema.sql y se crean con `npm run db:setup`.
+// Las tablas están definidas en db/schema.sql y se crean solas al arrancar (db/init.ts).
 
 // Express 4 no captura los errores de los handlers async: wrap los deriva al
 // manejador de errores definido al final de las rutas.
@@ -1835,14 +1854,10 @@ ${petDetails}`;
 // Corta el arranque con un mensaje claro si la base no está lista
 async function checkDatabase() {
   try {
-    await query("SELECT 1 FROM usuarios LIMIT 1");
+    await asegurarBase();
   } catch (err: any) {
     console.error(`\n[DB] No se pudo usar la base "${dbConfig.database}" en ${dbConfig.host}:${dbConfig.port} (${err.code || err.message}).`);
-    if (err.code === "ER_NO_SUCH_TABLE") {
-      console.error("[DB] Faltan las tablas. Ejecutá: npm run db:setup\n");
-    } else {
-      console.error("[DB] Levantá MySQL con `npm run db:up`, creá las tablas con `npm run db:setup` y revisá los datos DB_* del archivo .env\n");
-    }
+    console.error("[DB] Levantá MySQL con `npm run db:up` y revisá los datos DB_* del archivo .env\n");
     process.exit(1);
   }
 }

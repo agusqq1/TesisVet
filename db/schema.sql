@@ -1,6 +1,6 @@
 -- ============================================================
 -- VetAnimal · Esquema de base de datos (MySQL 8)
--- Se aplica con `npm run db:setup`. Todas las sentencias son
+-- Lo aplica el servidor al arrancar (db/init.ts). Todas las sentencias son
 -- idempotentes (CREATE TABLE IF NOT EXISTS).
 -- ============================================================
 

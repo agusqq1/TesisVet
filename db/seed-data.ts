@@ -1,5 +1,5 @@
 // Datos iniciales de demostración de VetAnimal.
-// Los carga `npm run db:setup` cuando la base está vacía y no hay un data_storage.json para importar.
+// Los carga el servidor al arrancar (db/init.ts) cuando la base está vacía y no hay un data_storage.json para importar.
 
 export const users = [
   {
