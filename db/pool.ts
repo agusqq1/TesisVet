@@ -3,11 +3,11 @@ import mysql from "mysql2/promise";
 import type { PoolConnection, ResultSetHeader } from "mysql2/promise";
 
 export const dbConfig = {
-  host: process.env.DB_HOST || "127.0.0.1",
-  port: Number(process.env.DB_PORT) || 3306,
-  user: process.env.DB_USER || "vetanimal",
-  password: process.env.DB_PASSWORD || "",
-  database: process.env.DB_NAME || "vetanimal",
+  host: process.env.DB_HOST?.trim() || "127.0.0.1",
+  port: Number(process.env.DB_PORT?.trim()) || 3306,
+  user: process.env.DB_USER?.trim() || "vetanimal",
+  password: process.env.DB_PASSWORD?.trim() || "",
+  database: process.env.DB_NAME?.trim() || "vetanimal",
   charset: "utf8mb4",
   // DATE/DATETIME llegan como texto ("2026-08-15") y DECIMAL como número,
   // que es el formato que ya espera el frontend.

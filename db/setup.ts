@@ -12,10 +12,10 @@ import path from "path";
 import bcrypt from "bcryptjs";
 import mysql from "mysql2/promise";
 import type { Connection } from "mysql2/promise";
-import { dbConfig, pool } from "./pool";
-import { guardarImagen } from "./imagenes";
-import { hoyLocal, sumarDias } from "../server/agenda";
-import * as seed from "./seed-data";
+import { dbConfig, pool } from "./pool.js";
+import { guardarImagen } from "./imagenes.js";
+import { hoyLocal, sumarDias } from "../server/agenda.js";
+import * as seed from "./seed-data.js";
 
 const TABLAS = [
   "avisos_operativos",

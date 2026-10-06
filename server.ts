@@ -6,10 +6,9 @@ import fs from "fs";
 import path from "path";
 import bcrypt from "bcryptjs";
 import type { ResultSetHeader } from "mysql2/promise";
-import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
-import { dbConfig, execute, query, queryOne, transaction } from "./db/pool";
-import { guardarImagen, UPLOADS_DIR } from "./db/imagenes";
+import { dbConfig, execute, query, queryOne, transaction } from "./db/pool.js";
+import { guardarImagen, UPLOADS_DIR } from "./db/imagenes.js";
 import {
   cargarUsuario,
   cerrarSesion,
@@ -20,8 +19,8 @@ import {
   nuevoToken,
   requireAuth,
   requireVet,
-} from "./server/auth";
-import { horariosDisponibles, hoyLocal, sumarDias } from "./server/agenda";
+} from "./server/auth.js";
+import { horariosDisponibles, hoyLocal, sumarDias } from "./server/agenda.js";
 import {
   CLINICA,
   emailConfigurado,
@@ -33,9 +32,9 @@ import {
   emailRecuperacion,
   emailTurno,
   enviarEmail,
-} from "./server/email";
-import { ZONAS } from "./src/zonas";
-import { CUOTAS, MARCAS_TARJETA } from "./src/tarjetas";
+} from "./server/email.js";
+import { ZONAS } from "./src/zonas.js";
+import { CUOTAS, MARCAS_TARJETA } from "./src/tarjetas.js";
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
@@ -1879,6 +1878,7 @@ async function startServer() {
   vigilarEnv();
 
   if (process.env.NODE_ENV !== "production") {
+    const { createServer: createViteServer } = await import("vite");
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",
@@ -1899,4 +1899,7 @@ async function startServer() {
   });
 }
 
-startServer();
+// En Vercel el servidor no escucha un puerto: api/index.ts exporta la app como función
+if (!process.env.VERCEL) startServer();
+
+export default app;

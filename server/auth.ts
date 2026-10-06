@@ -4,7 +4,7 @@
 
 import crypto from "crypto";
 import type { Request, Response, NextFunction } from "express";
-import { execute, queryOne } from "../db/pool";
+import { execute, queryOne } from "../db/pool.js";
 
 const COOKIE = "vet_session";
 const DIAS_SESION = 7;
