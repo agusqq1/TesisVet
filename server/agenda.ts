@@ -60,15 +60,15 @@ export async function horariosDisponibles(
   const [franjas, turnos] = await Promise.all([
     consulta(
       `SELECT h.veterinario_id,
-              TIME_FORMAT(h.hora_inicio, '%H:%i') AS inicio,
-              TIME_FORMAT(h.hora_fin, '%H:%i') AS fin
+              to_char(h.hora_inicio, 'HH24:MI') AS inicio,
+              to_char(h.hora_fin, 'HH24:MI') AS fin
        FROM horarios_veterinario h
        JOIN usuarios u ON u.id = h.veterinario_id AND u.rol = 'veterinario'
        WHERE h.dia_semana = ?`,
       [diaSemana]
     ),
     consulta(
-      `SELECT veterinario_id, TIME_FORMAT(hora, '%H:%i') AS hora, duracion_min
+      `SELECT veterinario_id, to_char(hora, 'HH24:MI') AS hora, duracion_min
        FROM turnos
        WHERE fecha = ? AND estado <> 'cancelado' AND veterinario_id IS NOT NULL`,
       [fecha]

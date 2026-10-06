@@ -4,7 +4,7 @@
 //   npm run email:test -- otro@correo.com  lo envía a esa dirección
 
 import "dotenv/config";
-import { CLINICA, enviarEmail, verificarEmail } from "./email";
+import { CLINICA, enviarEmail, verificarEmail } from "./email.js";
 
 async function main() {
   const destinatario = process.argv[2] || CLINICA.email;

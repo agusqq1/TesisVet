@@ -4,7 +4,7 @@
 
 import crypto from "crypto";
 import type { Request, Response, NextFunction } from "express";
-import { execute, queryOne } from "../db/pool";
+import { execute, queryOne } from "../db/pool.js";
 
 const COOKIE = "vet_session";
 const DIAS_SESION = 7;
@@ -65,7 +65,7 @@ function opcionesCookie(req: Request) {
 export async function crearSesion(req: Request, res: Response, usuarioId: number) {
   const token = nuevoToken();
   await execute(
-    "INSERT INTO sesiones (token_hash, usuario_id, expira_en) VALUES (?, ?, NOW() + INTERVAL ? DAY)",
+    "INSERT INTO sesiones (token_hash, usuario_id, expira_en) VALUES (?, ?, NOW() + make_interval(days => ?::int))",
     [hashToken(token), usuarioId, DIAS_SESION]
   );
   // De paso se limpian las sesiones vencidas
