@@ -4,35 +4,35 @@ Sistema de gestión veterinaria: turnos online, historia clínica, mascotas, der
 
 - **Frontend:** React + Vite + Tailwind (`src/`)
 - **Backend:** Express (`server.ts` y `server/`)
-- **Base de datos:** MySQL 8 en Docker (`db/`)
+- **Base de datos:** PostgreSQL en Supabase (`db/`)
+- **Hosting:** Vercel (`api/index.ts` sirve la API como función). Cada push a `main` publica solo en https://vetanimal.vercel.app
 
 ## Requisitos
 
 - Node.js
-- Docker Desktop
+- Docker Desktop (opcional, solo para la herramienta de tablas Adminer)
 
 ## Primera vez
 
 1. Instalar dependencias: `npm install`
-2. Copiar `.env.example` como `.env` y elegir las contraseñas `DB_PASSWORD` y `DB_ROOT_PASSWORD`
-3. Abrir Docker Desktop y levantar la base: `npm run db:up`
-4. Iniciar la app: `npm run dev` (la primera vez crea las tablas y carga los datos iniciales sola)
+2. Tener en `.env` la conexión a Supabase (`POSTGRES_URL`) y las claves opcionales (ver más abajo)
+3. Iniciar la app: `npm run dev` (al arrancar crea las tablas que falten y, si la base está vacía, carga los datos iniciales)
 
 ## Uso diario
 
-Con Docker Desktop abierto:
-
 ```
-npm run db:up
 npm run dev
 ```
 
 | Dirección | Qué es |
 |---|---|
-| http://localhost:3000 | La aplicación |
-| http://localhost:8080 | phpMyAdmin, para ver y editar las tablas |
+| http://localhost:3000 | La aplicación en tu PC (usa la misma base que la web publicada) |
+| https://vetanimal.vercel.app | La aplicación publicada |
+| http://localhost:8080 | Adminer, para ver y editar las tablas (con `npm run db:admin`) |
 
-`npm run dev` se reinicia solo cuando cambia el código del servidor. Las claves de correo y del chat se toman al guardar el archivo `.env`, sin reiniciar; un cambio en los datos `DB_*` sí necesita reiniciar.
+`npm run dev` se reinicia solo cuando cambia el código del servidor. Las claves de correo y del chat se toman al guardar el archivo `.env`, sin reiniciar.
+
+**Ojo:** tu `npm run dev` y la web publicada comparten la base. Lo que cargues o borres en tu PC se ve en la web, y al revés.
 
 ## Cuentas de demostración
 
@@ -45,14 +45,23 @@ Se crean solas la primera vez que arranca la app con la base vacía. Se ingresa 
 
 **Antes de usar el sistema con datos reales hay que cambiar estas contraseñas o borrar estas cuentas.**
 
-## Comandos de la base de datos
+## Ver y editar las tablas
+
+Hay dos formas, y se pueden usar las dos:
+
+1. **Panel de Supabase** (sin instalar nada): https://supabase.com/dashboard → tu proyecto → **Table Editor**. Para consultas, **SQL Editor**.
+2. **Adminer en tu PC** (parecido a phpMyAdmin, pero para PostgreSQL). Con Docker Desktop abierto:
+
+   | Comando | Qué hace |
+   |---|---|
+   | `npm run db:admin` | Abre Adminer en http://localhost:8080 |
+   | `npm run db:admin:stop` | Lo cierra |
+
+   En la pantalla de ingreso: Sistema **PostgreSQL**, el servidor ya viene completado, usuario y contraseña son los de `POSTGRES_URL_NON_POOLING` en el `.env` (la parte `postgres.xxxx:contraseña@`), base de datos `postgres`.
 
 | Comando | Qué hace |
 |---|---|
-| `npm run db:up` | Levanta MySQL y phpMyAdmin en Docker |
-| `npm run db:down` | Los detiene (los datos no se pierden) |
-| `npm run db:reset` | Borra todo y vuelve a cargar los datos iniciales |
-| `npm run db:backup` | Guarda una copia de la base en `backups/` |
+| `npm run db:reset` | **Borra todo** en la base (también lo de la web publicada) y vuelve a cargar los datos iniciales |
 
 - **Esquema:** `db/schema.sql`
 - **Datos iniciales:** `db/seed-data.ts` (o `data_storage.json`, si existe, con los datos de la versión anterior)
@@ -61,8 +70,6 @@ Se crean solas la primera vez que arranca la app con la base vacía. Se ingresa 
 - **Veterinarias móviles:** operativos de castración y vacunación que se cargan y se editan desde el panel y se ven en el mapa público (`/veterinarias-moviles`, con OpenStreetMap). Los clientes eligen de qué localidades quieren avisos y reciben un email cuando se publica uno o cuando cambia su día, horario o lugar. Las localidades están en `src/zonas.ts`.
 - **Pago con tarjeta (simulado):** en el carrito se puede pagar con tarjeta, pero no hay ningún cobro real ni interviene un medio de pago. El número y el código de seguridad se validan en el navegador y no llegan al servidor; en la tabla `pagos` quedan solo la marca y los últimos 4 dígitos. Para probar: tarjeta `4111 1111 1111 1111`, cualquier vencimiento futuro y código; con `FUND` u `OTHE` como nombre del titular el pago se rechaza. En el panel esos pedidos figuran como "Pago online simulado". **Antes de vender de verdad hay que reemplazarlo por un medio de pago real o quitar la opción del carrito.**
 - **Doctores:** se agregan desde el panel, en la sección Doctores, con sus días y horario de atención. Si no se les carga una contraseña inicial, reciben un email con un enlace para elegirla (necesita el envío de emails configurado).
-
-Los datos de MySQL viven en el volumen de Docker `mysql_data`. Para borrarlo por completo: `docker compose down -v`.
 
 ## Funciones opcionales (`.env`)
 
@@ -102,5 +109,5 @@ src/               Aplicación React (páginas, componentes, contexto)
 ## Producción
 
 - `npm run build` genera `dist/`; `npm start` lo sirve.
-- Definir `NODE_ENV=production`, `APP_URL` y las variables `DB_*` del servidor de base de datos.
+- En Vercel, definir `APP_URL=https://vetanimal.vercel.app`, `POSTGRES_URL`, `SMTP_USER`, `SMTP_PASS` y `GEMINI_API_KEY` en Settings → Environment Variables.
 - Usar HTTPS: la cookie de sesión se marca como segura automáticamente.

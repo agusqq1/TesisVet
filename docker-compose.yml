@@ -1,0 +1,24 @@
+# Herramienta local para ver y editar la base de datos de VetAnimal.
+#
+# La base vive en Supabase (PostgreSQL, en la nube) y la usan tanto la web publicada
+# como `npm run dev`. Adminer es una interfaz web muy parecida a phpMyAdmin que sí
+# entiende PostgreSQL. Con Docker Desktop abierto:
+#
+#   npm run db:admin        abre Adminer en http://localhost:8080
+#   npm run db:admin:stop   lo cierra
+#
+# En la pantalla de ingreso: Sistema "PostgreSQL", servidor ya completado, usuario y
+# contraseña los de POSTGRES_URL_NON_POOLING en el .env, base de datos "postgres".
+
+services:
+  adminer:
+    image: adminer:4
+    container_name: vetanimal-adminer
+    restart: unless-stopped
+    environment:
+      # Conexión directa de Supabase (puerto 5432), la indicada para herramientas de escritorio
+      ADMINER_DEFAULT_SERVER: ${ADMINER_SERVER:-aws-0-us-east-1.pooler.supabase.com:5432}
+      ADMINER_DESIGN: pepa-linha
+    ports:
+      # Solo accesible desde esta computadora
+      - "127.0.0.1:8080:8080"

@@ -10,7 +10,9 @@
     "clean": "rm -rf dist server.cjs",
     "lint": "tsc --noEmit",
     "db:reset": "tsx db/setup.ts --reset",
-    "email:test": "tsx server/email-test.ts"
+    "email:test": "tsx server/email-test.ts",
+    "db:admin": "docker compose up -d adminer",
+    "db:admin:stop": "docker compose down"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
