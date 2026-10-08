@@ -15,6 +15,8 @@ interface DatosQr {
   imagen: string;
   qr_publico: boolean;
   qr_mensaje: string;
+  qr_mostrar_telefono: boolean;
+  telefono_dueno: string;
 }
 
 // Muestra el QR para imprimir en la chapa del collar y deja configurar la página
@@ -24,6 +26,7 @@ export const ChapaQrModal: React.FC<ChapaQrModalProps> = ({ pet, onClose, onUpda
   const [error, setError] = useState("");
   const [activa, setActiva] = useState(true);
   const [mensaje, setMensaje] = useState("");
+  const [mostrarTelefono, setMostrarTelefono] = useState(true);
   const [guardando, setGuardando] = useState(false);
   const [guardado, setGuardado] = useState(false);
 
@@ -33,6 +36,7 @@ export const ChapaQrModal: React.FC<ChapaQrModalProps> = ({ pet, onClose, onUpda
         setDatos(d);
         setActiva(d.qr_publico);
         setMensaje(d.qr_mensaje);
+        setMostrarTelefono(d.qr_mostrar_telefono);
       })
       .catch((e) => setError(e.message || "No se pudo generar el código."));
   }, [pet.id]);
@@ -43,7 +47,7 @@ export const ChapaQrModal: React.FC<ChapaQrModalProps> = ({ pet, onClose, onUpda
     try {
       const updated = await api<Pet>(`/api/pets/${pet.id}`, {
         method: "PUT",
-        body: { qr_publico: activa, qr_mensaje: mensaje },
+        body: { qr_publico: activa, qr_mensaje: mensaje, qr_mostrar_telefono: mostrarTelefono },
       });
       onUpdated(updated);
       setGuardado(true);
@@ -74,8 +78,8 @@ export const ChapaQrModal: React.FC<ChapaQrModalProps> = ({ pet, onClose, onUpda
         </div>
         <p className="text-sm text-slate-500 mb-5">
           Imprimí este código en la chapa del collar. Quien lo escanee con la cámara del celular
-          ve el nombre, la foto y las alertas médicas de {pet.nombre}, y puede avisarte sin ver tu
-          teléfono ni tu dirección.
+          abre el mini perfil de {pet.nombre}: nombre, foto, alertas médicas y la forma de
+          contactarte si se pierde.
         </p>
 
         {error && <div className="alert alert-error text-sm mb-4">{error}</div>}
@@ -131,6 +135,23 @@ export const ChapaQrModal: React.FC<ChapaQrModalProps> = ({ pet, onClose, onUpda
                 </span>
               </label>
 
+              <label className="flex items-start gap-3 p-3 mt-3 rounded-xl border border-slate-200 bg-slate-50 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={mostrarTelefono}
+                  onChange={(e) => setMostrarTelefono(e.target.checked)}
+                  className="mt-1 accent-brand-600"
+                />
+                <span>
+                  <span className="block text-sm font-semibold text-slate-900">Mostrar mi teléfono</span>
+                  <span className="block text-xs text-slate-500 mt-0.5">
+                    {datos.telefono_dueno
+                      ? `Quien escanee verá ${datos.telefono_dueno} con botones para llamarte o escribirte por WhatsApp.`
+                      : "No tenés un teléfono cargado en tu perfil. Cargalo en Mis datos para que aparezca en la chapa."}
+                  </span>
+                </span>
+              </label>
+
               <div className="field mt-4">
                 <label className="block text-sm font-semibold text-slate-900 mb-1.5">
                   Mensaje para quien la encuentre
@@ -157,9 +178,9 @@ export const ChapaQrModal: React.FC<ChapaQrModalProps> = ({ pet, onClose, onUpda
 
               <div className="mt-4 text-xs text-slate-500 space-y-1.5">
                 <p className="font-semibold text-slate-700">Qué ve quien escanea</p>
-                <p>Nombre, foto, especie, raza y edad. Alergias y condiciones crónicas, si las hay. Tu nombre de pila y este mensaje.</p>
+                <p>Nombre, foto, especie, raza y edad. Alergias y condiciones crónicas, si las hay. Tu nombre de pila, este mensaje y tu teléfono si lo habilitaste.</p>
                 <p className="font-semibold text-slate-700 pt-1">Qué no ve</p>
-                <p>Tu teléfono, tu email, tu dirección ni la historia clínica. El aviso te llega por email a través de la clínica.</p>
+                <p>Tu email, tu dirección ni la historia clínica. Además del teléfono, siempre puede dejarte un aviso que te llega por email.</p>
               </div>
             </div>
           </div>

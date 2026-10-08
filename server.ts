@@ -127,12 +127,20 @@ const esEmail = (v: unknown): v is string =>
 
 const PASSWORD_MIN = 8;
 
-// Dirección pública del sitio, para los enlaces de los emails. En producción conviene
-// fijar APP_URL en .env para que no dependa del pedido.
-const urlBase = (req: Request) =>
-  /^https?:\/\//.test(process.env.APP_URL || "")
-    ? process.env.APP_URL!.replace(/\/+$/, "")
-    : `${req.protocol}://${req.get("host")}`;
+// Dirección pública del sitio, para los enlaces de los emails y de las chapas QR.
+// Se usa APP_URL si apunta a un dominio real. Si quedó en localhost (el valor de
+// desarrollo) y el pedido llega desde otro host, se ignora: si no, los QR y los emails
+// generados en Vercel apuntarían a la PC de quien lo configuró.
+const esLocal = (valor: string) => /localhost|127\.0\.0\.1/.test(valor);
+const urlBase = (req: Request) => {
+  const appUrl = (process.env.APP_URL || "").replace(/\/+$/, "");
+  const host = req.get("host") || "";
+  if (/^https?:\/\//.test(appUrl) && (!esLocal(appUrl) || esLocal(host))) return appUrl;
+  if (process.env.VERCEL_PROJECT_PRODUCTION_URL && !esLocal(host)) {
+    return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
+  }
+  return `${req.protocol}://${host}`;
+};
 
 // Enlace para elegir una contraseña
 const enlaceClave = (req: Request, token: string) =>
@@ -141,7 +149,7 @@ const enlaceClave = (req: Request, token: string) =>
 const PET_SELECT = `
   SELECT m.id, m.usuario_id, m.nombre, m.especie, m.raza, m.edad, m.peso, m.foto,
          m.estado_salud, m.alergias, m.condiciones_cronicas, m.creado_en,
-         m.codigo_qr, m.qr_publico, m.qr_mensaje,
+         m.codigo_qr, m.qr_publico, m.qr_mensaje, m.qr_mostrar_telefono,
          u.nombre AS dueno, u.telefono
   FROM mascotas m
   LEFT JOIN usuarios u ON u.id = m.usuario_id`;
@@ -360,6 +368,23 @@ app.get("/api/auth/me", (req, res) => {
   if (!req.user) return res.status(401).json({ error: "No hay una sesión iniciada." });
   res.json({ user: req.user });
 });
+
+// El usuario corrige sus propios datos de contacto (por ejemplo, el teléfono que
+// aparece en la chapa QR de sus mascotas)
+app.put("/api/auth/me", requireAuth, wrap(async (req, res) => {
+  const campos: Record<string, any> = {};
+  if (req.body.telefono !== undefined) campos.telefono = str(req.body.telefono).trim().slice(0, 40);
+  if (req.body.nombre !== undefined) {
+    const nombre = str(req.body.nombre).trim().slice(0, 120);
+    if (nombre.length < 2) return res.status(400).json({ error: "Ingresá tu nombre." });
+    campos.nombre = nombre;
+  }
+  if (Object.keys(campos).length > 0) {
+    await execute("UPDATE usuarios SET ? WHERE id = ?", [campos, req.user!.id]);
+  }
+  const user = await queryOne("SELECT * FROM usuarios WHERE id = ?", [req.user!.id]);
+  res.json({ user: mapUser(user) });
+}));
 
 app.post("/api/auth/logout", wrap(async (req, res) => {
   await cerrarSesion(req, res);
@@ -695,9 +720,10 @@ app.put("/api/pets/:id", requireAuth, wrap(async (req, res) => {
   }
 
   // Chapa QR: el dueño decide si la página pública está activa y qué mensaje muestra
-  const { qr_publico, qr_mensaje } = req.body;
+  const { qr_publico, qr_mensaje, qr_mostrar_telefono } = req.body;
   if (qr_publico !== undefined) campos.qr_publico = Boolean(qr_publico);
   if (qr_mensaje !== undefined) campos.qr_mensaje = str(qr_mensaje).trim().slice(0, 300);
+  if (qr_mostrar_telefono !== undefined) campos.qr_mostrar_telefono = Boolean(qr_mostrar_telefono);
 
   if (Object.keys(campos).length > 0) {
     await execute("UPDATE mascotas SET ? WHERE id = ?", [campos, pet.id]);
@@ -765,7 +791,11 @@ app.get("/api/pets/:id/qr", requireAuth, wrap(async (req, res) => {
     errorCorrectionLevel: "H", // tolera rayones y desgaste de la chapa
     color: { dark: "#1e3a8a", light: "#ffffff" },
   });
-  const ajustes = await queryOne("SELECT qr_publico, qr_mensaje FROM mascotas WHERE id = ?", [pet.id]);
+  const ajustes = await queryOne(
+    `SELECT m.qr_publico, m.qr_mensaje, m.qr_mostrar_telefono, u.telefono
+     FROM mascotas m JOIN usuarios u ON u.id = m.usuario_id WHERE m.id = ?`,
+    [pet.id]
+  );
 
   res.json({
     codigo,
@@ -773,6 +803,8 @@ app.get("/api/pets/:id/qr", requireAuth, wrap(async (req, res) => {
     imagen,
     qr_publico: Boolean(ajustes?.qr_publico),
     qr_mensaje: ajustes?.qr_mensaje || "",
+    qr_mostrar_telefono: Boolean(ajustes?.qr_mostrar_telefono),
+    telefono_dueno: ajustes?.telefono || "",
   });
 }));
 
@@ -796,7 +828,8 @@ app.get("/api/publico/mascotas/:codigo", limiteChapa, wrap(async (req, res) => {
 
   const m = await queryOne(
     `SELECT m.id, m.usuario_id, m.nombre, m.especie, m.raza, m.edad, m.foto, m.alergias,
-            m.condiciones_cronicas, m.qr_publico, m.qr_mensaje, u.nombre AS dueno
+            m.condiciones_cronicas, m.qr_publico, m.qr_mensaje, m.qr_mostrar_telefono,
+            u.nombre AS dueno, u.telefono
      FROM mascotas m JOIN usuarios u ON u.id = m.usuario_id
      WHERE m.codigo_qr = ? AND m.activo`,
     [codigo]
@@ -821,6 +854,8 @@ app.get("/api/publico/mascotas/:codigo", limiteChapa, wrap(async (req, res) => {
     condiciones_cronicas: m.condiciones_cronicas || undefined,
     qr_mensaje: m.qr_mensaje || undefined,
     dueno: String(m.dueno || "").split(" ")[0], // solo el nombre de pila
+    // El teléfono se muestra solo si el dueño lo habilitó en la chapa
+    ...(m.qr_mostrar_telefono && m.telefono && { telefono: m.telefono }),
     activa,
     ...(esDuenoOVet && { mascota_id: m.id }),
   });

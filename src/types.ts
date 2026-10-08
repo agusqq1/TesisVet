@@ -77,6 +77,7 @@ export interface Pet {
   codigo_qr?: string | null;
   qr_publico?: boolean;
   qr_mensaje?: string | null;
+  qr_mostrar_telefono?: boolean;
   creado_en?: string;
   dueno?: string;
   telefono?: string;
@@ -93,6 +94,8 @@ export interface MascotaPublica {
   condiciones_cronicas?: string;
   qr_mensaje?: string;
   dueno: string;
+  // Solo viene si el dueño eligió mostrarlo en la chapa
+  telefono?: string;
   activa: boolean;
   // Solo viene si quien mira es el dueño o personal de la clínica
   mascota_id?: number;

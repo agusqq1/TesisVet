@@ -45,6 +45,7 @@ CREATE TABLE IF NOT EXISTS mascotas (
   codigo_qr            VARCHAR(20),
   qr_publico           BOOLEAN NOT NULL DEFAULT true,
   qr_mensaje           TEXT,
+  qr_mostrar_telefono  BOOLEAN NOT NULL DEFAULT true,
   creado_en            TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS idx_mascotas_usuario ON mascotas (usuario_id);
@@ -52,6 +53,7 @@ CREATE INDEX IF NOT EXISTS idx_mascotas_usuario ON mascotas (usuario_id);
 ALTER TABLE mascotas ADD COLUMN IF NOT EXISTS codigo_qr VARCHAR(20);
 ALTER TABLE mascotas ADD COLUMN IF NOT EXISTS qr_publico BOOLEAN NOT NULL DEFAULT true;
 ALTER TABLE mascotas ADD COLUMN IF NOT EXISTS qr_mensaje TEXT;
+ALTER TABLE mascotas ADD COLUMN IF NOT EXISTS qr_mostrar_telefono BOOLEAN NOT NULL DEFAULT true;
 CREATE UNIQUE INDEX IF NOT EXISTS uq_mascotas_codigo_qr ON mascotas (codigo_qr);
 
 CREATE TABLE IF NOT EXISTS servicios (

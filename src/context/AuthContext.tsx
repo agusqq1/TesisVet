@@ -11,6 +11,8 @@ interface AuthContextType {
   loading: boolean;
   login: (email: string, pass: string) => Promise<AuthResult>;
   register: (nombre: string, email: string, pass: string, telefono?: string) => Promise<AuthResult>;
+  // Corrige nombre o teléfono del usuario con sesión iniciada
+  actualizarPerfil: (datos: { nombre?: string; telefono?: string }) => Promise<AuthResult>;
   logout: () => void;
 }
 
@@ -55,13 +57,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const register = (nombre: string, email: string, pass: string, telefono?: string) =>
     autenticar("/api/auth/register", { nombre, email, password: pass, telefono }, "Error al registrarse");
 
+  const actualizarPerfil = async (datos: { nombre?: string; telefono?: string }): Promise<AuthResult> => {
+    try {
+      const data = await api<{ user: User }>("/api/auth/me", { method: "PUT", body: datos });
+      setUser(data.user);
+      return { success: true, user: data.user };
+    } catch (e: any) {
+      return { success: false, error: e.message || "No se pudieron guardar los datos." };
+    }
+  };
+
   const logout = () => {
     setUser(null);
     api("/api/auth/logout", { method: "POST" }).catch(() => {});
   };
 
   return (
-    <AuthContext.Provider value={{ user, ready, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, ready, loading, login, register, actualizarPerfil, logout }}>
       {children}
     </AuthContext.Provider>
   );

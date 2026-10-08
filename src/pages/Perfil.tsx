@@ -40,7 +40,7 @@ const photoPresets = [
 ];
 
 export const Perfil: React.FC<PerfilProps> = ({ navigate }) => {
-  const { user } = useAuth();
+  const { user, actualizarPerfil } = useAuth();
   const esVeterinario = user?.rol === "veterinario";
   const [pets, setPets] = useState<Pet[]>([]);
   const [turnos, setTurnos] = useState<Turno[]>([]);
@@ -49,6 +49,21 @@ export const Perfil: React.FC<PerfilProps> = ({ navigate }) => {
   // Editing state
   const [editingPet, setEditingPet] = useState<Pet | null>(null);
   const [qrPet, setQrPet] = useState<Pet | null>(null);
+
+  // Edición del teléfono propio (es el que aparece en la chapa QR de las mascotas)
+  const [editandoTelefono, setEditandoTelefono] = useState(false);
+  const [nuevoTelefono, setNuevoTelefono] = useState("");
+  const [guardandoTelefono, setGuardandoTelefono] = useState(false);
+  const [errorTelefono, setErrorTelefono] = useState("");
+
+  const guardarTelefono = async () => {
+    setGuardandoTelefono(true);
+    setErrorTelefono("");
+    const r = await actualizarPerfil({ telefono: nuevoTelefono });
+    setGuardandoTelefono(false);
+    if (r.success) setEditandoTelefono(false);
+    else setErrorTelefono(r.error || "No se pudo guardar.");
+  };
   const [editNombre, setEditNombre] = useState("");
   const [editEspecie, setEditEspecie] = useState("Perro");
   const [editRaza, setEditRaza] = useState("");
@@ -216,9 +231,60 @@ export const Perfil: React.FC<PerfilProps> = ({ navigate }) => {
             <p>
               <strong>Email:</strong> {user.email}
             </p>
-            <p>
-              <strong>Teléfono:</strong> {user.telefono || "No especificado"}
-            </p>
+            {editandoTelefono ? (
+              <div>
+                <div className="flex items-center gap-2">
+                  <strong>Teléfono:</strong>
+                  <input
+                    type="tel"
+                    value={nuevoTelefono}
+                    onChange={(e) => setNuevoTelefono(e.target.value)}
+                    placeholder="Ej.: 11 4000 1000"
+                    maxLength={40}
+                    autoFocus
+                    className="flex-1 border border-slate-300 rounded-lg px-2.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
+                  />
+                  <button
+                    type="button"
+                    onClick={guardarTelefono}
+                    disabled={guardandoTelefono}
+                    className="btn btn-primary btn-sm py-1.5 px-2.5 flex items-center gap-1"
+                  >
+                    <Check size={13} />
+                    <span>{guardandoTelefono ? "..." : "Guardar"}</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEditandoTelefono(false)}
+                    className="btn btn-light btn-sm py-1.5 px-2"
+                    title="Cancelar"
+                  >
+                    <X size={13} />
+                  </button>
+                </div>
+                {errorTelefono && <p className="text-xs text-red-600 mt-1">{errorTelefono}</p>}
+                <p className="text-[11px] text-slate-500 mt-1">
+                  Es el teléfono que ve quien escanea la chapa QR de tus mascotas.
+                </p>
+              </div>
+            ) : (
+              <p className="flex items-center gap-2">
+                <span>
+                  <strong>Teléfono:</strong> {user.telefono || "No especificado"}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setNuevoTelefono(user.telefono || "");
+                    setEditandoTelefono(true);
+                  }}
+                  className="text-brand-600 hover:text-brand-700 cursor-pointer"
+                  title="Cambiar teléfono"
+                >
+                  <Pencil size={13} />
+                </button>
+              </p>
+            )}
           </div>
         </div>
 

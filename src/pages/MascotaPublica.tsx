@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { AlertTriangle, Phone, Send, FileText, ShieldOff } from "lucide-react";
+import { AlertTriangle, Phone, Send, FileText, ShieldOff, MessageCircle } from "lucide-react";
 import { LogoIcon } from "../components/LogoIcon";
 import { MascotaPublica as DatosMascota } from "../types";
 import { api } from "../api";
@@ -51,6 +51,17 @@ export const MascotaPublica: React.FC<MascotaPublicaProps> = ({ codigo, navigate
   };
 
   const telefonoClinica = CLINICA.telefono.replace(/[^\d+]/g, "");
+
+  // Enlace de WhatsApp para un número argentino escrito de cualquier forma:
+  // "(011) 15-4000-1000" → 5491140001000. Si ya trae el 54, se respeta.
+  const enlaceWhatsApp = (telefono: string) => {
+    let d = telefono.replace(/\D/g, "");
+    if (d.startsWith("54")) return `https://wa.me/${d.startsWith("549") ? d : "549" + d.slice(2)}`;
+    if (d.startsWith("0")) d = d.slice(1);
+    d = d.replace(/^(\d{2,4})15(\d{6,8})$/, "$1$2"); // saca el 15 de los celulares
+    return `https://wa.me/549${d}`;
+  };
+  const telefonoDueno = mascota?.telefono?.replace(/[^\d+]/g, "") || "";
   const alertas = [
     mascota?.alergias && { titulo: "Alergias", texto: mascota.alergias },
     mascota?.condiciones_cronicas && { titulo: "Condiciones crónicas", texto: mascota.condiciones_cronicas },
@@ -119,6 +130,33 @@ export const MascotaPublica: React.FC<MascotaPublicaProps> = ({ codigo, navigate
                   </p>
                 )}
 
+                {mascota.telefono && (
+                  <div className="mt-4 p-4 rounded-2xl bg-brand-600 text-white">
+                    <p className="text-xs font-semibold uppercase tracking-wider opacity-80 mb-1">
+                      Si me encontraste, llamá a {mascota.dueno || "mi familia"}
+                    </p>
+                    <p className="text-2xl font-bold tracking-wide">{mascota.telefono}</p>
+                    <div className="grid grid-cols-2 gap-2 mt-3">
+                      <a
+                        href={`tel:${telefonoDueno}`}
+                        className="flex items-center justify-center gap-1.5 bg-white text-brand-700 font-semibold rounded-xl py-2.5 text-sm"
+                      >
+                        <Phone size={15} />
+                        <span>Llamar</span>
+                      </a>
+                      <a
+                        href={enlaceWhatsApp(mascota.telefono)}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex items-center justify-center gap-1.5 bg-emerald-500 text-white font-semibold rounded-xl py-2.5 text-sm"
+                      >
+                        <MessageCircle size={15} />
+                        <span>WhatsApp</span>
+                      </a>
+                    </div>
+                  </div>
+                )}
+
                 {!mascota.activa && (
                   <div className="alert alert-error text-xs mt-4">
                     La chapa está desactivada: solo vos y la clínica ven estos datos.
@@ -159,10 +197,11 @@ export const MascotaPublica: React.FC<MascotaPublicaProps> = ({ codigo, navigate
             </div>
 
             <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 mt-4">
-              <h2 className="text-lg font-bold text-slate-900">¿Me encontraste?</h2>
+              <h2 className="text-lg font-bold text-slate-900">
+                {mascota.telefono ? "¿No te atienden? Dejá un aviso" : "¿Me encontraste?"}
+              </h2>
               <p className="text-sm text-slate-500 mt-1 mb-4">
-                Dejá tus datos y le avisamos a mi familia ahora mismo. Ellos no ven tu información
-                hasta que vos la compartís acá.
+                Dejá tus datos y le avisamos a mi familia por email ahora mismo.
               </p>
 
               {enviado ? (
