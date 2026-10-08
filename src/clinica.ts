@@ -4,7 +4,7 @@ export const CLINICA = {
   nombre: "VetAnimal",
   direccion: "Av. Eduardo Madero 1250",
   localidad: "Del Viso, Pilar (Buenos Aires)",
-  telefono: "(011) 4000-1000",
+  telefono: "11 6426-0688",
   email: "veterinariavet101@gmail.com",
   horarios: "Lunes a sábados de 08:30 a 20:00 hs",
 };

@@ -301,12 +301,33 @@ const LOCK_ID = 727274;
 const SIN_ID = ["avisos_operativos", "sesiones", "recuperaciones_password", "centros_derivacion"];
 
 export async function prepararBaseDeDatos({ reset = false } = {}) {
+  // DB_INIT=0 arranca sin tocar el esquema: para servidores de prueba que comparten
+  // la base con la versión publicada.
+  if (process.env.DB_INIT === "0" && !reset) {
+    console.log("DB_INIT=0: se omite la preparación de la base.");
+    return;
+  }
+
   await withClient(async (conn) => {
-    await conn.query("SELECT pg_advisory_lock($1)", [LOCK_ID]);
+    // Si otra instancia está preparando la base, se espera un rato acotado. Si no
+    // suelta el lock (por ejemplo, una función de Vercel congelada a mitad de camino),
+    // se sigue adelante en vez de dejar colgada toda la API: las tablas ya existen.
+    let tengoLock = false;
+    for (let intento = 0; intento < 8 && !tengoLock; intento++) {
+      const { rows } = await conn.query("SELECT pg_try_advisory_lock($1) AS ok", [LOCK_ID]);
+      tengoLock = Boolean(rows[0].ok);
+      if (!tengoLock) await new Promise((r) => setTimeout(r, 1000));
+    }
+    if (!tengoLock) {
+      console.warn("[DB] Otra instancia está preparando la base; se continúa sin esperar más.");
+      return;
+    }
     try {
+      // Que ningún ALTER quede esperando para siempre detrás de una consulta larga
+      await conn.query("SET lock_timeout = '8s'");
       await aplicar(conn, reset);
     } finally {
-      await conn.query("SELECT pg_advisory_unlock($1)", [LOCK_ID]);
+      await conn.query("SELECT pg_advisory_unlock($1)", [LOCK_ID]).catch(() => {});
     }
   });
 }

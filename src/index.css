@@ -510,3 +510,92 @@
   .btn, .tarjeta-viva{ transition:none; }
   .btn:active:not(:disabled), .tarjeta-viva:hover{ transform:none; }
 }
+
+/* ---------------- Escena de la portada ----------------
+   Un gato y un perro que lo persigue, en un circuito con perspectiva: la ida pasa
+   cerca (grandes, abajo) y la vuelta pasa lejos (chicos, arriba y más claros).
+   Componente: src/components/EscenaMascotas.tsx */
+.escena{
+  position:relative; height:150px; overflow:hidden;
+  perspective:700px; perspective-origin:50% 20%;
+  user-select:none; pointer-events:none;
+}
+.escena-piso{
+  position:absolute; left:0; right:0; top:38px; bottom:0;
+  background:linear-gradient(180deg, #dcefd5 0%, #c9e6bf 45%, #b9dfad 100%);
+  border-top:1px solid rgba(255,255,255,.7);
+}
+/* sendero en perspectiva: angosto en el horizonte, ancho adelante */
+.escena-sendero{
+  position:absolute; left:0; right:0; top:46px; bottom:0;
+  background:linear-gradient(180deg, rgba(37,99,235,.06), rgba(37,99,235,.14));
+  clip-path:polygon(44% 0, 56% 0, 100% 100%, 0 100%);
+}
+.arbusto{
+  position:absolute; border-radius:50% 50% 45% 45%; background:#86c47a;
+  box-shadow:inset -6px -4px 0 rgba(0,0,0,.08);
+}
+/* sobre el horizonte: los del centro quedan "lejos" (más chicos) */
+.arbusto-1{ width:64px; height:40px; left:3%;  top:14px; background:#8fc984; }
+.arbusto-2{ width:34px; height:22px; left:27%; top:24px; background:#b3dfa9; }
+.arbusto-3{ width:40px; height:26px; left:63%; top:22px; background:#a5d79a; }
+.arbusto-4{ width:70px; height:44px; left:88%; top:10px; background:#86c47a; }
+
+.corredor{ position:absolute; bottom:18px; left:0; width:120px; will-change:transform; transform-origin:50% 100%; }
+.corredor-gato{ width:104px; animation:circuito 14s linear infinite; }
+.corredor-perro{ animation:circuito 14s linear infinite; animation-delay:-12.9s; }
+.corredor-cuerpo{ animation:trote .32s ease-in-out infinite; transform-origin:50% 100%; }
+.corredor-svg{ width:100%; height:auto; display:block; }
+.corredor-sombra{
+  position:absolute; left:14%; right:14%; bottom:-8px; height:12px; border-radius:50%;
+  background:rgba(15,23,42,.22); filter:blur(3px);
+  animation:sombra .32s ease-in-out infinite;
+}
+
+/* Circuito: ida cerca (translateZ 0, escala 1) → giro → vuelta lejos (escala .55, más arriba) */
+@keyframes circuito{
+  0%   { transform:translate3d(-20vw, 0, 0) scaleX(1) scale(1); opacity:1; }
+  46%  { transform:translate3d(100vw, 0, 0) scaleX(1) scale(1); opacity:1; }
+  48%  { transform:translate3d(104vw, -56px, 0) scaleX(-1) scale(.55); opacity:.85; }
+  50%  { transform:translate3d(100vw, -56px, 0) scaleX(-1) scale(.55); opacity:.85; }
+  96%  { transform:translate3d(-20vw, -56px, 0) scaleX(-1) scale(.55); opacity:.85; }
+  98%  { transform:translate3d(-24vw, 0, 0) scaleX(1) scale(1); opacity:1; }
+  100% { transform:translate3d(-20vw, 0, 0) scaleX(1) scale(1); opacity:1; }
+}
+@keyframes trote{
+  0%,100%{ transform:translateY(0) rotate(0); }
+  50%{ transform:translateY(-5px) rotate(-3deg); }
+}
+@keyframes sombra{
+  0%,100%{ transform:scaleX(1); opacity:.9; }
+  50%{ transform:scaleX(.8); opacity:.6; }
+}
+/* Patas: dos pares alternados, pivotan desde la cadera */
+.pata{ transform-box:fill-box; transform-origin:50% 0; animation:zancada .32s ease-in-out infinite; }
+.pata-a, .pata-d{ animation-delay:0s; }
+.pata-b, .pata-c{ animation-delay:-.16s; }
+@keyframes zancada{
+  0%,100%{ transform:rotate(28deg); }
+  50%{ transform:rotate(-28deg); }
+}
+.cola{ transform-box:fill-box; transform-origin:100% 50%; animation:meneo .5s ease-in-out infinite; }
+@keyframes meneo{
+  0%,100%{ transform:rotate(-12deg); }
+  50%{ transform:rotate(14deg); }
+}
+.oreja{ transform-box:fill-box; transform-origin:50% 0; animation:oreja .32s ease-in-out infinite; }
+@keyframes oreja{
+  0%,100%{ transform:rotate(0); }
+  50%{ transform:rotate(-10deg); }
+}
+
+@media (max-width:640px){
+  .escena{ height:120px; }
+  .corredor{ width:84px; }
+  .corredor-gato{ width:72px; }
+}
+@media (prefers-reduced-motion: reduce){
+  .corredor, .corredor-cuerpo, .corredor-sombra, .pata, .cola, .oreja{ animation:none; }
+  .corredor-gato{ transform:translate3d(55vw, 0, 0); }
+  .corredor-perro{ transform:translate3d(30vw, 0, 0); }
+}

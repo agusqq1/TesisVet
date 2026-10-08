@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Service, CentroVeterinarioRecomendado } from "../types";
 import { Cargando } from "../components/Cargando";
+import { EscenaMascotas } from "../components/EscenaMascotas";
 import { api } from "../api";
 import { formatPrecio } from "../format";
 import { CLINICA } from "../clinica";
@@ -154,6 +155,9 @@ export const Home: React.FC<HomeProps> = ({ navigate }) => {
             </div>
           </div>
         </div>
+
+        {/* El jardín de la clínica: un gato y un perro que lo persigue */}
+        <EscenaMascotas />
       </section>
 
       {/* ---------------- Accesos principales ---------------- */}

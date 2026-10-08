@@ -1901,7 +1901,7 @@ const CLINICAL_VET_FALLBACKS: Array<{ keywords: string[]; response: string }> = 
   {
     keywords: ["horario", "horarios", "donde", "dónde", "direccion", "dirección", "ubicacion", "ubicación", "queda", "telefono", "teléfono"],
     response:
-      "🏥 **VetAnimal - Clínica Veterinaria Del Viso:**\n\n• **Sede Central:** Av. Eduardo Madero 1250, Del Viso (Partido del Pilar, Bs. As.).\n• **Horarios de Atención:** Lunes a Sábados de 08:30 a 20:00 hs.\n• **Teléfono de Recepción:** (02320) 47-1234 / 11-4000-1000.\n• **Red de Derivaciones:** Centro Asociado Tortuguitas en Cura Brochero 1420.",
+      "🏥 **VetAnimal - Clínica Veterinaria Del Viso:**\n\n• **Sede Central:** Av. Eduardo Madero 1250, Del Viso (Partido del Pilar, Bs. As.).\n• **Horarios de Atención:** Lunes a Sábados de 08:30 a 20:00 hs.\n• **Teléfono de Recepción:** 11 6426-0688.\n• **Red de Derivaciones:** Centro Asociado Tortuguitas en Cura Brochero 1420.",
   },
   {
     keywords: ["cardio", "cardiografia", "cardiografía", "doppler", "ecocardiograma", "rayos", "radiografia", "radiología", "derivacion", "derivación", "tortuguitas"],
@@ -1921,7 +1921,7 @@ const CLINICAL_VET_FALLBACKS: Array<{ keywords: string[]; response: string }> = 
   {
     keywords: ["ahoga", "respirar", "urgencia", "emergencia", "convulsion", "convulsión", "sangre", "sangrado", "veneno", "intoxic", "atragant"],
     response:
-      "🚨 **¡ATENCIÓN - POSIBLE URGENCIA VETERINARIA!**\n\n1. **Trasladate de inmediato:** Acudí a nuestra guardia médica presencial en **Av. Eduardo Madero 1250, Del Viso** o al centro veterinario de urgencia más cercano.\n2. **Mantené la calma:** El estrés acelera el ritmo cardíaco y empeora la dificultad respiratoria del animal.\n3. **Vías aéreas:** Asegurate de que el cuello esté recto y no comprimido. No suministres líquidos ni medicamentos caseros por la boca.\n4. **Teléfono de guardia:** (02320) 47-1234 / 11-4000-1000.",
+      "🚨 **¡ATENCIÓN - POSIBLE URGENCIA VETERINARIA!**\n\n1. **Trasladate de inmediato:** Acudí a nuestra guardia médica presencial en **Av. Eduardo Madero 1250, Del Viso** o al centro veterinario de urgencia más cercano.\n2. **Mantené la calma:** El estrés acelera el ritmo cardíaco y empeora la dificultad respiratoria del animal.\n3. **Vías aéreas:** Asegurate de que el cuello esté recto y no comprimido. No suministres líquidos ni medicamentos caseros por la boca.\n4. **Teléfono de guardia:** 11 6426-0688.",
   },
 ];
 

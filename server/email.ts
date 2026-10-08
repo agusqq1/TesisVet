@@ -9,7 +9,7 @@ const EMAIL_CLINICA_DEFAULT = "veterinariavet101@gmail.com";
 export const CLINICA = {
   nombre: "VetAnimal",
   sede: "VetAnimal - Sede Del Viso / Pilar",
-  telefono: "(011) 4000-1000",
+  telefono: "11 6426-0688",
   get email() {
     return (process.env.SMTP_USER || EMAIL_CLINICA_DEFAULT).trim();
   },

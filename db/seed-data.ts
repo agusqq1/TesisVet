@@ -8,7 +8,7 @@ export const users = [
     email: "admin@vetanimal.com",
     password: "Admin2026!",
     rol: "veterinario" as const,
-    telefono: "11-4000-1000",
+    telefono: "11-6426-0688",
     especialidad: "Medicina General y Cirugía",
     matricula: "MP 14.280",
     foto: "https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=200&q=80",

@@ -111,7 +111,7 @@ export const OrdenMedicaModal: React.FC<OrdenMedicaModalProps> = ({ orden, onClo
                     Clínica Veterinaria &bull; Sede Del Viso / Pilar
                   </p>
                   <p className="text-[11px] text-slate-500 mt-0.5">
-                    Central de Urgencias: (011) 4000-1000 &bull; Mail: veterinariavet101@gmail.com
+                    Central de Urgencias: 11 6426-0688 &bull; Mail: veterinariavet101@gmail.com
                   </p>
                 </div>
               </div>
