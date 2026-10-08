@@ -311,6 +311,24 @@ export async function prepararBaseDeDatos({ reset = false } = {}) {
   });
 }
 
+// Un veterinario sin franjas de atención no aparece nunca en la agenda y los clientes
+// ven "no hay horarios disponibles". Si alguno quedó sin horario (por ejemplo, porque
+// los datos se cargaron a mano en la base), se le pone el de la clínica: lunes a
+// sábado de 08:30 a 20:00. Después se ajusta desde la tabla horarios_veterinario.
+async function completarHorarios(conn: PoolClient) {
+  const res = await conn.query(
+    `INSERT INTO horarios_veterinario (veterinario_id, dia_semana, hora_inicio, hora_fin)
+     SELECT u.id, d.dia, '08:30', '20:00'
+     FROM usuarios u
+     CROSS JOIN generate_series(1, 6) AS d(dia)
+     WHERE u.rol = 'veterinario'
+       AND NOT EXISTS (SELECT 1 FROM horarios_veterinario h WHERE h.veterinario_id = u.id)`
+  );
+  if (res.rowCount) {
+    console.log(`Horario de atención inicial cargado para ${res.rowCount / 6} veterinario(s) que no tenían.`);
+  }
+}
+
 async function aplicar(conn: PoolClient, reset: boolean) {
   if (reset) {
     await conn.query(`DROP TABLE IF EXISTS ${TABLAS.join(", ")} CASCADE`);
@@ -321,7 +339,10 @@ async function aplicar(conn: PoolClient, reset: boolean) {
   await conn.query(fs.readFileSync(path.join(process.cwd(), "db", "schema.sql"), "utf-8"));
 
   const { rows } = await conn.query("SELECT COUNT(*)::int AS total FROM usuarios");
-  if (rows[0].total > 0) return;
+  if (rows[0].total > 0) {
+    await completarHorarios(conn);
+    return;
+  }
 
   console.log("[DB] Base vacía: cargando datos iniciales...");
 
