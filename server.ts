@@ -404,6 +404,19 @@ app.put("/api/auth/me", requireAuth, wrap(async (req, res) => {
     if (nombre.length < 2) return res.status(400).json({ error: "Ingresá tu nombre." });
     campos.nombre = nombre;
   }
+  // Cambio de contraseña: hay que confirmar la actual
+  if (req.body.password_nueva !== undefined) {
+    const actual = str(req.body.password_actual);
+    const nueva = str(req.body.password_nueva);
+    if (nueva.length < PASSWORD_MIN) {
+      return res.status(400).json({ error: `La contraseña nueva debe tener al menos ${PASSWORD_MIN} caracteres.` });
+    }
+    const fila = await queryOne("SELECT password_hash FROM usuarios WHERE id = ?", [req.user!.id]);
+    if (!fila || !(await bcrypt.compare(actual, fila.password_hash))) {
+      return res.status(400).json({ error: "La contraseña actual no es correcta." });
+    }
+    campos.password_hash = await bcrypt.hash(nueva, 10);
+  }
   if (Object.keys(campos).length > 0) {
     await execute("UPDATE usuarios SET ? WHERE id = ?", [campos, req.user!.id]);
   }

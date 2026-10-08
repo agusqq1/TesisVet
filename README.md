@@ -41,9 +41,9 @@ Se crean solas la primera vez que arranca la app con la base vacía. Se ingresa 
 | Rol | Email | Contraseña |
 |---|---|---|
 | Veterinario / administrador | admin@vetanimal.com | Admin2026! |
-| Cliente | agustina.gomez@example.com | 123456 |
+| Cliente | agustina.gomez@example.com | 123456aa |
 
-**Antes de usar el sistema con datos reales hay que cambiar estas contraseñas o borrar estas cuentas.**
+**Antes de usar el sistema con datos reales hay que cambiar estas contraseñas o borrar estas cuentas.** Cualquier usuario cambia la suya desde Mi perfil → Cambiar contraseña. Si una cuenta de ejemplo quedó con otra contraseña, se restablece desde la PC con `npm run password -- email@ejemplo.com NuevaContraseña`.
 
 ## Ver y editar las tablas
 

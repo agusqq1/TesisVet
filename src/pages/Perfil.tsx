@@ -21,7 +21,8 @@ import {
   Share2,
   ExternalLink,
   Building2,
-  QrCode
+  QrCode,
+  Lock
 } from "lucide-react";
 import { ChapaQrModal } from "../components/ChapaQrModal";
 
@@ -55,6 +56,39 @@ export const Perfil: React.FC<PerfilProps> = ({ navigate }) => {
   const [nuevoTelefono, setNuevoTelefono] = useState("");
   const [guardandoTelefono, setGuardandoTelefono] = useState(false);
   const [errorTelefono, setErrorTelefono] = useState("");
+
+  // Cambio de contraseña desde el perfil (confirma la actual)
+  const [cambiandoClave, setCambiandoClave] = useState(false);
+  const [claveActual, setClaveActual] = useState("");
+  const [claveNueva, setClaveNueva] = useState("");
+  const [claveNueva2, setClaveNueva2] = useState("");
+  const [guardandoClave, setGuardandoClave] = useState(false);
+  const [claveMsg, setClaveMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
+  const guardarClave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (claveNueva.length < 8) {
+      setClaveMsg({ type: "error", text: "La contraseña nueva debe tener al menos 8 caracteres." });
+      return;
+    }
+    if (claveNueva !== claveNueva2) {
+      setClaveMsg({ type: "error", text: "Las contraseñas nuevas no coinciden." });
+      return;
+    }
+    setGuardandoClave(true);
+    setClaveMsg(null);
+    const r = await actualizarPerfil({ password_actual: claveActual, password_nueva: claveNueva });
+    setGuardandoClave(false);
+    if (r.success) {
+      setClaveMsg({ type: "success", text: "Contraseña cambiada. La próxima vez entrás con la nueva." });
+      setCambiandoClave(false);
+      setClaveActual("");
+      setClaveNueva("");
+      setClaveNueva2("");
+    } else {
+      setClaveMsg({ type: "error", text: r.error || "No se pudo cambiar la contraseña." });
+    }
+  };
 
   const guardarTelefono = async () => {
     setGuardandoTelefono(true);
@@ -285,6 +319,76 @@ export const Perfil: React.FC<PerfilProps> = ({ navigate }) => {
                 </button>
               </p>
             )}
+
+            {/* Cambio de contraseña, sin depender de un email */}
+            <div className="pt-3 mt-3 border-t border-slate-200">
+              {!cambiandoClave ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCambiandoClave(true);
+                    setClaveMsg(null);
+                  }}
+                  className="text-xs font-semibold text-brand-600 hover:text-brand-700 cursor-pointer flex items-center gap-1.5"
+                >
+                  <Lock size={13} />
+                  <span>Cambiar contraseña</span>
+                </button>
+              ) : (
+                <form onSubmit={guardarClave} className="space-y-2">
+                  <p className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
+                    <Lock size={13} />
+                    <span>Cambiar contraseña</span>
+                  </p>
+                  <input
+                    type="password"
+                    autoComplete="current-password"
+                    placeholder="Contraseña actual"
+                    value={claveActual}
+                    onChange={(e) => setClaveActual(e.target.value)}
+                    required
+                    className="w-full border border-slate-300 rounded-lg px-2.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
+                  />
+                  <input
+                    type="password"
+                    autoComplete="new-password"
+                    placeholder="Contraseña nueva (mínimo 8 caracteres)"
+                    value={claveNueva}
+                    onChange={(e) => setClaveNueva(e.target.value)}
+                    required
+                    minLength={8}
+                    className="w-full border border-slate-300 rounded-lg px-2.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
+                  />
+                  <input
+                    type="password"
+                    autoComplete="new-password"
+                    placeholder="Repetir la contraseña nueva"
+                    value={claveNueva2}
+                    onChange={(e) => setClaveNueva2(e.target.value)}
+                    required
+                    className="w-full border border-slate-300 rounded-lg px-2.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
+                  />
+                  {claveMsg && (
+                    <p className={`text-xs ${claveMsg.type === "error" ? "text-red-600" : "text-emerald-700"}`}>{claveMsg.text}</p>
+                  )}
+                  <div className="flex items-center gap-2">
+                    <button type="submit" disabled={guardandoClave} className="btn btn-primary btn-sm py-1.5 px-3">
+                      {guardandoClave ? "Guardando..." : "Guardar contraseña"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setCambiandoClave(false)}
+                      className="btn btn-light btn-sm py-1.5 px-3"
+                    >
+                      Cancelar
+                    </button>
+                  </div>
+                </form>
+              )}
+              {!cambiandoClave && claveMsg?.type === "success" && (
+                <p className="text-xs text-emerald-700 mt-1">{claveMsg.text}</p>
+              )}
+            </div>
           </div>
         </div>
 
