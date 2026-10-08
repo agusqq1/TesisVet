@@ -74,9 +74,28 @@ export interface Pet {
   estado_salud: string;
   alergias?: string;
   condiciones_cronicas?: string;
+  codigo_qr?: string | null;
+  qr_publico?: boolean;
+  qr_mensaje?: string | null;
   creado_en?: string;
   dueno?: string;
   telefono?: string;
+}
+
+// Lo que ve quien escanea la chapa QR de una mascota (sin datos de contacto del dueño)
+export interface MascotaPublica {
+  nombre: string;
+  especie: string;
+  raza?: string;
+  edad?: number;
+  foto?: string;
+  alergias?: string;
+  condiciones_cronicas?: string;
+  qr_mensaje?: string;
+  dueno: string;
+  activa: boolean;
+  // Solo viene si quien mira es el dueño o personal de la clínica
+  mascota_id?: number;
 }
 
 export interface Service {

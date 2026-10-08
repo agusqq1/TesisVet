@@ -395,3 +395,34 @@ export function emailRecuperacion(nombre: string, enlace: string) {
     ),
   };
 }
+
+// Alguien escaneó la chapa QR de una mascota y dejó sus datos para el dueño.
+// El dueño recibe el contacto; la clínica va en copia por si no lo ve a tiempo.
+export function emailMascotaEncontrada(datos: {
+  dueno: string;
+  mascota: string;
+  contacto: string;
+  telefono: string;
+  ubicacion: string;
+  mensaje: string;
+}) {
+  return {
+    subject: `Alguien escaneó la chapa de ${datos.mascota}`,
+    html: plantilla(
+      "ESCANEARON LA CHAPA DE TU MASCOTA",
+      `${CLINICA.nombre} &bull; Chapa QR`,
+      `
+        <p>Hola <strong>${esc(datos.dueno)}</strong>,</p>
+        <p>Una persona escaneó la chapa QR de <strong>${esc(datos.mascota)}</strong> y dejó estos datos para que te comuniques:</p>
+        ${caja(
+          fila("Nombre", datos.contacto) +
+            (datos.telefono ? fila("Teléfono", datos.telefono) : "") +
+            (datos.ubicacion ? fila("Dónde está", datos.ubicacion) : "") +
+            (datos.mensaje ? fila("Mensaje", datos.mensaje) : "")
+        )}
+        <p>Comunicate cuanto antes. Si necesitás ayuda, llamanos al ${esc(CLINICA.telefono)}.</p>
+        <p style="font-size: 13px; color: #64748b;">Tu teléfono y tu dirección no se mostraron a esta persona: solo ve el nombre y la foto de ${esc(datos.mascota)}.</p>
+      `
+    ),
+  };
+}

@@ -5,6 +5,8 @@ import type { Request, Response, NextFunction } from "express";
 import fs from "fs";
 import path from "path";
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
+import QRCode from "qrcode";
 import type { ResultSetHeader } from "./db/pool.js";
 import { GoogleGenAI } from "@google/genai";
 import { dbConfig, execute, query, queryOne, transaction } from "./db/pool.js";
@@ -28,6 +30,7 @@ import {
   emailAltaProfesional,
   emailBienvenida,
   emailDerivacion,
+  emailMascotaEncontrada,
   emailOperativo,
   emailPedido,
   emailRecuperacion,
@@ -138,6 +141,7 @@ const enlaceClave = (req: Request, token: string) =>
 const PET_SELECT = `
   SELECT m.id, m.usuario_id, m.nombre, m.especie, m.raza, m.edad, m.peso, m.foto,
          m.estado_salud, m.alergias, m.condiciones_cronicas, m.creado_en,
+         m.codigo_qr, m.qr_publico, m.qr_mensaje,
          u.nombre AS dueno, u.telefono
   FROM mascotas m
   LEFT JOIN usuarios u ON u.id = m.usuario_id`;
@@ -690,6 +694,11 @@ app.put("/api/pets/:id", requireAuth, wrap(async (req, res) => {
     if (estado_salud !== undefined) campos.estado_salud = str(estado_salud);
   }
 
+  // Chapa QR: el dueño decide si la página pública está activa y qué mensaje muestra
+  const { qr_publico, qr_mensaje } = req.body;
+  if (qr_publico !== undefined) campos.qr_publico = Boolean(qr_publico);
+  if (qr_mensaje !== undefined) campos.qr_mensaje = str(qr_mensaje).trim().slice(0, 300);
+
   if (Object.keys(campos).length > 0) {
     await execute("UPDATE mascotas SET ? WHERE id = ?", [campos, pet.id]);
   }
@@ -710,6 +719,158 @@ app.delete("/api/pets/:id", requireAuth, wrap(async (req, res) => {
     [pet.id, hoyLocal()]
   );
   res.json({ message: "Mascota eliminada correctamente." });
+}));
+
+// --- CHAPA QR ---
+// Cada mascota puede tener un código impreso en la chapa del collar. Quien lo escanea
+// abre /m/<codigo>: ve el nombre, la foto y las alertas médicas, y puede avisarle al
+// dueño sin ver su teléfono ni su dirección. El código es aleatorio para que no se
+// pueda recorrer de a uno como pasaría con el id.
+
+// Sin 0/O ni 1/I, que se confunden al leerlos impresos
+const ALFABETO_QR = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+const nuevoCodigoQr = () =>
+  Array.from({ length: 10 }, () => ALFABETO_QR[crypto.randomInt(ALFABETO_QR.length)]).join("");
+const esCodigoQr = (v: unknown): v is string => typeof v === "string" && /^[A-Z2-9]{10}$/.test(v);
+
+// Devuelve el código de la mascota y lo crea la primera vez que hace falta
+async function asegurarCodigoQr(petId: number): Promise<string> {
+  for (let intento = 0; intento < 5; intento++) {
+    const fila = await queryOne("SELECT codigo_qr FROM mascotas WHERE id = ?", [petId]);
+    if (fila?.codigo_qr) return fila.codigo_qr;
+    try {
+      await execute("UPDATE mascotas SET codigo_qr = ? WHERE id = ? AND codigo_qr IS NULL", [
+        nuevoCodigoQr(),
+        petId,
+      ]);
+    } catch (err) {
+      if (!isDup(err)) throw err; // código repetido: se vuelve a sortear
+    }
+  }
+  throw httpError(500, "No se pudo generar el código de la chapa. Intentá de nuevo.");
+}
+
+const enlaceChapa = (req: Request, codigo: string) => `${urlBase(req)}/m/${codigo}`;
+
+// Imagen del QR para imprimir en la chapa, más los ajustes de la página pública
+app.get("/api/pets/:id/qr", requireAuth, wrap(async (req, res) => {
+  const pet = await mascotaAccesible(req, req.params.id);
+  if (!pet) return res.status(404).json({ error: "Mascota no encontrada." });
+
+  const codigo = await asegurarCodigoQr(pet.id);
+  const url = enlaceChapa(req, codigo);
+  const imagen = await QRCode.toDataURL(url, {
+    width: 600,
+    margin: 2,
+    errorCorrectionLevel: "H", // tolera rayones y desgaste de la chapa
+    color: { dark: "#1e3a8a", light: "#ffffff" },
+  });
+  const ajustes = await queryOne("SELECT qr_publico, qr_mensaje FROM mascotas WHERE id = ?", [pet.id]);
+
+  res.json({
+    codigo,
+    url,
+    imagen,
+    qr_publico: Boolean(ajustes?.qr_publico),
+    qr_mensaje: ajustes?.qr_mensaje || "",
+  });
+}));
+
+const limiteChapa = limitar({
+  ventanaMs: 60 * 1000,
+  max: 60,
+  mensaje: "Demasiadas consultas seguidas. Esperá un minuto.",
+});
+
+const limiteAvisoChapa = limitar({
+  ventanaMs: 10 * 60 * 1000,
+  max: 5,
+  mensaje: "Ya enviaste varios avisos. Si es urgente, llamá a la clínica.",
+});
+
+// Datos públicos de la mascota: lo que ve quien escanea la chapa, sin iniciar sesión
+app.get("/api/publico/mascotas/:codigo", limiteChapa, wrap(async (req, res) => {
+  const codigo = String(req.params.codigo || "").toUpperCase();
+  const noExiste = { error: "Esta chapa no corresponde a ninguna mascota registrada." };
+  if (!esCodigoQr(codigo)) return res.status(404).json(noExiste);
+
+  const m = await queryOne(
+    `SELECT m.id, m.usuario_id, m.nombre, m.especie, m.raza, m.edad, m.foto, m.alergias,
+            m.condiciones_cronicas, m.qr_publico, m.qr_mensaje, u.nombre AS dueno
+     FROM mascotas m JOIN usuarios u ON u.id = m.usuario_id
+     WHERE m.codigo_qr = ? AND m.activo`,
+    [codigo]
+  );
+  if (!m) return res.status(404).json(noExiste);
+
+  // El dueño y el personal ven la chapa aunque esté desactivada, y reciben el id
+  // para saltar a la historia clínica
+  const esDuenoOVet = Boolean(req.user) && (req.user!.rol === "veterinario" || req.user!.id === m.usuario_id);
+  const activa = Boolean(m.qr_publico);
+  if (!activa && !esDuenoOVet) {
+    return res.json({ nombre: m.nombre, especie: m.especie, dueno: "", activa: false });
+  }
+
+  res.json({
+    nombre: m.nombre,
+    especie: m.especie,
+    raza: m.raza || undefined,
+    edad: m.edad ?? undefined,
+    foto: m.foto || undefined,
+    alergias: m.alergias || undefined,
+    condiciones_cronicas: m.condiciones_cronicas || undefined,
+    qr_mensaje: m.qr_mensaje || undefined,
+    dueno: String(m.dueno || "").split(" ")[0], // solo el nombre de pila
+    activa,
+    ...(esDuenoOVet && { mascota_id: m.id }),
+  });
+}));
+
+// Quien encontró a la mascota deja sus datos; el dueño los recibe por email
+app.post("/api/publico/mascotas/:codigo/aviso", limiteAvisoChapa, wrap(async (req, res) => {
+  const codigo = String(req.params.codigo || "").toUpperCase();
+  if (!esCodigoQr(codigo)) {
+    return res.status(404).json({ error: "Esta chapa no corresponde a ninguna mascota registrada." });
+  }
+
+  const contacto = str(req.body.nombre).trim().slice(0, 80);
+  const telefono = str(req.body.telefono).trim().slice(0, 40);
+  const ubicacion = str(req.body.ubicacion).trim().slice(0, 200);
+  const mensaje = str(req.body.mensaje).trim().slice(0, 500);
+  if (!contacto) return res.status(400).json({ error: "Decinos tu nombre para que el dueño sepa quién lo contacta." });
+  if (!telefono && !mensaje) {
+    return res.status(400).json({ error: "Dejá un teléfono o un mensaje para que el dueño pueda comunicarse." });
+  }
+
+  const m = await queryOne(
+    `SELECT m.nombre, m.qr_publico, u.nombre AS dueno, u.email
+     FROM mascotas m JOIN usuarios u ON u.id = m.usuario_id
+     WHERE m.codigo_qr = ? AND m.activo`,
+    [codigo]
+  );
+  if (!m || !m.qr_publico) {
+    return res.status(404).json({ error: "Esta chapa no está activa. Llamá a la clínica para que te ayudemos." });
+  }
+
+  const { delivered } = await enviarEmail({
+    to: m.email,
+    copiaClinica: true,
+    ...emailMascotaEncontrada({
+      dueno: m.dueno,
+      mascota: m.nombre,
+      contacto,
+      telefono,
+      ubicacion,
+      mensaje,
+    }),
+  });
+
+  if (!delivered) {
+    return res.status(502).json({
+      error: `No pudimos avisarle al dueño en este momento. Llamá a la clínica al ${CLINICA.telefono} y te ayudamos.`,
+    });
+  }
+  res.json({ message: `Le avisamos al dueño de ${m.nombre}. ¡Gracias por ayudar!` });
 }));
 
 // --- SERVICES ---

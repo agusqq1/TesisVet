@@ -18,6 +18,7 @@ import { Tienda } from "./pages/Tienda";
 import { Carrito } from "./pages/Carrito";
 import { Perfil } from "./pages/Perfil";
 import { VeterinariasMoviles } from "./pages/VeterinariasMoviles";
+import { MascotaPublica } from "./pages/MascotaPublica";
 import { AdminDashboard } from "./pages/AdminDashboard";
 import { AdminTurnos } from "./pages/AdminTurnos";
 import { AdminPacientes } from "./pages/AdminPacientes";
@@ -57,6 +58,11 @@ function AppContent() {
 
   const isAdminPage = currentPath.startsWith("/admin");
 
+  // Página que abre la chapa QR del collar (/m/<codigo>): pública y sin menú, pensada
+  // para el celular de quien encuentra a la mascota
+  const isChapaPage = currentPath.startsWith("/m/");
+  const codigoChapa = isChapaPage ? currentPath.slice(3).split("/")[0] : "";
+
   // El servidor valida los permisos en cada pedido; esto solo evita mostrar
   // pantallas que el usuario no va a poder usar.
   const faltaSesion = !user && (isAdminPage || RUTAS_PRIVADAS.includes(currentPath));
@@ -78,11 +84,12 @@ function AppContent() {
 
   return (
     <div className="min-h-screen flex flex-col justify-between">
-      {!isAuthPage && !isAdminPage && (
+      {!isAuthPage && !isAdminPage && !isChapaPage && (
         <Header currentPath={currentPath} navigate={navigate} />
       )}
 
       <main className="flex-1">
+        {isChapaPage && <MascotaPublica codigo={codigoChapa} navigate={navigate} />}
         {currentPath === "/" && <Home navigate={navigate} />}
         {currentPath === "/login" && <Login navigate={navigate} />}
         {currentPath === "/register" && <Register navigate={navigate} />}
@@ -115,11 +122,13 @@ function AppContent() {
         )}
       </main>
 
-      {!isAuthPage && !isAdminPage && <Footer navigate={navigate} />}
+      {!isAuthPage && !isAdminPage && !isChapaPage && <Footer navigate={navigate} />}
 
-      {!isAuthPage && !isAdminPage && <AvisoOperativos currentPath={currentPath} navigate={navigate} />}
+      {!isAuthPage && !isAdminPage && !isChapaPage && (
+        <AvisoOperativos currentPath={currentPath} navigate={navigate} />
+      )}
 
-      {!isAuthPage && <ChatWidget navigate={navigate} />}
+      {!isAuthPage && !isChapaPage && <ChatWidget navigate={navigate} />}
     </div>
   );
 }

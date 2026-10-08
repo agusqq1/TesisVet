@@ -20,8 +20,10 @@ import {
   HeartPulse,
   Share2,
   ExternalLink,
-  Building2
+  Building2,
+  QrCode
 } from "lucide-react";
+import { ChapaQrModal } from "../components/ChapaQrModal";
 
 interface PerfilProps {
   navigate: (path: string) => void;
@@ -46,6 +48,7 @@ export const Perfil: React.FC<PerfilProps> = ({ navigate }) => {
 
   // Editing state
   const [editingPet, setEditingPet] = useState<Pet | null>(null);
+  const [qrPet, setQrPet] = useState<Pet | null>(null);
   const [editNombre, setEditNombre] = useState("");
   const [editEspecie, setEditEspecie] = useState("Perro");
   const [editRaza, setEditRaza] = useState("");
@@ -296,6 +299,14 @@ export const Perfil: React.FC<PerfilProps> = ({ navigate }) => {
 
                     <div className="flex items-center gap-1.5">
                       <button
+                        onClick={() => setQrPet(p)}
+                        className="btn btn-outline btn-sm text-xs py-1 px-2.5 flex items-center gap-1"
+                        title="Chapa QR para el collar"
+                      >
+                        <QrCode size={12} />
+                        <span>Chapa QR</span>
+                      </button>
+                      <button
                         onClick={() => openEditPet(p)}
                         className="btn btn-outline btn-sm text-xs py-1 px-2.5 flex items-center gap-1"
                         title="Editar datos y foto de la mascota"
@@ -318,6 +329,17 @@ export const Perfil: React.FC<PerfilProps> = ({ navigate }) => {
           )}
         </div>
       </div>
+
+      {qrPet && (
+        <ChapaQrModal
+          pet={qrPet}
+          onClose={() => setQrPet(null)}
+          onUpdated={(updated) => {
+            setPets((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
+            setQrPet(updated);
+          }}
+        />
+      )}
 
       {/* Edit Pet Modal */}
       {editingPet && (
