@@ -346,7 +346,9 @@ app.post("/api/auth/register", limiteCuentas, wrap(async (req, res) => {
 
   const newUser = await queryOne("SELECT * FROM usuarios WHERE id = ?", [userId]);
   await crearSesion(req, res, userId);
-  enviarEmail({ to: newUser.email, ...emailBienvenida(newUser.nombre) }).catch(() => {});
+  // Se espera el envío antes de responder: en Vercel la función se congela al
+  // responder y un envío "en segundo plano" nunca llega a salir.
+  await enviarEmail({ to: newUser.email, ...emailBienvenida(newUser.nombre) });
   res.json({ user: mapUser(newUser) });
 }));
 
@@ -1154,11 +1156,12 @@ app.post("/api/derivaciones", requireVet, wrap(async (req, res) => {
   const [newDerivacion] = await fetchDerivaciones("WHERE d.id = ?", [derivacionId]);
 
   if (newDerivacion.dueno_email) {
-    enviarEmail({
+    // Con await por el mismo motivo que en el registro (ver /api/auth/register)
+    await enviarEmail({
       to: newDerivacion.dueno_email,
       copiaClinica: true,
       ...emailDerivacion(newDerivacion),
-    }).catch(() => {});
+    });
   }
 
   res.status(201).json(newDerivacion);
