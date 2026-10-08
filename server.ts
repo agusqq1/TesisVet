@@ -103,6 +103,19 @@ const toNumOrNull = (v: unknown) => {
   return Number.isFinite(n) ? n : null;
 };
 
+// Límites razonables para los datos de una mascota: evitan errores de tipeo
+// (una mascota de 100 kg o de 200 años) en la ficha y en la historia clínica.
+const EDAD_MAX = 20;
+const PESO_MAX = 80;
+const validarMedidas = (edad: number | null | undefined, peso: number | null | undefined) => {
+  if (edad != null && (edad < 0 || edad > EDAD_MAX)) {
+    throw httpError(400, `La edad tiene que estar entre 0 y ${EDAD_MAX} años.`);
+  }
+  if (peso != null && (peso <= 0 || peso > PESO_MAX)) {
+    throw httpError(400, `El peso tiene que estar entre 0,1 y ${PESO_MAX} kg.`);
+  }
+};
+
 const numero = (v: unknown) => {
   const n = Number(v);
   if (!Number.isFinite(n) || n < 0) {
@@ -663,6 +676,8 @@ app.post("/api/pets", requireAuth, wrap(async (req, res) => {
     defaultFoto = "https://images.unsplash.com/photo-1425082661705-1834bfd09dca?w=500&q=80";
   }
 
+  validarMedidas(toNumOrNull(edad), toNumOrNull(peso));
+
   const newPet = {
     usuario_id: owner.id,
     nombre: str(nombre),
@@ -710,6 +725,7 @@ app.put("/api/pets/:id", requireAuth, wrap(async (req, res) => {
   if (raza !== undefined) campos.raza = str(raza);
   if (edad !== undefined) campos.edad = toNumOrNull(edad);
   if (peso !== undefined) campos.peso = toNumOrNull(peso);
+  validarMedidas(campos.edad, campos.peso);
   if (foto !== undefined) campos.foto = guardarImagen(foto);
 
   // Los datos clínicos solo los modifica el personal de la clínica
@@ -1306,6 +1322,14 @@ app.post("/api/derivaciones", requireVet, wrap(async (req, res) => {
   const emisionStr = hoyLocal();
   const validezStr = sumarDias(emisionStr, 30);
 
+  // Fecha y hora en que el dueño tiene que presentarse en el centro (opcional):
+  // si se cargan, van en el email con la dirección y los horarios del centro
+  const fechaPresentacion = esFecha(req.body.fecha_presentacion) ? req.body.fecha_presentacion : null;
+  const horaPresentacion = esHora(req.body.hora_presentacion) ? req.body.hora_presentacion : null;
+  if (fechaPresentacion && fechaPresentacion < emisionStr) {
+    return res.status(400).json({ error: "La fecha de presentación no puede ser anterior a hoy." });
+  }
+
   // Si la derivación proviene de un turno médico, se asocia en la misma transacción
   const turnoId = toId(req.body.turno_id);
 
@@ -1331,6 +1355,8 @@ app.post("/api/derivaciones", requireVet, wrap(async (req, res) => {
             indicaciones_previas: str(indicaciones_previas) || "Concurrir con esta orden médica impresa o en el celular.",
             fecha_emision: emisionStr,
             fecha_validez_hasta: validezStr,
+            fecha_presentacion: fechaPresentacion,
+            hora_presentacion: horaPresentacion,
             estado: "activa",
           },
         ]);

@@ -483,6 +483,9 @@ export const Perfil: React.FC<PerfilProps> = ({ navigate }) => {
                       value={editEdad}
                       onChange={(e) => setEditEdad(e.target.value === "" ? "" : Number(e.target.value))}
                       min="0"
+                      max="20"
+                      step="0.5"
+                      title="Hasta 20 años"
                       className="w-full text-sm p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-brand-600"
                     />
                   </div>
@@ -493,7 +496,9 @@ export const Perfil: React.FC<PerfilProps> = ({ navigate }) => {
                       step="0.1"
                       value={editPeso}
                       onChange={(e) => setEditPeso(e.target.value === "" ? "" : Number(e.target.value))}
-                      min="0"
+                      min="0.1"
+                      max="80"
+                      title="Hasta 80 kg"
                       className="w-full text-sm p-2 border border-gray-300 rounded-lg focus:outline-none focus:border-brand-600"
                     />
                   </div>

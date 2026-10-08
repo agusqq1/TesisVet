@@ -421,8 +421,9 @@ export const AdminPacientes: React.FC<AdminPacientesProps> = ({ navigate }) => {
                   <input
                     type="number"
                     min="0"
+                    max="20"
                     step="0.5"
-                    placeholder="Ej: 2"
+                    placeholder="Ej: 2 (hasta 20)"
                     value={edad}
                     onChange={(e) => setEdad(e.target.value)}
                     className="w-full border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
@@ -435,9 +436,10 @@ export const AdminPacientes: React.FC<AdminPacientesProps> = ({ navigate }) => {
                   </label>
                   <input
                     type="number"
-                    min="0"
+                    min="0.1"
+                    max="80"
                     step="0.1"
-                    placeholder="Ej: 4.5"
+                    placeholder="Ej: 4.5 (hasta 80)"
                     value={peso}
                     onChange={(e) => setPeso(e.target.value)}
                     className="w-full border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"

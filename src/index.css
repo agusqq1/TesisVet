@@ -512,90 +512,172 @@
 }
 
 /* ---------------- Escena de la portada ----------------
-   Un gato y un perro que lo persigue, en un circuito con perspectiva: la ida pasa
-   cerca (grandes, abajo) y la vuelta pasa lejos (chicos, arriba y más claros).
+   Un gato y un perro que lo persigue, en un circuito con perspectiva real: la ida
+   pasa cerca (translateZ 0); en los extremos giran sobre su eje (rotateY) y se alejan
+   al fondo (translateZ negativo), con lo que se achican y suben al horizonte solos.
    Componente: src/components/EscenaMascotas.tsx */
 .escena{
-  position:relative; height:150px; overflow:hidden;
-  perspective:700px; perspective-origin:50% 20%;
+  position:relative; height:170px; overflow:hidden;
+  perspective:700px; perspective-origin:50% 22%;
   user-select:none; pointer-events:none;
 }
+.escena-cielo{
+  position:absolute; inset:0 0 auto 0; height:46px;
+  background:linear-gradient(180deg, rgba(219,234,254,.6), rgba(239,246,255,0));
+}
+.sol{
+  position:absolute; right:9%; top:4px; width:34px; height:34px; border-radius:50%;
+  background:radial-gradient(circle at 40% 40%, #fff7c2, #fbbf24 70%, #f59e0b);
+  box-shadow:0 0 24px 8px rgba(251,191,36,.28);
+}
+.nube{
+  position:absolute; top:10px; height:14px; width:54px; border-radius:999px; background:#fff;
+  box-shadow:0 1px 2px rgba(15,23,42,.06); opacity:.95;
+  animation:nube 60s linear infinite;
+}
+.nube::before, .nube::after{ content:""; position:absolute; bottom:4px; border-radius:50%; background:#fff; }
+.nube::before{ left:9px; width:22px; height:22px; }
+.nube::after{ left:24px; width:16px; height:16px; }
+.nube-1{ left:-10%; top:8px; }
+.nube-2{ left:-10%; top:22px; width:40px; height:10px; animation-duration:80s; animation-delay:-30s; opacity:.8; }
+.nube-3{ left:-10%; top:4px; width:64px; animation-duration:70s; animation-delay:-55s; }
+@keyframes nube{ from{ transform:translateX(0); } to{ transform:translateX(125vw); } }
+
 .escena-piso{
-  position:absolute; left:0; right:0; top:38px; bottom:0;
-  background:linear-gradient(180deg, #dcefd5 0%, #c9e6bf 45%, #b9dfad 100%);
-  border-top:1px solid rgba(255,255,255,.7);
+  position:absolute; left:0; right:0; top:46px; bottom:0;
+  background:linear-gradient(180deg, #dcefd5 0%, #c9e6bf 45%, #b4dba7 100%);
+  border-top:1px solid rgba(255,255,255,.75);
 }
 /* sendero en perspectiva: angosto en el horizonte, ancho adelante */
 .escena-sendero{
-  position:absolute; left:0; right:0; top:46px; bottom:0;
-  background:linear-gradient(180deg, rgba(37,99,235,.06), rgba(37,99,235,.14));
-  clip-path:polygon(44% 0, 56% 0, 100% 100%, 0 100%);
+  position:absolute; left:0; right:0; top:54px; bottom:0;
+  background:linear-gradient(180deg, rgba(37,99,235,.05), rgba(37,99,235,.14));
+  clip-path:polygon(45% 0, 55% 0, 100% 100%, 0 100%);
+}
+.cerco{
+  position:absolute; left:0; right:0; top:34px; height:14px;
+  background:
+    repeating-linear-gradient(90deg, #f1f5f9 0 4px, transparent 4px 22px),
+    linear-gradient(180deg, transparent 0 5px, #e2e8f0 5px 7px, transparent 7px 100%);
+  opacity:.9;
 }
 .arbusto{
-  position:absolute; border-radius:50% 50% 45% 45%; background:#86c47a;
-  box-shadow:inset -6px -4px 0 rgba(0,0,0,.08);
+  position:absolute; border-radius:50% 50% 45% 45%;
+  background:radial-gradient(circle at 35% 30%, #b7e3ab, #7fbf73 75%);
+  box-shadow:inset -6px -4px 0 rgba(0,0,0,.08), 0 3px 6px rgba(15,23,42,.08);
 }
 /* sobre el horizonte: los del centro quedan "lejos" (más chicos) */
-.arbusto-1{ width:64px; height:40px; left:3%;  top:14px; background:#8fc984; }
-.arbusto-2{ width:34px; height:22px; left:27%; top:24px; background:#b3dfa9; }
-.arbusto-3{ width:40px; height:26px; left:63%; top:22px; background:#a5d79a; }
-.arbusto-4{ width:70px; height:44px; left:88%; top:10px; background:#86c47a; }
+.arbusto-1{ width:64px; height:40px; left:3%;  top:22px; }
+.arbusto-2{ width:32px; height:21px; left:27%; top:33px; }
+.arbusto-3{ width:38px; height:25px; left:63%; top:31px; }
+.arbusto-4{ width:70px; height:44px; left:88%; top:18px; }
 
-.corredor{ position:absolute; bottom:18px; left:0; width:120px; will-change:transform; transform-origin:50% 100%; }
+.corredor{
+  position:absolute; bottom:16px; left:0; width:120px; will-change:transform;
+  transform-origin:50% 100%; transform-style:preserve-3d;
+}
 .corredor-gato{ width:104px; animation:circuito 14s linear infinite; }
 .corredor-perro{ animation:circuito 14s linear infinite; animation-delay:-12.9s; }
-.corredor-cuerpo{ animation:trote .32s ease-in-out infinite; transform-origin:50% 100%; }
+.corredor-cuerpo{
+  animation:galope .32s ease-in-out infinite; transform-origin:50% 100%;
+  filter:drop-shadow(0 3px 2px rgba(15,23,42,.18));
+}
 .corredor-svg{ width:100%; height:auto; display:block; }
 .corredor-sombra{
-  position:absolute; left:14%; right:14%; bottom:-8px; height:12px; border-radius:50%;
-  background:rgba(15,23,42,.22); filter:blur(3px);
+  position:absolute; left:12%; right:12%; bottom:-8px; height:12px; border-radius:50%;
+  background:radial-gradient(ellipse, rgba(15,23,42,.30), rgba(15,23,42,0) 70%);
   animation:sombra .32s ease-in-out infinite;
 }
-
-/* Circuito: ida cerca (translateZ 0, escala 1) → giro → vuelta lejos (escala .55, más arriba) */
-@keyframes circuito{
-  0%   { transform:translate3d(-20vw, 0, 0) scaleX(1) scale(1); opacity:1; }
-  46%  { transform:translate3d(100vw, 0, 0) scaleX(1) scale(1); opacity:1; }
-  48%  { transform:translate3d(104vw, -56px, 0) scaleX(-1) scale(.55); opacity:.85; }
-  50%  { transform:translate3d(100vw, -56px, 0) scaleX(-1) scale(.55); opacity:.85; }
-  96%  { transform:translate3d(-20vw, -56px, 0) scaleX(-1) scale(.55); opacity:.85; }
-  98%  { transform:translate3d(-24vw, 0, 0) scaleX(1) scale(1); opacity:1; }
-  100% { transform:translate3d(-20vw, 0, 0) scaleX(1) scale(1); opacity:1; }
+/* polvo que levantan las patas */
+.polvo{
+  position:absolute; bottom:-2px; left:8%; width:10px; height:10px; border-radius:50%;
+  background:rgba(148,163,184,.45); opacity:0;
+  animation:polvo .9s ease-out infinite;
 }
-@keyframes trote{
-  0%,100%{ transform:translateY(0) rotate(0); }
-  50%{ transform:translateY(-5px) rotate(-3deg); }
+.polvo-2{ left:16%; width:7px; height:7px; animation-delay:-.3s; }
+.polvo-3{ left:3%; width:8px; height:8px; animation-delay:-.6s; }
+@keyframes polvo{
+  0%{ opacity:0; transform:translate(0, 0) scale(.4); }
+  20%{ opacity:.8; }
+  100%{ opacity:0; transform:translate(-26px, -14px) scale(1.8); }
+}
+
+/* Circuito: ida cerca → giro sobre el eje y alejamiento → vuelta lejos → giro y regreso */
+@keyframes circuito{
+  0%   { transform:translate3d(-20vw, 0, 0) rotateY(0deg); }
+  45%  { transform:translate3d(100vw, 0, 0) rotateY(0deg); }
+  50%  { transform:translate3d(104vw, 0, -520px) rotateY(180deg); }
+  95%  { transform:translate3d(-20vw, 0, -520px) rotateY(180deg); }
+  100% { transform:translate3d(-20vw, 0, 0) rotateY(360deg); }
+}
+/* galope: el cuerpo sube y se estira al impulsarse, baja y se comprime al apoyar */
+@keyframes galope{
+  0%,100%{ transform:translateY(0) scale(1.04, .96) rotate(1deg); }
+  50%{ transform:translateY(-6px) scale(.97, 1.05) rotate(-4deg); }
 }
 @keyframes sombra{
-  0%,100%{ transform:scaleX(1); opacity:.9; }
-  50%{ transform:scaleX(.8); opacity:.6; }
+  0%,100%{ transform:scaleX(1); opacity:1; }
+  50%{ transform:scaleX(.78); opacity:.55; }
 }
 /* Patas: dos pares alternados, pivotan desde la cadera */
 .pata{ transform-box:fill-box; transform-origin:50% 0; animation:zancada .32s ease-in-out infinite; }
 .pata-a, .pata-d{ animation-delay:0s; }
 .pata-b, .pata-c{ animation-delay:-.16s; }
 @keyframes zancada{
-  0%,100%{ transform:rotate(28deg); }
-  50%{ transform:rotate(-28deg); }
+  0%,100%{ transform:rotate(30deg); }
+  50%{ transform:rotate(-30deg); }
 }
 .cola{ transform-box:fill-box; transform-origin:100% 50%; animation:meneo .5s ease-in-out infinite; }
 @keyframes meneo{
-  0%,100%{ transform:rotate(-12deg); }
-  50%{ transform:rotate(14deg); }
+  0%,100%{ transform:rotate(-14deg); }
+  50%{ transform:rotate(16deg); }
 }
 .oreja{ transform-box:fill-box; transform-origin:50% 0; animation:oreja .32s ease-in-out infinite; }
 @keyframes oreja{
   0%,100%{ transform:rotate(0); }
-  50%{ transform:rotate(-10deg); }
+  50%{ transform:rotate(-12deg); }
 }
 
 @media (max-width:640px){
-  .escena{ height:120px; }
+  .escena{ height:136px; }
   .corredor{ width:84px; }
   .corredor-gato{ width:72px; }
+  .sol{ width:26px; height:26px; }
 }
 @media (prefers-reduced-motion: reduce){
-  .corredor, .corredor-cuerpo, .corredor-sombra, .pata, .cola, .oreja{ animation:none; }
+  .corredor, .corredor-cuerpo, .corredor-sombra, .pata, .cola, .oreja, .polvo, .nube{ animation:none; }
+  .polvo{ display:none; }
+  .nube-1{ left:12%; } .nube-2{ left:48%; } .nube-3{ left:72%; }
   .corredor-gato{ transform:translate3d(55vw, 0, 0); }
   .corredor-perro{ transform:translate3d(30vw, 0, 0); }
+}
+
+/* ---------------- Más movimiento ----------------
+   Subrayado animado del menú, entrada de ventanas emergentes, botones que se
+   elevan y secciones de la portada que aparecen al hacer scroll ([data-reveal]). */
+.main-nav button{ position:relative; }
+.main-nav button::after{
+  content:""; position:absolute; left:14px; right:14px; bottom:5px; height:2px; border-radius:2px;
+  background:var(--marca); transform:scaleX(0); transform-origin:left center; transition:transform .28s ease;
+}
+.main-nav button.active::after{ transform:scaleX(1); }
+
+.btn-primary:not(:disabled):hover{ transform:translateY(-1px); box-shadow:0 6px 16px rgba(37,99,235,.28); }
+
+.fixed.inset-0.z-50{ animation:fondo-entra .2s ease-out both; }
+.fixed.inset-0.z-50 > div{ animation:modal-entra .28s cubic-bezier(.2,.8,.2,1) both; }
+@keyframes fondo-entra{ from{ opacity:0; } to{ opacity:1; } }
+@keyframes modal-entra{
+  from{ opacity:0; transform:translateY(16px) scale(.97); }
+  to{ opacity:1; transform:none; }
+}
+
+[data-reveal]{ opacity:0; transform:translateY(28px); transition:opacity .7s ease, transform .7s cubic-bezier(.2,.8,.2,1); }
+[data-reveal].visible{ opacity:1; transform:none; }
+
+@media (prefers-reduced-motion: reduce){
+  .main-nav button::after{ transition:none; }
+  .btn-primary:not(:disabled):hover{ transform:none; }
+  .fixed.inset-0.z-50, .fixed.inset-0.z-50 > div{ animation:none; }
+  [data-reveal]{ opacity:1; transform:none; transition:none; }
 }

@@ -209,34 +209,86 @@ export function emailTurno(t: {
 }
 
 // `orden` es una orden de derivación tal como la devuelve la API
+// "2026-10-20" → "lunes 20 de octubre de 2026"
+const fechaLargaConAnio = (fecha: string) =>
+  new Intl.DateTimeFormat("es-AR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(new Date(`${String(fecha).substring(0, 10)}T12:00:00Z`));
+
+const capitalizar = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
+
+// "2026-10-20" → "20/10/2026"
+const fechaCorta = (fecha: string) => {
+  const [a, m, d] = String(fecha).substring(0, 10).split("-");
+  return d && m && a ? `${d}/${m}/${a}` : String(fecha);
+};
+
+// Email al dueño cuando el veterinario emite una orden de derivación: a qué centro
+// ir, dónde queda y cómo llegar, en qué horario atiende y, si ya se coordinó, el día y
+// la hora en que tiene que presentarse. La orden médica completa va debajo.
 export function emailDerivacion(orden: any) {
   const centro = orden.centro_destino;
+  const direccionCompleta = `${centro.direccion}, ${centro.localidad}`;
+  const mapa = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(direccionCompleta)}`;
+  const hora = orden.hora_presentacion ? String(orden.hora_presentacion).substring(0, 5) : "";
+  const cuando = orden.fecha_presentacion
+    ? `${capitalizar(fechaLargaConAnio(orden.fecha_presentacion))}${hora ? ` a las ${hora} hs` : ""}`
+    : "";
+
   return {
-    subject: `Orden médica de derivación #${orden.codigo} - ${orden.mascota_nombre} (${centro.nombre})`,
+    subject: cuando
+      ? `${orden.mascota_nombre}: derivación a ${centro.nombre} el ${fechaCorta(orden.fecha_presentacion)}${hora ? ` a las ${hora}` : ""}`
+      : `Orden de derivación #${orden.codigo} - ${orden.mascota_nombre} (${centro.nombre})`,
     html: plantilla(
       "ORDEN MÉDICA DE DERIVACIÓN E INTERCONSULTA",
       `${esc(orden.clinica_origen)} &bull; Código: <strong>${esc(orden.codigo)}</strong>`,
       `
-        <p>Estimado/a <strong>${esc(orden.dueno_nombre)}</strong>,</p>
-        <p>El equipo veterinario de ${CLINICA.nombre} emitió una <strong>orden de derivación médica</strong> para tu mascota <strong>${esc(orden.mascota_nombre)}</strong>.</p>
+        <p>Hola <strong>${esc(orden.dueno_nombre)}</strong>,</p>
+        <p>El equipo de ${CLINICA.nombre} derivó a <strong>${esc(orden.mascota_nombre)}</strong> a otro centro para <strong>${esc(orden.estudio_solicitado)}</strong>. Acá tenés todo lo que necesitás para ir:</p>
+
         ${caja(`
-          <p style="margin: 0 0 8px; font-weight: bold; color: #1e3a8a;">Centro receptor:</p>
-          <p style="margin: 0; font-size: 15px; font-weight: bold;">${esc(centro.nombre)}</p>
-          <p style="margin: 4px 0 0; color: #475569; font-size: 13px;">Dirección: ${esc(centro.direccion)} (${esc(centro.localidad)})</p>
-          <p style="margin: 4px 0 0; color: #475569; font-size: 13px;">Tel: ${esc(centro.telefono)} &bull; WhatsApp: ${esc(centro.whatsapp || "-")}</p>
-          <p style="margin: 4px 0 0; color: #475569; font-size: 13px;">Horarios: ${esc(centro.horarios)}</p>
+          <p style="margin: 0 0 6px; font-weight: bold; color: #1e3a8a; font-size: 12px; text-transform: uppercase; letter-spacing: .04em;">Dónde</p>
+          <p style="margin: 0; font-size: 16px; font-weight: bold;">${esc(centro.nombre)}</p>
+          <p style="margin: 4px 0 0; color: #334155; font-size: 14px;">${esc(direccionCompleta)}</p>
+          ${centro.distancia_estimada ? `<p style="margin: 2px 0 0; color: #64748b; font-size: 12px;">${esc(centro.distancia_estimada)} desde ${esc(CLINICA.nombre)}</p>` : ""}
+          <p style="margin: 10px 0 0;">
+            <a href="${esc(mapa)}" style="background-color: #2563eb; color: white; padding: 9px 14px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 13px;">Cómo llegar (Google Maps)</a>
+          </p>
+          <p style="margin: 12px 0 0; color: #475569; font-size: 13px;">Tel: ${esc(centro.telefono || "-")} &bull; WhatsApp: ${esc(centro.whatsapp || "-")}</p>
+          <p style="margin: 4px 0 0; color: #475569; font-size: 13px;">Horario de atención: ${esc(centro.horarios || "consultar")}</p>
+          ${centro.medico_responsable ? `<p style="margin: 4px 0 0; color: #475569; font-size: 13px;">Profesional a cargo: ${esc(centro.medico_responsable)}</p>` : ""}
         `)}
-        <div style="margin: 16px 0; font-size: 13px; line-height: 1.6;">
+
+        ${caja(`
+          <p style="margin: 0 0 6px; font-weight: bold; color: #1e3a8a; font-size: 12px; text-transform: uppercase; letter-spacing: .04em;">Cuándo</p>
+          ${
+            cuando
+              ? `<p style="margin: 0; font-size: 16px; font-weight: bold;">${esc(cuando)}</p>
+                 <p style="margin: 6px 0 0; color: #475569; font-size: 13px;">Llegá unos 10 minutos antes con esta orden.</p>`
+              : `<p style="margin: 0; font-size: 14px;">Comunicate con el centro para coordinar el turno. Esta orden tiene validez hasta el <strong>${esc(fechaCorta(orden.fecha_validez_hasta))}</strong>.</p>`
+          }
+          <p style="margin: 10px 0 0; color: #b45309; font-size: 13px;"><strong>Preparación previa:</strong> ${esc(orden.indicaciones_previas)}</p>
+          <p style="margin: 6px 0 0; color: #475569; font-size: 13px;"><strong>Llevá:</strong> esta orden (impresa o en el celular), la libreta sanitaria de ${esc(orden.mascota_nombre)} y los estudios previos si los tenés.</p>
+        `)}
+
+        <p style="margin: 18px 0 6px; font-weight: bold; color: #1e3a8a; font-size: 12px; text-transform: uppercase; letter-spacing: .04em;">Orden médica</p>
+        <div style="font-size: 13px; line-height: 1.6;">
+          ${fila("Paciente", `${orden.mascota_nombre} (${orden.especie}${orden.raza ? `, ${orden.raza}` : ""})`)}
           ${fila("Estudio solicitado", orden.estudio_solicitado)}
           ${fila("Especialidad", orden.especialidad_derivada)}
           ${fila("Motivo de derivación", orden.motivo_derivacion)}
           ${fila("Sospecha diagnóstica", orden.sospecha_diagnostica)}
-          <p style="margin: 0 0 6px; color: #b45309;"><strong>Indicaciones previas:</strong> ${esc(orden.indicaciones_previas)}</p>
+          ${orden.resumen_clinico ? fila("Resumen clínico", orden.resumen_clinico) : ""}
           ${fila("Profesional emisor", `${orden.veterinario_emisor_nombre} ${orden.veterinario_matricula ? `(${orden.veterinario_matricula})` : ""}`)}
-          ${fila("Validez", `hasta el ${orden.fecha_validez_hasta}`)}
+          ${fila("Emitida el", fechaCorta(orden.fecha_emision))}
+          ${fila("Válida hasta", fechaCorta(orden.fecha_validez_hasta))}
         </div>
         <p style="font-size: 12px; color: #64748b; margin-top: 20px;">
-          Podés presentar esta orden impresa o mostrarla desde tu celular al llegar a ${esc(centro.nombre)}.
+          Ante cualquier duda, llamanos al ${esc(CLINICA.telefono)} o respondé este correo.
         </p>
       `
     ),

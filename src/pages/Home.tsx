@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Service, CentroVeterinarioRecomendado } from "../types";
 import { Cargando } from "../components/Cargando";
 import { EscenaMascotas } from "../components/EscenaMascotas";
+import { useReveal } from "../hooks/useReveal";
 import { api } from "../api";
 import { formatPrecio } from "../format";
 import { CLINICA } from "../clinica";
@@ -76,6 +77,9 @@ const PASOS_DERIVACION = [
 export const Home: React.FC<HomeProps> = ({ navigate }) => {
   const [services, setServices] = useState<Service[]>([]);
   const [centros, setCentros] = useState<CentroVeterinarioRecomendado[]>([]);
+
+  // Las secciones marcadas con data-reveal aparecen al hacer scroll
+  useReveal([services.length, centros.length]);
 
   // Servicios y centros de derivación se leen de la base: la portada muestra lo que realmente se ofrece
   useEffect(() => {
@@ -161,7 +165,7 @@ export const Home: React.FC<HomeProps> = ({ navigate }) => {
       </section>
 
       {/* ---------------- Accesos principales ---------------- */}
-      <section className="container py-20">
+      <section className="container py-20" data-reveal>
         <div className="max-w-2xl mb-10">
           <h2 className="text-3xl tracking-tight">Todo lo que podés hacer desde acá</h2>
           <p className="mt-3 text-slate-600">
@@ -191,7 +195,7 @@ export const Home: React.FC<HomeProps> = ({ navigate }) => {
       </section>
 
       {/* ---------------- Servicios y precios ---------------- */}
-      <section id="servicios" className="bg-slate-50 border-y border-slate-200/70 scroll-mt-20">
+      <section id="servicios" className="bg-slate-50 border-y border-slate-200/70 scroll-mt-20" data-reveal>
         <div className="container py-20">
           <div className="max-w-2xl mb-10">
             <h2 className="text-3xl tracking-tight">Servicios y precios</h2>
@@ -233,7 +237,7 @@ export const Home: React.FC<HomeProps> = ({ navigate }) => {
       </section>
 
       {/* ---------------- Derivaciones ---------------- */}
-      <section className="container py-20">
+      <section className="container py-20" data-reveal>
         <div className="max-w-2xl mb-12">
           <h2 className="text-3xl tracking-tight">Cuando hace falta un especialista</h2>
           <p className="mt-3 text-slate-600">
@@ -259,7 +263,7 @@ export const Home: React.FC<HomeProps> = ({ navigate }) => {
       </section>
 
       {/* ---------------- Ubicación ---------------- */}
-      <section className="container pb-20">
+      <section className="container pb-20" data-reveal>
         <div className="bg-brand-950 text-white rounded-3xl overflow-hidden grid grid-cols-1 lg:grid-cols-2">
           <div className="p-8 sm:p-12">
             <h2 className="text-3xl tracking-tight text-white">Dónde estamos</h2>

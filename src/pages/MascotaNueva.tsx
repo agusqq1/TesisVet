@@ -190,7 +190,10 @@ export const MascotaNueva: React.FC<MascotaNuevaProps> = ({ navigate }) => {
                   onChange={(e) => setEdad(e.target.value)}
                   placeholder="Ej: 3"
                   min="0"
+                  max="20"
+                  step="0.5"
                 />
+                <p className="text-[11px] text-slate-400 mt-1">Hasta 20 años</p>
               </div>
             </div>
 
@@ -203,8 +206,10 @@ export const MascotaNueva: React.FC<MascotaNuevaProps> = ({ navigate }) => {
                   value={peso}
                   onChange={(e) => setPeso(e.target.value)}
                   placeholder="Ej: 12.5"
-                  min="0"
+                  min="0.1"
+                  max="80"
                 />
+                <p className="text-[11px] text-slate-400 mt-1">Hasta 80 kg</p>
               </div>
             </div>
           </div>

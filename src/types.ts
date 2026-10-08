@@ -232,6 +232,9 @@ export interface OrdenDerivacion {
   
   fecha_emision: string;
   fecha_validez_hasta: string;
+  // Cuándo presentarse en el centro receptor, si ya se coordinó
+  fecha_presentacion?: string | null;
+  hora_presentacion?: string | null;
   estado: 'activa' | 'presentada' | 'completada' | 'vencida';
   creado_en: string;
 }

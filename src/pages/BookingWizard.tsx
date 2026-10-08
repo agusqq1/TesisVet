@@ -345,7 +345,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({ navigate }) => {
 
       {/* STEP 1 */}
       {step === 1 && (
-        <div>
+        <div key="paso-1" className="pagina-entra">
           <h1 className="wizard-title">Mascota y Servicio</h1>
           <p className="wizard-sub">
             Seleccioná para quién es la consulta y la atención requerida.
@@ -547,7 +547,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({ navigate }) => {
 
       {/* STEP 2 */}
       {step === 2 && (
-        <div>
+        <div key="paso-2" className="pagina-entra">
           <h1 className="wizard-title">Fecha y Horario</h1>
           <p className="wizard-sub">
             Elegí día y hora para {selectedPet?.nombre}.
@@ -720,7 +720,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({ navigate }) => {
 
       {/* STEP 3 */}
       {step === 3 && (
-        <div>
+        <div key="paso-3" className="pagina-entra">
           <h1 className="wizard-title">Revisá tu Turno</h1>
           <p className="wizard-sub">Confirmá los datos antes de reservar.</p>
 

@@ -48,6 +48,9 @@ export const GenerarDerivacionModal: React.FC<GenerarDerivacionModalProps> = ({
     'Ayuno de 6 horas de sólidos. Presentarse con esta orden médica.'
   );
 
+  // Cuándo tiene que presentarse el dueño en el centro (opcional; va en el email)
+  const [fechaPresentacion, setFechaPresentacion] = useState<string>('');
+  const [horaPresentacion, setHoraPresentacion] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
@@ -105,6 +108,8 @@ export const GenerarDerivacionModal: React.FC<GenerarDerivacionModalProps> = ({
           sospecha_diagnostica: sospechaDiagnostica,
           resumen_clinico: resumenClinico,
           indicaciones_previas: indicacionesPrevias,
+          fecha_presentacion: fechaPresentacion || undefined,
+          hora_presentacion: horaPresentacion || undefined,
         },
       });
       onSuccess(newOrden);
@@ -339,6 +344,31 @@ export const GenerarDerivacionModal: React.FC<GenerarDerivacionModalProps> = ({
               className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:border-brand-600 focus:outline-none"
               placeholder="Ej. Ayuno de 6 horas de sólidos. Concurrir con la orden médica oficial..."
             />
+          </div>
+
+          {/* Cuándo presentarse en el centro: va en el email junto con la dirección y los horarios */}
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+              Fecha y hora de presentación en el centro <span className="normal-case font-normal text-slate-400">(opcional, si ya se coordinó)</span>
+            </label>
+            <div className="grid grid-cols-2 gap-3">
+              <input
+                type="date"
+                value={fechaPresentacion}
+                min={new Date().toISOString().substring(0, 10)}
+                onChange={(e) => setFechaPresentacion(e.target.value)}
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:border-brand-600 focus:outline-none"
+              />
+              <input
+                type="time"
+                value={horaPresentacion}
+                onChange={(e) => setHoraPresentacion(e.target.value)}
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:border-brand-600 focus:outline-none"
+              />
+            </div>
+            <p className="text-[11px] text-slate-500 mt-1">
+              El dueño recibe por email la dirección del centro, cómo llegar, sus horarios y, si la cargás, esta fecha y hora.
+            </p>
           </div>
 
           {/* Footer Actions */}

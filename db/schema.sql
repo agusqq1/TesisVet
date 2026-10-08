@@ -101,9 +101,14 @@ CREATE TABLE IF NOT EXISTS derivaciones (
   indicaciones_previas  TEXT,
   fecha_emision         DATE NOT NULL,
   fecha_validez_hasta   DATE NOT NULL,
+  -- Cuándo tiene que presentarse en el centro receptor (si ya se coordinó)
+  fecha_presentacion    DATE,
+  hora_presentacion     TIME,
   estado                estado_derivacion NOT NULL DEFAULT 'activa',
   creado_en             TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+ALTER TABLE derivaciones ADD COLUMN IF NOT EXISTS fecha_presentacion DATE;
+ALTER TABLE derivaciones ADD COLUMN IF NOT EXISTS hora_presentacion TIME;
 CREATE UNIQUE INDEX IF NOT EXISTS uq_derivaciones_codigo ON derivaciones (codigo);
 CREATE INDEX IF NOT EXISTS idx_derivaciones_mascota ON derivaciones (mascota_id);
 
