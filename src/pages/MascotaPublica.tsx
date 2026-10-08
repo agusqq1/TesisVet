@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { AlertTriangle, Phone, Send, FileText, ShieldOff, MessageCircle } from "lucide-react";
 import { LogoIcon } from "../components/LogoIcon";
+import { Cargando } from "../components/Cargando";
 import { MascotaPublica as DatosMascota } from "../types";
 import { api } from "../api";
 import { CLINICA } from "../clinica";
@@ -76,8 +77,8 @@ export const MascotaPublica: React.FC<MascotaPublicaProps> = ({ codigo, navigate
 
       <div className="w-full max-w-md">
         {cargando && (
-          <div className="bg-white rounded-3xl border border-slate-200 p-8 text-center text-sm text-slate-500">
-            Buscando la chapa...
+          <div className="bg-white rounded-3xl border border-slate-200 p-4">
+            <Cargando texto="Buscando la chapa..." />
           </div>
         )}
 

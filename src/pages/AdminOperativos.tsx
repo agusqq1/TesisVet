@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { OperativoMovil } from "../types";
+import { Cargando } from "../components/Cargando";
 import { AdminSidebar } from "../components/AdminSidebar";
 import { Mapa, PuntoMapa } from "../components/Mapa";
 import { RUTA_MAPA } from "../components/AvisoOperativos";
@@ -214,7 +215,7 @@ export const AdminOperativos: React.FC<AdminOperativosProps> = ({ navigate }) =>
 
         <div className="panel-card">
           {loading ? (
-            <p className="text-center py-10 text-gray-500">Cargando operativos...</p>
+            <Cargando texto="Cargando operativos..." />
           ) : operativos.length === 0 ? (
             <p className="text-center py-10 text-gray-500">
               Todavía no hay operativos cargados. Publicá el primero con "Nuevo operativo".

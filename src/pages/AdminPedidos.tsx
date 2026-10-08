@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Order, OrderEstado } from "../types";
+import { Cargando } from "../components/Cargando";
 import { AdminSidebar } from "../components/AdminSidebar";
 import { api } from "../api";
 import { formatFecha, formatPrecio } from "../format";
@@ -99,7 +100,7 @@ export const AdminPedidos: React.FC<AdminPedidosProps> = ({ navigate }) => {
           </div>
 
           {loading ? (
-            <p className="text-center py-10 text-gray-500">Cargando pedidos...</p>
+            <Cargando texto="Cargando pedidos..." />
           ) : visibles.length === 0 ? (
             <p className="text-center py-10 text-gray-500">No hay pedidos para mostrar.</p>
           ) : (

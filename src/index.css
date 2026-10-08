@@ -471,3 +471,42 @@
 @media (max-width:640px){
   .container{ padding-inline:16px; }
 }
+
+/* ---------------- Movimiento ----------------
+   Animaciones de la marca: huellitas de carga, entrada de cada pantalla y respuesta
+   de botones y tarjetas. Todo en CSS, sin librerías. Si el sistema pide "reducir
+   movimiento", se apagan. */
+.huellas{ display:flex; align-items:flex-start; gap:6px; color:var(--marca); height:34px; }
+.huella{ width:22px; height:22px; opacity:0; animation:huella 1.6s ease-in-out infinite; }
+.huella:nth-child(odd){ margin-top:10px; }
+.huella:nth-child(2){ animation-delay:.2s; }
+.huella:nth-child(3){ animation-delay:.4s; }
+.huella:nth-child(4){ animation-delay:.6s; }
+.huellas-sm{ height:22px; gap:4px; }
+.huellas-sm .huella{ width:14px; height:14px; }
+.huellas-sm .huella:nth-child(odd){ margin-top:6px; }
+@keyframes huella{
+  0%{ opacity:0; transform:scale(.6) rotate(-6deg); }
+  18%{ opacity:1; transform:scale(1) rotate(0); }
+  55%{ opacity:1; }
+  80%,100%{ opacity:0; transform:scale(.9); }
+}
+
+.pagina-entra{ animation:pagina-entra .3s ease-out both; }
+@keyframes pagina-entra{
+  from{ opacity:0; transform:translateY(10px); }
+  to{ opacity:1; transform:none; }
+}
+
+.btn{ transition:background-color .15s ease, border-color .15s ease, color .15s ease, box-shadow .15s ease, transform .12s ease; }
+.btn:active:not(:disabled){ transform:translateY(1px) scale(.99); }
+
+.tarjeta-viva{ transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease; }
+.tarjeta-viva:hover{ transform:translateY(-2px); box-shadow:0 10px 24px rgba(15,23,42,.08); }
+
+@media (prefers-reduced-motion: reduce){
+  .huella{ animation:none; opacity:1; }
+  .pagina-entra{ animation:none; }
+  .btn, .tarjeta-viva{ transition:none; }
+  .btn:active:not(:disabled), .tarjeta-viva:hover{ transform:none; }
+}

@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { OperativoMovil } from "../types";
+import { Cargando } from "../components/Cargando";
 import { api } from "../api";
 import { formatFechaLarga } from "../format";
 import { ZONAS } from "../zonas";
@@ -157,7 +158,7 @@ export const VeterinariasMoviles: React.FC<VeterinariasMovilesProps> = ({ naviga
             <h2 className="text-lg">Próximos operativos</h2>
 
             {loading ? (
-              <p className="text-sm text-slate-500 py-8 text-center">Cargando operativos...</p>
+              <Cargando texto="Cargando operativos..." />
             ) : operativos.length === 0 ? (
               <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center">
                 <MapPin size={32} className="text-slate-400 mx-auto mb-3" />

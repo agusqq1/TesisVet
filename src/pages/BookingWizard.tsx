@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { Pet, Service, Turno } from "../types";
+import { Cargando } from "../components/Cargando";
 import { 
   Heart, 
   Scissors, 
@@ -631,9 +632,7 @@ export const BookingWizard: React.FC<BookingWizardProps> = ({ navigate }) => {
                         Fecha elegida: {formatFechaLarga(selectedDate)}
                       </p>
                       {loadingTimes ? (
-                        <p style={{ color: "var(--texto-muted)", marginTop: "14px" }}>
-                          Buscando horarios...
-                        </p>
+                        <Cargando texto="Buscando horarios..." className="mt-2" />
                       ) : availableTimes.length === 0 ? (
                         <p style={{ color: "var(--texto-muted)", marginTop: "14px" }}>
                           No quedan horarios disponibles para ese día. Probá con otra fecha.

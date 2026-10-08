@@ -19,6 +19,7 @@ import { Carrito } from "./pages/Carrito";
 import { Perfil } from "./pages/Perfil";
 import { VeterinariasMoviles } from "./pages/VeterinariasMoviles";
 import { MascotaPublica } from "./pages/MascotaPublica";
+import { Cargando } from "./components/Cargando";
 import { AdminDashboard } from "./pages/AdminDashboard";
 import { AdminTurnos } from "./pages/AdminTurnos";
 import { AdminPacientes } from "./pages/AdminPacientes";
@@ -76,9 +77,7 @@ function AppContent() {
 
   if (!ready || faltaSesion || faltaPermiso) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-sm text-slate-500">
-        Cargando...
-      </div>
+      <Cargando tamano="pagina" />
     );
   }
 
@@ -89,6 +88,8 @@ function AppContent() {
       )}
 
       <main className="flex-1">
+       {/* La key hace que cada pantalla entre con la animación .pagina-entra al cambiar de ruta */}
+       <div key={currentPath} className="pagina-entra">
         {isChapaPage && <MascotaPublica codigo={codigoChapa} navigate={navigate} />}
         {currentPath === "/" && <Home navigate={navigate} />}
         {currentPath === "/login" && <Login navigate={navigate} />}
@@ -120,6 +121,7 @@ function AppContent() {
         {currentPath === "/admin/tienda" && (
           <AdminTienda navigate={navigate} />
         )}
+       </div>
       </main>
 
       {!isAuthPage && !isAdminPage && !isChapaPage && <Footer navigate={navigate} />}

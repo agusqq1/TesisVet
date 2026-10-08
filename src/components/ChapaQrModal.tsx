@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Download, ExternalLink, QrCode, Check } from "lucide-react";
 import { Pet } from "../types";
+import { Cargando } from "./Cargando";
 import { api } from "../api";
 
 interface ChapaQrModalProps {
@@ -85,7 +86,7 @@ export const ChapaQrModal: React.FC<ChapaQrModalProps> = ({ pet, onClose, onUpda
         {error && <div className="alert alert-error text-sm mb-4">{error}</div>}
 
         {!datos && !error && (
-          <p className="text-sm text-slate-500 py-8 text-center">Generando el código...</p>
+          <Cargando texto="Generando el código..." />
         )}
 
         {datos && (

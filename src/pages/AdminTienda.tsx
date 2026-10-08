@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { Product, ProductCategory } from "../types";
+import { Cargando } from "../components/Cargando";
 import { AdminSidebar } from "../components/AdminSidebar";
 import { api } from "../api";
 import { formatPrecio } from "../format";
@@ -217,7 +218,7 @@ export const AdminTienda: React.FC<AdminTiendaProps> = ({ navigate }) => {
 
           {/* Table of Products */}
           {loading ? (
-            <p className="text-center py-10 text-gray-500">Cargando catálogo...</p>
+            <Cargando texto="Cargando catálogo..." />
           ) : filteredProducts.length === 0 ? (
             <div className="empty-state">
               <h2>No se encontraron productos</h2>

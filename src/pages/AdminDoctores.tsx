@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { HorarioAtencion, Veterinario } from "../types";
+import { Cargando } from "../components/Cargando";
 import { AdminSidebar } from "../components/AdminSidebar";
 import { api } from "../api";
 import { Plus, X, AlertCircle, Mail, Phone, Clock } from "lucide-react";
@@ -184,7 +185,7 @@ export const AdminDoctores: React.FC<AdminDoctoresProps> = ({ navigate }) => {
 
         <div className="panel-card">
           {loading ? (
-            <p className="text-center py-10 text-gray-500">Cargando doctores...</p>
+            <Cargando texto="Cargando doctores..." />
           ) : (
             <div className="overflow-x-auto">
               <table className="data-table">

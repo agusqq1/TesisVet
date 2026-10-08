@@ -312,7 +312,7 @@ export const Perfil: React.FC<PerfilProps> = ({ navigate }) => {
               {pets.map((p) => (
                 <div
                   key={p.id}
-                  className="flex flex-col justify-between p-4 border border-slate-200 rounded-2xl hover:border-brand-400 transition-all bg-slate-50"
+                  className="tarjeta-viva flex flex-col justify-between p-4 border border-slate-200 rounded-2xl hover:border-brand-400 bg-slate-50"
                 >
                   <div className="flex items-start gap-3">
                     <img

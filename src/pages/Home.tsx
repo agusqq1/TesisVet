@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Service, CentroVeterinarioRecomendado } from "../types";
+import { Cargando } from "../components/Cargando";
 import { api } from "../api";
 import { formatPrecio } from "../format";
 import { CLINICA } from "../clinica";
@@ -218,7 +219,7 @@ export const Home: React.FC<HomeProps> = ({ navigate }) => {
                     </li>
                   ))}
                   {grupo.servicios.length === 0 && (
-                    <li className="px-6 py-8 text-sm text-slate-500">Cargando servicios...</li>
+                    <li className="px-6"><Cargando tamano="bloque" texto="Cargando servicios..." /></li>
                   )}
                 </ul>
               </div>
