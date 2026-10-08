@@ -10,7 +10,7 @@ import QRCode from "qrcode";
 import type { ResultSetHeader } from "./db/pool.js";
 import { GoogleGenAI } from "@google/genai";
 import { dbConfig, execute, query, queryOne, transaction } from "./db/pool.js";
-import { guardarImagen, UPLOADS_DIR } from "./db/imagenes.js";
+import { guardarImagen, descripcionAlmacenamiento, UPLOADS_DIR } from "./db/imagenes.js";
 import { prepararBaseDeDatos } from "./db/init.js";
 import {
   cargarUsuario,
@@ -32,12 +32,21 @@ import {
   emailDerivacion,
   emailMascotaEncontrada,
   emailOperativo,
+  emailRecordatorioOperativo,
   emailPedido,
   emailRecuperacion,
   emailTurno,
   enviarEmail,
 } from "./server/email.js";
 import { ZONAS } from "./src/zonas.js";
+import {
+  avisarPushPorLocalidades,
+  avisarPushUsuario,
+  clavePublicaPush,
+  esSuscripcionValida,
+  estadoPush,
+  pushConfigurado,
+} from "./server/push.js";
 import { CUOTAS, MARCAS_TARJETA } from "./src/tarjetas.js";
 
 const app = express();
@@ -328,6 +337,9 @@ app.post("/api/auth/login", limiteLogin, wrap(async (req, res) => {
   if (!passwordOk) {
     return res.status(401).json({ error: "Email o contraseña incorrectos." });
   }
+  if (!user.activo) {
+    return res.status(403).json({ error: "Esta cuenta fue dada de baja. Consultá en la clínica." });
+  }
   await crearSesion(req, res, user.id);
   res.json({ user: mapUser(user) });
 }));
@@ -511,8 +523,8 @@ app.post("/api/users", requireVet, wrap(async (req, res) => {
 // --- VETERINARIOS (equipo de la clínica) ---
 async function fetchVeterinarios(where = "", params: any[] = []) {
   const vets = await query(
-    `SELECT id, nombre, email, telefono, especialidad, matricula, foto
-     FROM usuarios WHERE rol = 'veterinario' ${where} ORDER BY nombre`,
+    `SELECT id, nombre, email, telefono, especialidad, matricula, foto, activo
+     FROM usuarios WHERE rol = 'veterinario' ${where} ORDER BY activo DESC, nombre`,
     params
   );
   if (vets.length === 0) return [];
@@ -526,6 +538,7 @@ async function fetchVeterinarios(where = "", params: any[] = []) {
   );
   return vets.map((v) => ({
     ...v,
+    activo: Boolean(v.activo),
     horarios: horarios
       .filter((h) => h.veterinario_id === v.id)
       .map(({ veterinario_id, ...h }) => h),
@@ -622,6 +635,102 @@ app.post("/api/veterinarios", requireVet, wrap(async (req, res) => {
   res.status(201).json({ ...vet, email_enviado: delivered, invitado: !conPassword });
 }));
 
+// Edición de un profesional: datos de contacto, matrícula, días y horario de atención.
+// Los horarios se reemplazan por completo por los que llegan.
+app.put("/api/veterinarios/:id", requireVet, wrap(async (req, res) => {
+  const id = toId(req.params.id);
+  const vet = await queryOne("SELECT id FROM usuarios WHERE id = ? AND rol = 'veterinario'", [id]);
+  if (!vet) return res.status(404).json({ error: "Profesional no encontrado." });
+
+  const { nombre, email, telefono, especialidad, matricula, password, dias, hora_inicio, hora_fin } = req.body;
+  if (typeof nombre !== "string" || !nombre.trim() || !esEmail(email)) {
+    return res.status(400).json({ error: "Ingresá el nombre y un email válido del profesional." });
+  }
+  if (!str(matricula).trim()) {
+    return res.status(400).json({ error: "Ingresá la matrícula del profesional." });
+  }
+  const conPassword = typeof password === "string" && password !== "";
+  if (conPassword && password.length < PASSWORD_MIN) {
+    return res.status(400).json({ error: `La contraseña debe tener al menos ${PASSWORD_MIN} caracteres.` });
+  }
+  const diasAtencion: unknown[] = Array.isArray(dias) ? [...new Set(dias)] : [];
+  if (diasAtencion.some((d) => !Number.isInteger(d) || (d as number) < 0 || (d as number) > 6)) {
+    return res.status(400).json({ error: "Alguno de los días de atención no es válido." });
+  }
+  if (diasAtencion.length > 0 && (!esHora(hora_inicio) || !esHora(hora_fin) || hora_inicio >= hora_fin)) {
+    return res
+      .status(400)
+      .json({ error: "El horario de atención no es válido: la hora de fin tiene que ser posterior a la de inicio." });
+  }
+
+  const campos: Record<string, any> = {
+    nombre: nombre.trim(),
+    email,
+    telefono: str(telefono).trim(),
+    especialidad: str(especialidad).trim() || null,
+    matricula: str(matricula).trim(),
+  };
+  if (conPassword) campos.password_hash = await bcrypt.hash(password, 10);
+
+  try {
+    await transaction(async (conn) => {
+      await conn.query("UPDATE usuarios SET ? WHERE id = ?", [campos, id]);
+      // Los turnos ya reservados no se tocan: solo cambia qué horarios se ofrecen de ahora en más
+      await conn.query("DELETE FROM horarios_veterinario WHERE veterinario_id = ?", [id]);
+      for (const dia of diasAtencion) {
+        await conn.query("INSERT INTO horarios_veterinario SET ?", [
+          { veterinario_id: id, dia_semana: dia, hora_inicio, hora_fin },
+        ]);
+      }
+    });
+  } catch (err) {
+    if (isDup(err)) return res.status(400).json({ error: "Ya existe una cuenta registrada con ese email." });
+    throw err;
+  }
+
+  const [actualizado] = await fetchVeterinarios("AND id = ?", [id]);
+  res.json(actualizado);
+}));
+
+// Baja (o reincorporación) de un profesional. No se borra: sus consultas, derivaciones y
+// turnos pasados siguen a su nombre en la historia clínica. Dado de baja no puede
+// ingresar, no aparece en la agenda y sus turnos futuros se liberan.
+app.patch("/api/veterinarios/:id/activo", requireVet, wrap(async (req, res) => {
+  const id = toId(req.params.id);
+  const activo = Boolean(req.body.activo);
+  const vet = await queryOne("SELECT id, nombre, activo FROM usuarios WHERE id = ? AND rol = 'veterinario'", [id]);
+  if (!vet) return res.status(404).json({ error: "Profesional no encontrado." });
+
+  if (!activo) {
+    if (id === req.user!.id) {
+      return res.status(400).json({ error: "No podés darte de baja a vos mismo. Pedile a otro profesional que lo haga." });
+    }
+    const otros = await queryOne(
+      "SELECT COUNT(*)::int AS total FROM usuarios WHERE rol = 'veterinario' AND activo AND id <> ?",
+      [id]
+    );
+    if (!otros || otros.total === 0) {
+      return res.status(400).json({ error: "Tiene que quedar al menos un profesional activo en la clínica." });
+    }
+  }
+
+  await transaction(async (conn) => {
+    await conn.query("UPDATE usuarios SET activo = ? WHERE id = ?", [activo, id]);
+    if (!activo) {
+      // Cierra sus sesiones abiertas y libera los turnos que tenía a futuro para que
+      // los clientes puedan reprogramar con otro profesional
+      await conn.query("DELETE FROM sesiones WHERE usuario_id = ?", [id]);
+      await conn.query(
+        "UPDATE turnos SET estado = 'cancelado' WHERE veterinario_id = ? AND estado IN ('pendiente', 'confirmado') AND fecha >= ?",
+        [id, hoyLocal()]
+      );
+    }
+  });
+
+  const [actualizado] = await fetchVeterinarios("AND id = ?", [id]);
+  res.json(actualizado);
+}));
+
 // --- PETS ---
 app.get("/api/pets", requireAuth, wrap(async (req, res) => {
   // Un cliente solo ve sus mascotas, pida lo que pida
@@ -685,7 +794,7 @@ app.post("/api/pets", requireAuth, wrap(async (req, res) => {
     raza: str(raza),
     edad: toNumOrNull(edad),
     peso: toNumOrNull(peso),
-    foto: guardarImagen(foto) || defaultFoto,
+    foto: (await guardarImagen(foto)) || defaultFoto,
     estado_salud: "Estable",
     alergias: "",
     condiciones_cronicas: "",
@@ -726,7 +835,7 @@ app.put("/api/pets/:id", requireAuth, wrap(async (req, res) => {
   if (edad !== undefined) campos.edad = toNumOrNull(edad);
   if (peso !== undefined) campos.peso = toNumOrNull(peso);
   validarMedidas(campos.edad, campos.peso);
-  if (foto !== undefined) campos.foto = guardarImagen(foto);
+  if (foto !== undefined) campos.foto = await guardarImagen(foto);
 
   // Los datos clínicos solo los modifica el personal de la clínica
   if (esVet(req)) {
@@ -1261,7 +1370,7 @@ app.post("/api/estudios", requireVet, wrap(async (req, res) => {
       tipo: str(tipo) || "Radiografía",
       fecha: esFecha(fecha) ? fecha : hoyLocal(),
       zona_anatomica: str(zona_anatomica) || null,
-      imagen_url: guardarImagen(imagen_url),
+      imagen_url: await guardarImagen(imagen_url),
       observaciones: str(observaciones) || null,
       veterinario_id: req.user!.id,
       veterinario_nombre: req.user!.matricula
@@ -1448,7 +1557,7 @@ app.post("/api/products", requireVet, wrap(async (req, res) => {
       requiere_receta: requiere_receta ? 1 : 0,
       stock: stock !== undefined && stock !== "" ? numero(stock) : 0,
       imagen:
-        guardarImagen(imagen) ||
+        (await guardarImagen(imagen)) ||
         "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=400&q=80",
     },
   ]);
@@ -1472,7 +1581,7 @@ app.put("/api/products/:id", requireVet, wrap(async (req, res) => {
   if (etiqueta !== undefined) campos.etiqueta = str(etiqueta);
   if (descripcion !== undefined) campos.descripcion = str(descripcion);
   if (precio !== undefined && precio !== "") campos.precio = numero(precio);
-  if (imagen !== undefined) campos.imagen = guardarImagen(imagen);
+  if (imagen !== undefined) campos.imagen = await guardarImagen(imagen);
   if (requiere_receta !== undefined) campos.requiere_receta = requiere_receta ? 1 : 0;
   if (stock !== undefined && stock !== "") campos.stock = numero(stock);
 
@@ -1758,13 +1867,119 @@ async function avisarOperativo(req: Request, operativo: any, localidades: string
     [localidades]
   );
   const enlaceMapa = `${urlBase(req)}/veterinarias-moviles`;
-  (async () => {
-    for (const s of suscriptores) {
-      await enviarEmail({ to: s.email, ...emailOperativo(s.nombre, operativo, enlaceMapa, esCambio) });
-    }
-  })().catch(() => {});
+  // Primero las notificaciones push (llegan al instante al celular), después los emails.
+  // Se esperan los dos: en Vercel la función se congela al responder.
+  const pushEnviados = await avisarPushPorLocalidades(localidades, {
+    titulo: esCambio ? `Cambio: veterinaria móvil en ${operativo.localidad}` : `Veterinaria móvil en ${operativo.localidad}`,
+    cuerpo: `${operativo.titulo} · ${fechaCortaAr(operativo.fecha)} de ${operativo.hora_inicio} a ${operativo.hora_fin} hs · ${operativo.direccion}`,
+    url: "/veterinarias-moviles",
+    etiqueta: `operativo-${operativo.id}`,
+  }).catch(() => 0);
+  for (const s of suscriptores) {
+    await enviarEmail({ to: s.email, ...emailOperativo(s.nombre, operativo, enlaceMapa, esCambio) });
+  }
+  if (pushEnviados) console.log(`[PUSH] Aviso de operativo enviado a ${pushEnviados} dispositivo(s)`);
   return suscriptores.length;
 }
+
+// "2026-10-14" → "14/10"
+const fechaCortaAr = (fecha: string) => {
+  const [, m, d] = String(fecha).substring(0, 10).split("-");
+  return d && m ? `${d}/${m}` : String(fecha);
+};
+
+// --- NOTIFICACIONES PUSH ---
+// El navegador pide la clave pública, se suscribe y guarda la suscripción en la cuenta.
+app.get("/api/push/clave", (req, res) => {
+  res.json({ publicKey: clavePublicaPush() });
+});
+
+app.post("/api/push/suscribir", requireAuth, wrap(async (req, res) => {
+  const sub = req.body?.subscription;
+  if (!pushConfigurado()) return res.status(503).json({ error: "Las notificaciones push no están configuradas." });
+  if (!esSuscripcionValida(sub)) return res.status(400).json({ error: "La suscripción no es válida." });
+  // Si el mismo navegador ya estaba anotado (quizás con otra cuenta), se actualiza
+  await execute("DELETE FROM suscripciones_push WHERE endpoint = ?", [sub.endpoint]);
+  await execute("INSERT INTO suscripciones_push SET ?", [
+    { usuario_id: req.user!.id, endpoint: sub.endpoint, p256dh: sub.keys.p256dh, auth: sub.keys.auth },
+  ]);
+  res.status(201).json({ message: "Notificaciones activadas en este dispositivo." });
+}));
+
+app.delete("/api/push/suscribir", requireAuth, wrap(async (req, res) => {
+  const endpoint = str(req.body?.endpoint);
+  if (endpoint) {
+    await execute("DELETE FROM suscripciones_push WHERE endpoint = ? AND usuario_id = ?", [endpoint, req.user!.id]);
+  }
+  res.json({ message: "Notificaciones desactivadas en este dispositivo." });
+}));
+
+// Notificación de prueba al propio usuario, para comprobar que llega
+app.post("/api/push/probar", requireAuth, wrap(async (req, res) => {
+  const enviados = await avisarPushUsuario(req.user!.id, {
+    titulo: "VetAnimal",
+    cuerpo: "Las notificaciones funcionan. Te vamos a avisar de los operativos en tus localidades.",
+    url: "/veterinarias-moviles",
+    etiqueta: "prueba",
+  });
+  res.json({ enviados });
+}));
+
+// --- RECORDATORIOS DEL DÍA ANTERIOR ---
+// Para cada operativo de mañana que todavía no tuvo recordatorio, avisa por push y por
+// email a quienes siguen esa localidad, y lo deja marcado para no repetirlo.
+async function enviarRecordatoriosOperativos(base: string) {
+  const manana = sumarDias(hoyLocal(), 1);
+  const operativos = await query(
+    `${OPERATIVO_SELECT} WHERE fecha = ? AND recordatorio_enviado_en IS NULL ORDER BY hora_inicio`,
+    [manana]
+  );
+  const resumen: Array<{ operativo: number; emails: number; push: number }> = [];
+  for (const o of operativos) {
+    // Se marca antes de enviar: si dos ejecuciones coinciden, solo una toma el operativo
+    const marcado = await execute(
+      "UPDATE operativos_moviles SET recordatorio_enviado_en = NOW() WHERE id = ? AND recordatorio_enviado_en IS NULL",
+      [o.id]
+    );
+    if (!marcado.affectedRows) continue;
+
+    const push = await avisarPushPorLocalidades([o.localidad], {
+      titulo: `Mañana: veterinaria móvil en ${o.localidad}`,
+      cuerpo: `${o.titulo} · de ${o.hora_inicio} a ${o.hora_fin} hs · ${o.direccion}`,
+      url: "/veterinarias-moviles",
+      etiqueta: `recordatorio-${o.id}`,
+    }).catch(() => 0);
+
+    const suscriptores = await query(
+      `SELECT DISTINCT u.nombre, u.email
+       FROM avisos_operativos a JOIN usuarios u ON u.id = a.usuario_id
+       WHERE a.localidad = ? AND u.activo`,
+      [o.localidad]
+    );
+    let emails = 0;
+    for (const s of suscriptores) {
+      const { delivered } = await enviarEmail({
+        to: s.email,
+        ...emailRecordatorioOperativo(s.nombre, o, `${base}/veterinarias-moviles`),
+      });
+      if (delivered) emails++;
+    }
+    resumen.push({ operativo: o.id, emails, push });
+  }
+  if (resumen.length) console.log(`[RECORDATORIOS] ${JSON.stringify(resumen)}`);
+  return { fecha: manana, operativos: resumen };
+}
+
+// La llama el cron de Vercel una vez por día (vercel.json → crons) con el CRON_SECRET en
+// el encabezado Authorization. En desarrollo, sin CRON_SECRET, se puede llamar a mano.
+app.get("/api/tareas/recordatorios", wrap(async (req, res) => {
+  const secreto = (process.env.CRON_SECRET || "").trim();
+  const recibido = String(req.get("authorization") || "").replace(/^Bearer\s+/i, "");
+  if (secreto ? recibido !== secreto : process.env.VERCEL) {
+    return res.status(401).json({ error: "No autorizado." });
+  }
+  res.json(await enviarRecordatoriosOperativos(urlBase(req)));
+}));
 
 // Al publicar un operativo se avisa a quienes se anotaron en esa localidad.
 app.post("/api/operativos", requireVet, wrap(async (req, res) => {
@@ -2109,6 +2324,8 @@ function vigilarEnv() {
     console.log("\n[.env] Cambios detectados, configuración recargada:");
     console.log(estadoEmail());
     console.log(estadoChat());
+    console.log(estadoPush());
+    console.log(`[IMAGENES] Las fotos y radiografías se guardan en ${descripcionAlmacenamiento}`);
   });
 }
 
@@ -2132,10 +2349,24 @@ async function startServer() {
     });
   }
 
+  // En esta PC no hay cron de Vercel: se revisa cada media hora si hay recordatorios
+  // de operativos para mañana (el marcado en la base evita repetirlos)
+  const baseLocal = /^https?:\/\//.test(process.env.APP_URL || "") ? process.env.APP_URL! : `http://localhost:${PORT}`;
+  const revisarRecordatorios = () =>
+    enviarRecordatoriosOperativos(baseLocal).catch((err) =>
+      console.warn(`[RECORDATORIOS] No se pudieron revisar: ${err.message || err}`)
+    );
+  if (process.env.RECORDATORIOS !== "0") {
+    setTimeout(revisarRecordatorios, 20_000);
+    setInterval(revisarRecordatorios, 30 * 60_000);
+  }
+
   app.listen(PORT, "0.0.0.0", () => {
     console.log(`\nVetAnimal listo en http://localhost:${PORT}`);
     console.log(estadoEmail());
     console.log(estadoChat());
+    console.log(estadoPush());
+    console.log(`[IMAGENES] Las fotos y radiografías se guardan en ${descripcionAlmacenamiento}`);
   });
 }
 

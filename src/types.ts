@@ -35,6 +35,8 @@ export interface Veterinario {
   especialidad: string | null;
   matricula: string | null;
   foto: string | null;
+  // false = dado de baja: no ingresa ni recibe turnos, pero su historial se conserva
+  activo: boolean;
   horarios: HorarioAtencion[];
   // Solo en la respuesta del alta: si se lo invitó a elegir su contraseña y si salió el email
   invitado?: boolean;

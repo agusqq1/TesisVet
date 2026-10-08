@@ -4,7 +4,7 @@ import { HorarioAtencion, Veterinario } from "../types";
 import { Cargando } from "../components/Cargando";
 import { AdminSidebar } from "../components/AdminSidebar";
 import { api } from "../api";
-import { Plus, X, AlertCircle, Mail, Phone, Clock } from "lucide-react";
+import { Plus, X, AlertCircle, Mail, Phone, Clock, Pencil, UserX, UserCheck } from "lucide-react";
 
 interface AdminDoctoresProps {
   navigate: (path: string) => void;
@@ -94,6 +94,9 @@ export const AdminDoctores: React.FC<AdminDoctoresProps> = ({ navigate }) => {
   const [aviso, setAviso] = useState("");
 
   const [showModal, setShowModal] = useState(false);
+  // Doctor que se está editando; null cuando el formulario es un alta
+  const [editando, setEditando] = useState<Veterinario | null>(null);
+  const [cambiandoId, setCambiandoId] = useState<number | null>(null);
   const [form, setForm] = useState(FORM_VACIO);
   const [submitting, setSubmitting] = useState(false);
   const [errorForm, setErrorForm] = useState("");
@@ -106,9 +109,58 @@ export const AdminDoctores: React.FC<AdminDoctoresProps> = ({ navigate }) => {
   }, []);
 
   const abrirModal = () => {
+    setEditando(null);
     setForm(FORM_VACIO);
     setErrorForm("");
     setShowModal(true);
+  };
+
+  // Carga el formulario con los datos del doctor. Si tiene franjas distintas por día,
+  // toma la primera: el formulario maneja un solo horario para todos los días marcados.
+  const abrirEdicion = (d: Veterinario) => {
+    setEditando(d);
+    setForm({
+      nombre: d.nombre,
+      email: d.email,
+      telefono: d.telefono || "",
+      especialidad: d.especialidad || "",
+      matricula: d.matricula || "",
+      password: "",
+      dias: [...new Set(d.horarios.map((h) => h.dia_semana))].sort((a, b) => a - b),
+      hora_inicio: d.horarios[0]?.hora_inicio || "08:30",
+      hora_fin: d.horarios[0]?.hora_fin || "20:00",
+    });
+    setErrorForm("");
+    setShowModal(true);
+  };
+
+  const reemplazar = (actualizado: Veterinario) =>
+    setDoctores((prev) =>
+      prev
+        .map((d) => (d.id === actualizado.id ? actualizado : d))
+        .sort((a, b) => Number(b.activo) - Number(a.activo) || a.nombre.localeCompare(b.nombre, "es"))
+    );
+
+  // Baja o reincorporación. La baja no borra nada: conserva su historial y libera sus turnos futuros.
+  const cambiarActivo = async (d: Veterinario) => {
+    const mensaje = d.activo
+      ? `¿Dar de baja a ${d.nombre}?\n\nNo va a poder ingresar al panel ni recibir turnos, y sus turnos futuros se cancelan para que los clientes reprogramen. Su historial clínico se conserva y podés reincorporarlo cuando quieras.`
+      : `¿Reincorporar a ${d.nombre}? Vuelve a poder ingresar y a recibir turnos en sus días de atención.`;
+    if (!window.confirm(mensaje)) return;
+    setCambiandoId(d.id);
+    setError("");
+    try {
+      const actualizado = await api<Veterinario>(`/api/veterinarios/${d.id}/activo`, {
+        method: "PATCH",
+        body: { activo: !d.activo },
+      });
+      reemplazar(actualizado);
+      setAviso(actualizado.activo ? `${actualizado.nombre} fue reincorporado.` : `${actualizado.nombre} fue dado de baja.`);
+    } catch (err: any) {
+      setError(err.message || "No se pudo cambiar el estado del doctor.");
+    } finally {
+      setCambiandoId(null);
+    }
   };
 
   const toggleDia = (dia: number) =>
@@ -117,7 +169,7 @@ export const AdminDoctores: React.FC<AdminDoctoresProps> = ({ navigate }) => {
       dias: f.dias.includes(dia) ? f.dias.filter((d) => d !== dia) : [...f.dias, dia].sort((a, b) => a - b),
     }));
 
-  const handleCrear = async (e: React.FormEvent) => {
+  const handleGuardar = async (e: React.FormEvent) => {
     e.preventDefault();
     if (form.dias.length > 0 && form.hora_inicio >= form.hora_fin) {
       setErrorForm("La hora de fin tiene que ser posterior a la de inicio.");
@@ -130,6 +182,19 @@ export const AdminDoctores: React.FC<AdminDoctoresProps> = ({ navigate }) => {
 
     setSubmitting(true);
     setErrorForm("");
+    if (editando) {
+      try {
+        const actualizado = await api<Veterinario>(`/api/veterinarios/${editando.id}`, { method: "PUT", body: form });
+        reemplazar(actualizado);
+        setAviso(`Los datos de ${actualizado.nombre} se guardaron.${form.password ? " La contraseña fue cambiada." : ""}`);
+        setShowModal(false);
+      } catch (err: any) {
+        setErrorForm(err.message || "No se pudieron guardar los cambios.");
+      } finally {
+        setSubmitting(false);
+      }
+      return;
+    }
     try {
       const { invitado, email_enviado, ...nuevo } = await api<Veterinario>("/api/veterinarios", {
         method: "POST",
@@ -195,11 +260,12 @@ export const AdminDoctores: React.FC<AdminDoctoresProps> = ({ navigate }) => {
                     <th>Especialidad</th>
                     <th>Contacto</th>
                     <th>Atención de turnos</th>
+                    <th className="text-right">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
                   {doctores.map((d) => (
-                    <tr key={d.id}>
+                    <tr key={d.id} className={d.activo ? "" : "opacity-60"}>
                       <td>
                         <div className="flex items-center gap-3">
                           <Avatar doctor={d} />
@@ -209,6 +275,11 @@ export const AdminDoctores: React.FC<AdminDoctoresProps> = ({ navigate }) => {
                               {d.id === user?.id && (
                                 <span className="ml-2 text-[10px] font-bold uppercase text-brand-800 bg-brand-50 border border-brand-200 px-1.5 py-0.5 rounded">
                                   Vos
+                                </span>
+                              )}
+                              {!d.activo && (
+                                <span className="ml-2 text-[10px] font-bold uppercase text-slate-600 bg-slate-100 border border-slate-300 px-1.5 py-0.5 rounded">
+                                  Dado de baja
                                 </span>
                               )}
                             </strong>
@@ -232,7 +303,9 @@ export const AdminDoctores: React.FC<AdminDoctoresProps> = ({ navigate }) => {
                         </span>
                       </td>
                       <td>
-                        {d.horarios.length === 0 ? (
+                        {!d.activo ? (
+                          <span className="text-xs text-slate-500">Sin atención</span>
+                        ) : d.horarios.length === 0 ? (
                           <span className="text-xs font-semibold text-amber-800 bg-amber-50 border border-amber-200 px-2 py-1 rounded-md">
                             No recibe turnos online
                           </span>
@@ -244,6 +317,31 @@ export const AdminDoctores: React.FC<AdminDoctoresProps> = ({ navigate }) => {
                             </span>
                           ))
                         )}
+                      </td>
+                      <td>
+                        <div className="flex items-center justify-end gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => abrirEdicion(d)}
+                            className="btn btn-outline btn-sm text-xs py-1 px-2.5 flex items-center gap-1"
+                            title="Editar datos, horario o contraseña"
+                          >
+                            <Pencil size={12} />
+                            <span>Editar</span>
+                          </button>
+                          {d.id !== user?.id && (
+                            <button
+                              type="button"
+                              onClick={() => cambiarActivo(d)}
+                              disabled={cambiandoId === d.id}
+                              className={`btn btn-sm text-xs py-1 px-2.5 flex items-center gap-1 ${d.activo ? "btn-danger" : "btn-primary"}`}
+                              title={d.activo ? "Dar de baja (conserva su historial)" : "Reincorporar"}
+                            >
+                              {d.activo ? <UserX size={12} /> : <UserCheck size={12} />}
+                              <span>{cambiandoId === d.id ? "..." : d.activo ? "Baja" : "Reincorporar"}</span>
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -266,11 +364,15 @@ export const AdminDoctores: React.FC<AdminDoctoresProps> = ({ navigate }) => {
 
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 rounded-2xl bg-brand-100 text-brand-700 flex items-center justify-center font-bold">
-                <Plus size={22} />
+                {editando ? <Pencil size={20} /> : <Plus size={22} />}
               </div>
               <div>
-                <h2 className="text-xl font-bold text-slate-900">Agregar doctor</h2>
-                <p className="text-xs text-slate-500">Alta de un profesional con acceso al panel veterinario</p>
+                <h2 className="text-xl font-bold text-slate-900">{editando ? `Editar a ${editando.nombre}` : "Agregar doctor"}</h2>
+                <p className="text-xs text-slate-500">
+                  {editando
+                    ? "Cambios en sus datos, su horario de atención o su contraseña"
+                    : "Alta de un profesional con acceso al panel veterinario"}
+                </p>
               </div>
             </div>
 
@@ -281,7 +383,7 @@ export const AdminDoctores: React.FC<AdminDoctoresProps> = ({ navigate }) => {
               </div>
             )}
 
-            <form onSubmit={handleCrear} className="space-y-4">
+            <form onSubmit={handleGuardar} className="space-y-4">
               <div>
                 <label className={LABEL}>Nombre y apellido *</label>
                 <input
@@ -398,17 +500,19 @@ export const AdminDoctores: React.FC<AdminDoctoresProps> = ({ navigate }) => {
               </div>
 
               <div>
-                <label className={LABEL}>Contraseña inicial</label>
+                <label className={LABEL}>{editando ? "Nueva contraseña" : "Contraseña inicial"}</label>
                 <input
                   type="password"
                   autoComplete="new-password"
-                  placeholder="Opcional, mínimo 8 caracteres"
+                  placeholder={editando ? "Dejar vacía para no cambiarla" : "Opcional, mínimo 8 caracteres"}
                   value={form.password}
                   onChange={(e) => setForm({ ...form, password: e.target.value })}
                   className={INPUT}
                 />
                 <p className="text-[11px] text-slate-500 mt-1.5">
-                  Si la dejás vacía, el doctor recibe un email con un enlace para elegir su propia contraseña.
+                  {editando
+                    ? "Solo si el doctor necesita una contraseña nueva; si no, dejala vacía."
+                    : "Si la dejás vacía, el doctor recibe un email con un enlace para elegir su propia contraseña."}
                 </p>
               </div>
 
@@ -425,7 +529,7 @@ export const AdminDoctores: React.FC<AdminDoctoresProps> = ({ navigate }) => {
                   disabled={submitting}
                   className="btn btn-primary px-5 py-2.5 text-xs font-bold flex items-center gap-2 bg-brand-600 hover:bg-brand-500 shadow-md cursor-pointer disabled:opacity-50"
                 >
-                  {submitting ? "Guardando..." : "Agregar doctor"}
+                  {submitting ? "Guardando..." : editando ? "Guardar cambios" : "Agregar doctor"}
                 </button>
               </div>
             </form>

@@ -10,8 +10,23 @@
     }
   },
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api" },
-    { "source": "/uploads/(.*)", "destination": "/api" },
-    { "source": "/((?!assets/).*)", "destination": "/index.html" }
+    {
+      "source": "/api/(.*)",
+      "destination": "/api"
+    },
+    {
+      "source": "/uploads/(.*)",
+      "destination": "/api"
+    },
+    {
+      "source": "/((?!assets/).*)",
+      "destination": "/index.html"
+    }
+  ],
+  "crons": [
+    {
+      "path": "/api/tareas/recordatorios",
+      "schedule": "0 12 * * *"
+    }
   ]
 }

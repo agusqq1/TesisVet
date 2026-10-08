@@ -92,7 +92,7 @@ export function cargarUsuario(req: Request, res: Response, next: NextFunction) {
   queryOne(
     `SELECT u.* FROM sesiones s
      JOIN usuarios u ON u.id = s.usuario_id
-     WHERE s.token_hash = ? AND s.expira_en > NOW()`,
+     WHERE s.token_hash = ? AND s.expira_en > NOW() AND u.activo`,
     [hashToken(token)]
   )
     .then((usuario) => {

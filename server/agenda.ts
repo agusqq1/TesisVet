@@ -63,7 +63,7 @@ export async function horariosDisponibles(
               to_char(h.hora_inicio, 'HH24:MI') AS inicio,
               to_char(h.hora_fin, 'HH24:MI') AS fin
        FROM horarios_veterinario h
-       JOIN usuarios u ON u.id = h.veterinario_id AND u.rol = 'veterinario'
+       JOIN usuarios u ON u.id = h.veterinario_id AND u.rol = 'veterinario' AND u.activo
        WHERE h.dia_semana = ?`,
       [diaSemana]
     ),

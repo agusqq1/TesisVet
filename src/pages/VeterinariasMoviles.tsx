@@ -7,7 +7,8 @@ import { formatFechaLarga } from "../format";
 import { ZONAS } from "../zonas";
 import { Mapa, PuntoMapa } from "../components/Mapa";
 import { marcarOperativosVistos } from "../components/AvisoOperativos";
-import { Bell, Clock, LocateFixed, MapPin, Navigation, Check } from "lucide-react";
+import { Bell, Clock, LocateFixed, MapPin, Navigation, Check, BellRing, BellOff, Smartphone } from "lucide-react";
+import { estadoPush, activarPush, desactivarPush, EstadoPush } from "../push";
 
 interface VeterinariasMovilesProps {
   navigate: (path: string) => void;
@@ -42,6 +43,40 @@ export const VeterinariasMoviles: React.FC<VeterinariasMovilesProps> = ({ naviga
 
   const [avisos, setAvisos] = useState<string[]>([]);
   const [estadoAvisos, setEstadoAvisos] = useState<"" | "guardado" | "error">("");
+
+  // Notificaciones push en este dispositivo (además del email)
+  const [push, setPush] = useState<EstadoPush | "cargando">("cargando");
+  const [pushOcupado, setPushOcupado] = useState(false);
+  const [pushMsg, setPushMsg] = useState("");
+
+  useEffect(() => {
+    if (!user) return;
+    estadoPush().then(setPush).catch(() => setPush("no-soportado"));
+  }, [user?.id]);
+
+  const alternarPush = async () => {
+    setPushOcupado(true);
+    setPushMsg("");
+    try {
+      if (push === "activo") {
+        setPush(await desactivarPush());
+        setPushMsg("Listo: este dispositivo ya no recibe notificaciones.");
+      } else {
+        const nuevo = await activarPush();
+        setPush(nuevo);
+        if (nuevo === "activo") {
+          await api("/api/push/probar", { method: "POST" }).catch(() => {});
+          setPushMsg("Activadas. Te mandamos una notificación de prueba.");
+        } else if (nuevo === "bloqueado") {
+          setPushMsg("Tu navegador tiene bloqueadas las notificaciones para este sitio. Habilitalas en la configuración del sitio y volvé a intentar.");
+        }
+      }
+    } catch (e: any) {
+      setPushMsg(e.message || "No se pudieron activar las notificaciones.");
+    } finally {
+      setPushOcupado(false);
+    }
+  };
 
   useEffect(() => {
     api<OperativoMovil[]>("/api/operativos")
@@ -275,6 +310,31 @@ export const VeterinariasMoviles: React.FC<VeterinariasMovilesProps> = ({ naviga
                       );
                     })}
                   </div>
+                  {avisos.length > 0 && push !== "no-soportado" && push !== "sin-clave" && (
+                    <div className="mt-4 p-3.5 rounded-xl border border-slate-200 bg-slate-50 flex flex-wrap items-center justify-between gap-3">
+                      <div className="flex items-start gap-2.5 min-w-0">
+                        <Smartphone size={18} className="text-brand-600 mt-0.5 shrink-0" />
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold text-slate-900">Notificaciones en este dispositivo</p>
+                          <p className="text-xs text-slate-500">
+                            {push === "activo"
+                              ? "Te avisamos al instante cuando se publique un operativo y el día anterior como recordatorio."
+                              : "Además del email, recibí el aviso al instante en este celular o computadora, aunque la web esté cerrada."}
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={alternarPush}
+                        disabled={pushOcupado || push === "cargando"}
+                        className={`btn btn-sm flex items-center gap-1.5 ${push === "activo" ? "btn-light" : "btn-primary"}`}
+                      >
+                        {push === "activo" ? <BellOff size={14} /> : <BellRing size={14} />}
+                        <span>{pushOcupado ? "..." : push === "activo" ? "Desactivar" : "Activar"}</span>
+                      </button>
+                      {pushMsg && <p className="w-full text-xs text-slate-600">{pushMsg}</p>}
+                    </div>
+                  )}
                   <p className="text-xs mt-3 h-4">
                     {estadoAvisos === "guardado" && (
                       <span className="text-emerald-700 font-semibold">

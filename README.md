@@ -69,7 +69,7 @@ Hay dos formas, y se pueden usar las dos:
 - **Horarios de atención:** tabla `horarios_veterinario`, una fila por veterinario, día y franja. La agenda online solo ofrece turnos dentro de esas franjas.
 - **Veterinarias móviles:** operativos de castración y vacunación que se cargan y se editan desde el panel y se ven en el mapa público (`/veterinarias-moviles`, con OpenStreetMap). Los clientes eligen de qué localidades quieren avisos y reciben un email cuando se publica uno o cuando cambia su día, horario o lugar. Las localidades están en `src/zonas.ts`.
 - **Pago con tarjeta (simulado):** en el carrito se puede pagar con tarjeta, pero no hay ningún cobro real ni interviene un medio de pago. El número y el código de seguridad se validan en el navegador y no llegan al servidor; en la tabla `pagos` quedan solo la marca y los últimos 4 dígitos. Para probar: tarjeta `4111 1111 1111 1111`, cualquier vencimiento futuro y código; con `FUND` u `OTHE` como nombre del titular el pago se rechaza. En el panel esos pedidos figuran como "Pago online simulado". **Antes de vender de verdad hay que reemplazarlo por un medio de pago real o quitar la opción del carrito.**
-- **Doctores:** se agregan desde el panel, en la sección Doctores, con sus días y horario de atención. Si no se les carga una contraseña inicial, reciben un email con un enlace para elegirla (necesita el envío de emails configurado).
+- **Doctores:** se agregan, se editan y se dan de baja desde el panel, en la sección Doctores, con sus días y horario de atención. Si no se les carga una contraseña inicial, reciben un email con un enlace para elegirla (necesita el envío de emails configurado). La baja no borra nada: el profesional deja de ingresar y de recibir turnos, sus turnos futuros se cancelan y su historial se conserva; se lo puede reincorporar.
 
 ## Funciones opcionales (`.env`)
 
@@ -87,6 +87,16 @@ Hay dos formas, y se pueden usar las dos:
 4. Probar con `npm run email:test`: envía un email de prueba a la casilla de la clínica y, si algo falla, dice por qué
 
 Al arrancar, la consola del servidor indica si el envío real está activado.
+
+**Imágenes en la nube.** Con `SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY` en `.env` (y en Vercel), las fotos de mascotas, radiografías e imágenes de productos se guardan en Supabase Storage (bucket `imagenes`, se crea solo) y quedan para siempre. Sin esas variables van a la carpeta `uploads/` de la PC, que en Vercel se borra en cada deploy.
+
+**Notificaciones push y recordatorios de veterinarias móviles.**
+
+1. Generar las claves una sola vez: `npx web-push generate-vapid-keys`
+2. Cargar en `.env` y en Vercel: `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` y `VAPID_SUBJECT` (`mailto:` + el email de la clínica)
+3. Cargar `CRON_SECRET` (cualquier texto largo al azar) en `.env` y en Vercel: el cron de Vercel (`vercel.json`) llama todos los días a las 09:00 a `/api/tareas/recordatorios` con ese secreto y manda el recordatorio del día anterior por push y por email. En la PC, el servidor hace la misma revisión cada media hora.
+
+Los clientes activan las notificaciones desde Veterinarias móviles, debajo de sus localidades ("Notificaciones en este dispositivo"). Sin claves VAPID, los avisos salen solo por email.
 
 ## Seguridad
 

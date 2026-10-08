@@ -478,3 +478,36 @@ export function emailMascotaEncontrada(datos: {
     ),
   };
 }
+
+// Recordatorio que sale el día anterior a un operativo de veterinaria móvil, a quienes
+// siguen esa localidad. `o` es un operativo tal como lo devuelve la API.
+export function emailRecordatorioOperativo(nombre: string, o: any, enlaceMapa: string) {
+  const direccion = `${o.direccion}, ${o.localidad}`;
+  const mapa = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(direccion)}`;
+  return {
+    subject: `Mañana: veterinaria móvil en ${o.localidad}, ${o.hora_inicio} hs`,
+    html: plantilla(
+      "RECORDATORIO: ES MAÑANA",
+      `${CLINICA.nombre} &bull; Veterinaria móvil en ${esc(o.localidad)}`,
+      `
+        <p>Hola <strong>${esc(nombre)}</strong>,</p>
+        <p>Te recordamos que <strong>mañana, ${esc(fechaLarga(o.fecha))}</strong>, hay un operativo de veterinaria móvil en <strong>${esc(o.localidad)}</strong>:</p>
+        ${caja(
+          `<p style="margin: 0 0 8px; font-size: 15px; font-weight: bold; color: #1e3a8a;">${esc(o.titulo)}</p>` +
+            fila("Servicios", o.servicios) +
+            fila("Horario", `${o.hora_inicio} a ${o.hora_fin} hs`) +
+            fila("Lugar", direccion) +
+            (o.organizador ? fila("Organiza", o.organizador) : "") +
+            (o.requisitos ? `<p style="margin: 8px 0 0; color: #b45309;"><strong>Requisitos:</strong> ${esc(o.requisitos)}</p>` : "")
+        )}
+        <p style="margin: 20px 0; display: flex; gap: 10px;">
+          <a href="${esc(mapa)}" style="background-color: #2563eb; color: white; padding: 12px 20px; border-radius: 8px; text-decoration: none; font-weight: bold;">Cómo llegar</a>
+          <a href="${esc(enlaceMapa)}" style="background-color: #e2e8f0; color: #1e293b; padding: 12px 20px; border-radius: 8px; text-decoration: none; font-weight: bold; margin-left: 10px;">Ver en el mapa de VetAnimal</a>
+        </p>
+        <p style="font-size: 12px; color: #64748b;">
+          Recibís este recordatorio porque elegiste seguir los operativos de ${esc(o.localidad)}. Podés cambiarlo desde la sección Veterinarias móviles.
+        </p>
+      `
+    ),
+  };
+}

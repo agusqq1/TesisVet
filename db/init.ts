@@ -17,6 +17,7 @@ import * as seed from "./seed-data.js";
 
 const TABLAS = [
   "avisos_operativos",
+  "suscripciones_push",
   "operativos_moviles",
   "sesiones",
   "recuperaciones_password",
