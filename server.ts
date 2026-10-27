@@ -2087,13 +2087,14 @@ function getGeminiClient(): GoogleGenAI | null {
   return geminiAiClient;
 }
 
-const MODELOS_CHAT = ["gemini-3.8-flash", "gemini-3.1-flash-lite"];
+// Primero el modelo liviano: para preguntas frecuentes alcanza y contesta más rápido
+const MODELOS_CHAT = ["gemini-3.1-flash-lite", "gemini-3.8-flash"];
 
 // Google devuelve 503 o 429 cuando un modelo está saturado, y pasa seguido. Por eso se
 // alterna entre los dos modelos hasta que alguno responda o se agote el tiempo: nadie
 // espera más de TIEMPO_MAXIMO_CHAT_MS. Si devuelve null, el chat responde con los textos fijos.
 const TIEMPO_MAXIMO_CHAT_MS = 20000;
-const TIEMPO_POR_INTENTO_MS = 12000;
+const TIEMPO_POR_INTENTO_MS = 10000;
 
 async function generarRespuestaIA(
   ai: GoogleGenAI,
@@ -2107,9 +2108,11 @@ async function generarRespuestaIA(
     const restante = limite - Date.now();
     if (restante < 1000) break;
 
+    const modelo = MODELOS_CHAT[intento % MODELOS_CHAT.length];
+    const inicio = Date.now();
     try {
       const respuesta = await ai.models.generateContent({
-        model: MODELOS_CHAT[intento % MODELOS_CHAT.length],
+        model: modelo,
         contents,
         config: {
           systemInstruction,
@@ -2125,6 +2128,7 @@ async function generarRespuestaIA(
       if (texto) return texto;
     } catch (err: any) {
       ultimoError = err;
+      console.warn(`[CHAT] ${modelo} falló a los ${Date.now() - inicio} ms (${err?.status ?? err?.name ?? "sin detalle"})`);
       // Clave inválida, permisos o pedido mal armado: reintentar no lo arregla
       if (err?.status && ![429, 500, 503].includes(err.status)) {
         console.warn(`[CHAT] Gemini rechazó el pedido (${err.status}): ${String(err.message).slice(0, 200)}`);
