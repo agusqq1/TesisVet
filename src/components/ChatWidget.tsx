@@ -12,6 +12,7 @@ import {
   MapPin,
   ChevronDown,
 } from "lucide-react";
+import { CLINICA } from "../clinica";
 
 interface ChatMessage {
   id: string;
@@ -164,7 +165,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ navigate }) => {
       const fallbackMsg: ChatMessage = {
         id: "bot-" + Date.now(),
         role: "assistant",
-        text: "🐾 Disculpá, tuvimos un inconveniente de red. Si es una urgencia, recordá comunicarte directamente con la clínica al (02320) 47-1234.",
+        text: `🐾 Disculpá, tuvimos un inconveniente de red. Si es una urgencia, recordá comunicarte directamente con la clínica al ${CLINICA.telefono}.`,
         timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
         source: "clinical-knowledge-base",
       };

@@ -2299,7 +2299,7 @@ ${petDetails}`;
     console.error("Error en endpoint /api/chat:", error);
     return res.status(500).json({
       error: "Ocurrió un error al procesar tu consulta.",
-      reply: "Disculpá, tuvimos un inconveniente temporal al responder. Por favor intentá nuevamente o comunicate con la clínica al (02320) 47-1234.",
+      reply: `Disculpá, tuvimos un inconveniente temporal al responder. Por favor intentá nuevamente o comunicate con la clínica al ${CLINICA.telefono}.`,
     });
   }
 });
