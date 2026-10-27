@@ -8,7 +8,7 @@ import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import QRCode from "qrcode";
 import type { ResultSetHeader } from "./db/pool.js";
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI, ThinkingLevel } from "@google/genai";
 import { dbConfig, execute, query, queryOne, transaction } from "./db/pool.js";
 import { guardarImagen, descripcionAlmacenamiento, UPLOADS_DIR } from "./db/imagenes.js";
 import { prepararBaseDeDatos } from "./db/init.js";
@@ -2092,8 +2092,8 @@ const MODELOS_CHAT = ["gemini-3.8-flash", "gemini-3.1-flash-lite"];
 // Google devuelve 503 o 429 cuando un modelo está saturado, y pasa seguido. Por eso se
 // alterna entre los dos modelos hasta que alguno responda o se agote el tiempo: nadie
 // espera más de TIEMPO_MAXIMO_CHAT_MS. Si devuelve null, el chat responde con los textos fijos.
-const TIEMPO_MAXIMO_CHAT_MS = 15000;
-const TIEMPO_POR_INTENTO_MS = 8000;
+const TIEMPO_MAXIMO_CHAT_MS = 20000;
+const TIEMPO_POR_INTENTO_MS = 12000;
 
 async function generarRespuestaIA(
   ai: GoogleGenAI,
@@ -2114,6 +2114,9 @@ async function generarRespuestaIA(
         config: {
           systemInstruction,
           temperature: 0.6,
+          // Para preguntas frecuentes no hace falta que el modelo razone mucho, y
+          // razonando de más tardaba más de 8 segundos en contestar
+          thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
           // Corta el intento si el modelo no contesta a tiempo
           abortSignal: AbortSignal.timeout(Math.min(TIEMPO_POR_INTENTO_MS, restante)),
         },
