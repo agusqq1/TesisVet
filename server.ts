@@ -2087,8 +2087,9 @@ function getGeminiClient(): GoogleGenAI | null {
   return geminiAiClient;
 }
 
-// Primero el modelo liviano: para preguntas frecuentes alcanza y contesta más rápido
-const MODELOS_CHAT = ["gemini-3.1-flash-lite", "gemini-3.8-flash"];
+// Elegidos el 27/10/2026 probando con la clave de la clínica: eran los que contestaban
+// en pocos segundos (los demás devolvían 429 o 503 seguido)
+const MODELOS_CHAT = ["gemini-3-flash-preview", "gemini-3.5-flash"];
 
 // Google devuelve 503 o 429 cuando un modelo está saturado, y pasa seguido. Por eso se
 // alterna entre los dos modelos hasta que alguno responda o se agote el tiempo: nadie
