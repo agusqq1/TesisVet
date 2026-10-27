@@ -133,7 +133,7 @@ export const OrdenMedicaModal: React.FC<OrdenMedicaModalProps> = ({ orden, onClo
             </div>
 
             <div className="mt-5 text-center bg-brand-900 text-white py-2 px-4 rounded-lg">
-              <h2 className="text-xs sm:text-sm font-bold uppercase tracking-widest">
+              <h2 className="text-xs sm:text-sm font-bold uppercase tracking-widest text-white">
                 Orden Médica de Derivación e Interconsulta Externa
               </h2>
             </div>

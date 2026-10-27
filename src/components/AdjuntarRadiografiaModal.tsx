@@ -99,7 +99,7 @@ export const AdjuntarRadiografiaModal: React.FC<AdjuntarRadiografiaModalProps> =
               <ImageIcon size={20} />
             </div>
             <div>
-              <h3 className="font-bold text-lg leading-tight">Adjuntar Radiografía o Estudio de Imagen</h3>
+              <h3 className="font-bold text-lg leading-tight text-white">Adjuntar Radiografía o Estudio de Imagen</h3>
               <p className="text-xs text-slate-400">Incorporar placas radiológicas de alta definición al historial clínico</p>
             </div>
           </div>
